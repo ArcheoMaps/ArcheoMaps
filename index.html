@@ -773,10 +773,10 @@ body{
   <div id="loadOverlay">
     <span class="load-mark">⟡</span>
     <div class="load-spinner" id="loadSpinner"></div>
-    <div class="load-msg" id="loadMsg">Loading archeomaps.json…</div>
+    <div class="load-msg" id="loadMsg">Loading archeomaps_data.json…</div>
     <div id="loadError">
       <h3>Couldn't load the site data</h3>
-      <p id="loadErrorText">archeomaps.html could not fetch <code style="display:inline;padding:1px 5px;">archeomaps.json</code>. If you opened this file directly from disk (a <code style="display:inline;padding:1px 5px;">file://</code> URL), browsers block that kind of request for security reasons.</p>
+      <p id="loadErrorText">archeomaps.html could not fetch <code style="display:inline;padding:1px 5px;">archeomaps_data.json</code>. If you opened this file directly from disk (a <code style="display:inline;padding:1px 5px;">file://</code> URL), browsers block that kind of request for security reasons.</p>
       <p>Serve this folder with a small local web server instead, then open the page through it, e.g.:</p>
       <code>python3 -m http.server 8000
 # then visit: http://localhost:8000/archeomaps.html</code>
@@ -992,7 +992,7 @@ const LAND_TOPOLOGY = {"type":"Topology","objects":{"land":{"type":"GeometryColl
 const ICELAND_PATCH = {"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Iceland"},"geometry":{"type":"Polygon","coordinates":[[[-22.47,66.45],[-21.15,66.3],[-20.35,66.1],[-19.85,65.85],[-19.35,66.05],[-18.85,66.15],[-18.3,65.95],[-18.1,65.55],[-17.95,65.9],[-17.4,66.2],[-17.35,65.9],[-16.9,66.15],[-16.55,66.4],[-16.2,66.05],[-15.85,66.45],[-15.2,66.35],[-14.55,66.35],[-14.75,65.85],[-13.7,65.1],[-13.85,64.75],[-14.3,64.55],[-14.7,64.35],[-15.2,64.25],[-16.2,63.9],[-17.5,63.55],[-18.6,63.4],[-19.6,63.45],[-20.35,63.5],[-20.9,63.6],[-21.3,63.85],[-22.68,63.82],[-22.55,64.02],[-21.95,64.05],[-21.75,64.15],[-21.95,64.4],[-21.7,64.55],[-22.2,64.75],[-23.0,64.75],[-23.9,64.9],[-23.5,65.05],[-22.9,65.05],[-22.5,65.35],[-23.0,65.5],[-24.0,65.55],[-24.52,65.5],[-24.3,65.7],[-23.6,65.65],[-23.2,66.0],[-23.4,66.2],[-23.6,66.3],[-22.47,66.45]]]}}]};
 
 /* ==================== ArcheoMaps Phase 2 — application logic ====================
-   Loads the migrated site dataset from archeomaps.json at runtime and
+   Loads the migrated site dataset from archeomaps_data.json at runtime and
    drives the map / timeline / filter panel / drawer / search / site list from
    the new taxonomy (canonicalType, tags, culture, function, workflow status)
    rather than the legacy era/type/culture fields. Legacy fields are preserved
@@ -2420,7 +2420,7 @@ randomBtn.addEventListener('click', ()=>{
 });
 
 /* ================== data loading & initialization ================== */
-const DATA_URL = 'archeomaps.json';
+const DATA_URL = 'archeomaps_data.json';
 const loadOverlay = document.getElementById('loadOverlay');
 const loadSpinner = document.getElementById('loadSpinner');
 const loadMsg = document.getElementById('loadMsg');
@@ -2573,7 +2573,7 @@ function loadData(){
       return res.json();
     })
     .then(data=>{
-      if(!Array.isArray(data) || data.length === 0) throw new Error('archeomaps.json did not contain a site array.');
+      if(!Array.isArray(data) || data.length === 0) throw new Error('archeomaps_data.json did not contain a site array.');
       startApp(data);
     })
     .catch(showLoadError);
