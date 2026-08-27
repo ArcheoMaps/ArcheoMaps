@@ -1,0 +1,43 @@
+[orchestrator] server ready on port 8791
+  OK: starts at 0 of 62 reviewed
+  OK: first case in queue order is unescoId=4 (L’Anse aux Meadows), not string-sorted
+  OK: count updates after APPROVE
+  OK: autosave status updates after APPROVE
+  OK: EDIT form shows exactly 3 candidate radios
+  OK: EDIT without a curator note is rejected with an alert
+  OK: EDIT decision saved with note
+  OK: count updates after EDIT
+  OK: invalid free-text ArcheoMaps id shows inline error
+  OK: count updates after REJECT (3rd decision total)
+  OK: all 5 decision types recorded (5 of 62)
+  OK: empty state shown for a query with zero matches
+  OK: review sections hidden (not destroyed) when empty
+  OK: #caseNav still exists in DOM after clearing search (no permanent DOM wipe)
+  OK: case navigation renders again after clearing search
+  OK: search "Meadows" narrows to exactly 1 case
+  OK: Unresolved-only filter shows 57 (62 - 5 decided)
+  OK: keyboard shortcuts (j = next, 1 = approve) work
+  OK: digit keys do not trigger decisions while search box is focused
+  OK: exported file has correct total
+  OK: exported file contains exactly the 6 decisions made
+  OK: exported queueFingerprint matches loaded queue
+  OK: decisions persist across reload (localStorage autosave)
+  OK: autosave status restored after reload
+  OK: import adds a new decision (7 of 62)
+  OK: import success banner shown
+  OK: malformed JSON import rejected with clear error
+  OK: malformed import does not change decision count (no partial import)
+  OK: clear local progress resets to 0 of 62
+  OK: import-result banner is cleared by "Clear local progress" (regression test for stale-banner bug)
+  OK: no error banner visible after clearing local progress
+[check] console/page errors (desktop pass): []
+  OK: zero console/page errors during full desktop interaction pass
+  OK: other-namespace progress produces a warning banner without auto-loading it
+  OK: other-namespace decisions are NOT silently loaded into current queue
+  OK: left/right panels stack vertically on mobile (same x offset)
+  OK: right panel renders below left panel on mobile
+  OK: decisions work on mobile viewport
+[check] console/page errors (mobile pass): []
+  OK: zero console/page errors on mobile viewport
+
+ALL CHECKS PASSED

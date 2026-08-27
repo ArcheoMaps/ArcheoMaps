@@ -1,0 +1,88 @@
+{
+  "ranAt": "2026-08-26T17:17:11.345Z",
+  "total": 16,
+  "passed": 16,
+  "failed": 0,
+  "results": [
+    {
+      "name": "run 1 succeeds",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "run 2 succeeds (independent invocation)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "both outputs are valid JSON",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "itemCount === 62 on both runs",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "queueFingerprint identical across independent runs",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "every item proposalFingerprint identical across runs (order-independent)",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "output is byte-identical across runs excluding generatedAt",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "every candidate archeomapsId resolves to an embedded snapshot",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "every item has exactly 3 candidates",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "proposalIds are unique",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "knownArcheomapsIds includes every referenced candidate id",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "source dataset file byte-unchanged after both runs",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "source proposals file byte-unchanged after both runs",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "fails loudly (non-zero exit) when proposals file has wrong count",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "fails loudly when a proposal references a nonexistent ArcheoMaps id",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "fails loudly on malformed JSON input",
+      "pass": true,
+      "detail": null
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "validatedAt": "2026-08-26T17:17:04.642Z",
+  "inputs": {
+    "decisionsPath": "/tmp/review_decisions.valid.json",
+    "queuePath": "/home/claude/build/curator/review_queue.json",
+    "datasetPath": "/home/claude/build/scripts/archeomaps_data_unesco_enriched_corrected.json"
+  },
+  "fileChecks": [
+    {
+      "name": "decisions-file-valid-json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "queue-file-valid-json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "dataset-file-valid-json",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "namedChecks": [
+    {
+      "name": "schema-version-correct",
+      "pass": true
+    },
+    {
+      "name": "queue-version-matches",
+      "pass": true
+    },
+    {
+      "name": "queue-fingerprint-well-formed",
+      "pass": true
+    },
+    {
+      "name": "queue-fingerprint-matches",
+      "pass": true
+    },
+    {
+      "name": "exported-at-valid",
+      "pass": true
+    },
+    {
+      "name": "no-unknown-top-level-properties",
+      "pass": true
+    },
+    {
+      "name": "decision-counts-shape-valid",
+      "pass": true
+    },
+    {
+      "name": "decisions-is-array",
+      "pass": true
+    },
+    {
+      "name": "unreviewed-is-array",
+      "pass": true
+    },
+    {
+      "name": "unique-proposal-decisions",
+      "pass": true
+    },
+    {
+      "name": "unreviewed-no-duplicates",
+      "pass": true
+    },
+    {
+      "name": "unreviewed-ids-belong-to-queue",
+      "pass": true
+    },
+    {
+      "name": "no-proposal-in-both-collections",
+      "pass": true
+    },
+    {
+      "name": "every-queue-item-accounted-for",
+      "pass": true
+    },
+    {
+      "name": "per-decision-validation-clean",
+      "pass": true
+    }
+  ],
+  "contractErrors": [],
+  "perDecisionErrors": [],
+  "accounting": {
+    "declared": {
+      "APPROVE": 1,
+      "EDIT": 1,
+      "NEEDS_RESEARCH": 1,
+      "REJECT": 1,
+      "DEFER": 1,
+      "total": 62,
+      "unreviewed": 57
+    },
+    "recomputed": {
+      "APPROVE": 1,
+      "EDIT": 1,
+      "NEEDS_RESEARCH": 1,
+      "REJECT": 1,
+      "DEFER": 1,
+      "total": 62,
+      "unreviewed": 57
+    }
+  },
+  "noMutationConfirmed": true,
+  "overallValid": true
+}

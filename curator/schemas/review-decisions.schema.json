@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://archeomaps.example/schemas/review-decisions.schema.json",
+  "title": "ArcheoMaps Curator Review Decisions Export",
+  "description": "Schema for review_decisions.json, exported by the curator workbench and consumed (read-only, report-only) by scripts/validate-review-decisions.js. This file records human curator judgements only — it is never a patch and is never applied automatically.",
+  "type": "object",
+  "required": ["schemaVersion", "queueVersion", "queueFingerprint", "exportedAt", "decisionCounts", "decisions", "unreviewedProposalIds"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "type": "string" },
+    "queueVersion": { "type": "string" },
+    "queueFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "exportedAt": { "type": "string", "format": "date-time" },
+    "decisionCounts": {
+      "type": "object",
+      "required": ["APPROVE", "EDIT", "NEEDS_RESEARCH", "REJECT", "DEFER", "total", "unreviewed"],
+      "additionalProperties": false,
+      "properties": {
+        "APPROVE": { "type": "integer", "minimum": 0 },
+        "EDIT": { "type": "integer", "minimum": 0 },
+        "NEEDS_RESEARCH": { "type": "integer", "minimum": 0 },
+        "REJECT": { "type": "integer", "minimum": 0 },
+        "DEFER": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 0 },
+        "unreviewed": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/reviewDecision" }
+    },
+    "unreviewedProposalIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "proposalIds present in the queue that have no decision at export time."
+    }
+  },
+  "definitions": {
+    "decisionValue": {
+      "type": "string",
+      "enum": ["APPROVE", "EDIT", "NEEDS_RESEARCH", "REJECT", "DEFER"]
+    },
+    "rejectReason": {
+      "type": "string",
+      "enum": [
+        "different-entity",
+        "nearby-but-not-identical",
+        "parent-vs-component-mismatch",
+        "name-coincidence",
+        "incorrect-coordinates",
+        "other"
+      ]
+    },
+    "needsResearchReason": {
+      "type": "string",
+      "enum": [
+        "insufficient-identity-evidence",
+        "chronology-unclear",
+        "coordinates-unclear",
+        "parent-component-ambiguity",
+        "conflicting-sources",
+        "other"
+      ]
+    },
+    "reviewDecision": {
+      "type": "object",
+      "description": "A single curator judgement on one queue item. This is a decision record only: it must never contain patch-shaped or apply-shaped operations (no fields that write directly to an ArcheoMaps record).",
+      "required": [
+        "proposalId", "queueVersion", "proposalType", "source", "externalId",
+        "targetArcheomapsId", "decision", "reviewedAt", "evidenceVersion",
+        "proposalFingerprint"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "proposalId": { "type": "string", "minLength": 1 },
+        "queueVersion": { "type": "string" },
+        "proposalType": { "type": "string" },
+        "source": { "type": "string" },
+        "externalId": { "type": "string" },
+        "targetArcheomapsId": { "type": "string" },
+        "decision": { "$ref": "#/definitions/decisionValue" },
+        "selectedArcheomapsId": { "type": ["string", "null"] },
+        "editedValues": { "type": ["object", "null"] },
+        "curatorNote": { "type": "string" },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "evidenceVersion": { "type": "string" },
+        "proposalFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "blacklistExactProposal": { "type": "boolean" },
+        "rejectReason": { "$ref": "#/definitions/rejectReason" },
+        "needsResearchReason": { "$ref": "#/definitions/needsResearchReason" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "decision": { "const": "EDIT" } } },
+          "then": { "required": ["selectedArcheomapsId", "curatorNote"] }
+        }
+      ]
+    }
+  }
+}

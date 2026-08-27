@@ -1,0 +1,13 @@
+server ready (correct dataset)
+  OK: no inline "does not exist" error for a genuinely valid off-top-3 id
+  OK: lazy-fetched + integrity-verified snapshot renders correctly for an off-top-3 id
+  OK: left panel is clearly labeled as showing an alternate selection
+errors so far: []
+  OK: no page errors during the successful lazy-fetch path
+tampered-dataset server ready
+  OK: tampered dataset at the configured path is REJECTED, not silently used
+  OK: tampered dataset never gets used to render a snapshot
+errors (part 2): []
+  OK: no page errors during the integrity-failure path either
+
+ALL LAZY-DATASET-FETCH CHECKS PASSED

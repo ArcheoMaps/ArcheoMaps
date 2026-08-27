@@ -1,0 +1,130 @@
+{
+  "validatedAt": "2026-08-26T17:17:04.761Z",
+  "inputs": {
+    "decisionsPath": "/tmp/review_decisions.malformed.json",
+    "queuePath": "/home/claude/build/curator/review_queue.json",
+    "datasetPath": "/home/claude/build/scripts/archeomaps_data_unesco_enriched_corrected.json"
+  },
+  "fileChecks": [
+    {
+      "name": "decisions-file-valid-json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "queue-file-valid-json",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "dataset-file-valid-json",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "namedChecks": [
+    {
+      "name": "schema-version-correct",
+      "pass": true
+    },
+    {
+      "name": "queue-version-matches",
+      "pass": true
+    },
+    {
+      "name": "queue-fingerprint-well-formed",
+      "pass": true
+    },
+    {
+      "name": "queue-fingerprint-matches",
+      "pass": true
+    },
+    {
+      "name": "exported-at-valid",
+      "pass": true
+    },
+    {
+      "name": "no-unknown-top-level-properties",
+      "pass": true
+    },
+    {
+      "name": "decision-counts-shape-valid",
+      "pass": false
+    },
+    {
+      "name": "decisions-is-array",
+      "pass": true
+    },
+    {
+      "name": "unreviewed-is-array",
+      "pass": true
+    },
+    {
+      "name": "unique-proposal-decisions",
+      "pass": true
+    },
+    {
+      "name": "unreviewed-no-duplicates",
+      "pass": true
+    },
+    {
+      "name": "unreviewed-ids-belong-to-queue",
+      "pass": true
+    },
+    {
+      "name": "no-proposal-in-both-collections",
+      "pass": false
+    },
+    {
+      "name": "every-queue-item-accounted-for",
+      "pass": false
+    },
+    {
+      "name": "per-decision-validation-clean",
+      "pass": false
+    }
+  ],
+  "contractErrors": [
+    "decisions[0] (IDENTITY_MATCH::unesco::4): Missing or invalid required field \"queueVersion\".; Missing or invalid required field \"proposalType\".; Missing or invalid required field \"source\".; Missing or invalid required field \"targetArcheomapsId\".; Missing or invalid required field \"evidenceVersion\".; Missing or invalid required field \"proposalFingerprint\".; reviewedAt is missing or not a valid ISO 8601 date-time string.",
+    "proposalId \"IDENTITY_MATCH::unesco::4\" is missing from BOTH decisions and unreviewedProposalIds (every queue item must be accounted for exactly once).",
+    "Declared decisionCounts.APPROVE (1) does not match the recomputed value (0).",
+    "Declared decisionCounts.unreviewed (61) does not match the recomputed value (62)."
+  ],
+  "perDecisionErrors": [
+    {
+      "index": 0,
+      "proposalId": "IDENTITY_MATCH::unesco::4",
+      "errors": [
+        "Missing or invalid required field \"queueVersion\".",
+        "Missing or invalid required field \"proposalType\".",
+        "Missing or invalid required field \"source\".",
+        "Missing or invalid required field \"targetArcheomapsId\".",
+        "Missing or invalid required field \"evidenceVersion\".",
+        "Missing or invalid required field \"proposalFingerprint\".",
+        "reviewedAt is missing or not a valid ISO 8601 date-time string."
+      ]
+    }
+  ],
+  "accounting": {
+    "declared": {
+      "APPROVE": 1,
+      "EDIT": 0,
+      "NEEDS_RESEARCH": 0,
+      "REJECT": 0,
+      "DEFER": 0,
+      "total": 62,
+      "unreviewed": 61
+    },
+    "recomputed": {
+      "APPROVE": 0,
+      "EDIT": 0,
+      "NEEDS_RESEARCH": 0,
+      "REJECT": 0,
+      "DEFER": 0,
+      "total": 62,
+      "unreviewed": 62
+    }
+  },
+  "noMutationConfirmed": true,
+  "overallValid": false
+}

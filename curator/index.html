@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ArcheoMaps Curator Workbench — Phase 4.1A</title>
+<meta name="robots" content="noindex, nofollow" />
+<link rel="stylesheet" href="./curator.css" />
+</head>
+<body>
+
+<a href="#caseBody" class="skip-link">Skip to case content</a>
+
+<header id="topbar">
+  <div class="topbar-title">
+    <h1>ArcheoMaps Curator Workbench</h1>
+    <p class="subtitle">Phase 4.1A &mdash; UNESCO identity-match review. This page never edits the authoritative dataset; every button here saves a decision, not a data change.</p>
+  </div>
+
+  <div id="headerMeta" class="header-meta" aria-live="polite"></div>
+  <div id="headerCounts" class="header-counts" aria-live="polite"></div>
+  <div id="autosaveStatus" class="autosave-status" aria-live="polite"></div>
+
+  <div class="toolbar">
+    <button id="filterToggleBtn" type="button">Filters</button>
+    <button id="exportBtn" type="button">Export decisions</button>
+    <button id="backupBtn" type="button">Backup now</button>
+    <label class="file-input-label">
+      Import decisions
+      <input id="importFileInput" type="file" accept="application/json,.json" />
+    </label>
+    <button id="clearProgressBtn" type="button" class="danger-btn">Clear local progress</button>
+    <button id="helpToggleBtn" type="button" onclick="document.getElementById('helpPanel').classList.toggle('hidden')">Keyboard shortcuts</button>
+  </div>
+
+  <div id="helpPanel" class="help-panel hidden">
+    <h2>Keyboard shortcuts</h2>
+    <ul>
+      <li><kbd>&rarr;</kbd> / <kbd>j</kbd> &mdash; next case</li>
+      <li><kbd>&larr;</kbd> / <kbd>k</kbd> &mdash; previous case</li>
+      <li><kbd>1</kbd> Approve &middot; <kbd>2</kbd> Edit &middot; <kbd>3</kbd> Needs research &middot; <kbd>4</kbd> Reject &middot; <kbd>5</kbd> Defer</li>
+      <li><kbd>/</kbd> &mdash; focus search</li>
+    </ul>
+    <p>Shortcuts are disabled while typing in a text field.</p>
+  </div>
+
+  <div id="warningBanner" role="alert"></div>
+  <div id="importResult" role="status"></div>
+</header>
+
+<div id="filterBar" class="filter-bar"></div>
+
+<main id="caseBody">
+  <p id="emptyState" class="empty-state hidden">No cases match the current filters.</p>
+
+  <div id="reviewSections">
+    <nav id="caseNav" class="case-nav" aria-label="Case navigation"></nav>
+
+    <div class="comparison-grid">
+      <section id="leftPanel" class="panel panel-left" aria-labelledby="leftPanelHeading">
+        <h2 id="leftPanelHeading" class="panel-heading">Existing ArcheoMaps record</h2>
+      </section>
+      <section id="rightPanel" class="panel panel-right" aria-labelledby="rightPanelHeading">
+        <h2 id="rightPanelHeading" class="panel-heading">UNESCO proposal</h2>
+      </section>
+    </div>
+
+    <section id="candidateStrip" class="candidate-strip" aria-label="Top 3 identity candidates"></section>
+
+    <section id="evidencePanel" class="evidence-panel" aria-label="Evidence"></section>
+
+    <section id="decisionPanel" class="decision-panel" aria-label="Curator decision"></section>
+  </div>
+</main>
+
+<footer id="pagefooter">
+  <p>ArcheoMaps Curator Workbench &middot; curator workbench, not an importer &middot; source data is read-only from this page. See README.md for how this connects to patch generation.</p>
+</footer>
+
+<script src="./curator-core.js"></script>
+<script src="./curator.js"></script>
+</body>
+</html>

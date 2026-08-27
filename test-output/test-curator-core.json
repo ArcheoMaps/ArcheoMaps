@@ -1,0 +1,373 @@
+{
+  "ranAt": "2026-08-26T17:16:34.697Z",
+  "total": 73,
+  "passed": 73,
+  "failed": 0,
+  "results": [
+    {
+      "name": "itemMatchesFilters: decision=all matches everything",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "itemMatchesFilters: decision=unresolved excludes decided items",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "itemMatchesFilters: decision=REJECT only matches items decided REJECT",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "itemMatchesFilters: confidenceBand high/moderate/low thresholds",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "itemMatchesFilters: serialOnly matches componentsCount>1 OR SERIAL_PROPERTY flag",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "itemMatchesFilters: completenessBand reads from rank-1 candidate snapshot",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "matchesSearch: matches UNESCO name, any candidate name, id, region, state",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "filterItems: search + decision filter compose correctly",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "sortItems: queue-order is a stable no-op (preserves array order)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "sortItems: confidence-desc orders high to low with stable tie-break",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "sortItems: distance-asc orders nearest first",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "sortItems: completeness-desc reads rank-1 candidate percentage",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "sortItems: unknown sort key falls back to queue-order (no throw)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCounts: tallies decisions and unreviewed correctly",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: valid APPROVE (all required fields present) passes",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: THE REPORTED BUG — APPROVE with only proposalId/decision/externalId now FAILS",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: illegal decision value fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"queueVersion\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"proposalType\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"source\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"externalId\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"targetArcheomapsId\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"evidenceVersion\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing \"proposalFingerprint\" alone fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: missing reviewedAt fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: malformed reviewedAt (not ISO 8601) fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: reviewedAt missing timezone fails (not a complete ISO date-time)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: malformed proposalFingerprint (wrong length / non-hex) fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: stale (well-formed but wrong) proposalFingerprint is flagged, not silently accepted",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: wrong externalId (does not match queue item) fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: wrong targetArcheomapsId (does not match queue item) fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: wrong evidenceVersion (does not match queue item) fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: wrong queueVersion / proposalType / source each individually fail",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: unknown decision property fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: EDIT without selectedArcheomapsId fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: EDIT without curatorNote fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: EDIT with unknown ArcheoMaps id fails (no new ids can be created)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: EDIT with known id + note passes",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: unrecognized rejectReason/needsResearchReason are flagged",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: rejects patch-shaped fields (unescoIdNo, apply, patch, ...)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateDecision: unknown proposalId is flagged (not a known queue item)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "buildExport: counts + unreviewed list are correct and consistent",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "buildExport -> validateImportPayload round trip passes cleanly (self-consistency)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: incorrect schemaVersion fails",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects malformed queueFingerprint (wrong format)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects mismatched (but well-formed) queueFingerprint",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects malformed exportedAt",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects unknown top-level export property",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects incorrect decisionCounts (declared vs recomputed mismatch)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects decisionCounts with an unknown/missing key",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects duplicate proposalId within decisions",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects a decision referencing an unknown proposalId",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects a proposal present in BOTH decisions and unreviewedProposalIds",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects a queue item missing from BOTH decisions and unreviewedProposalIds",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects duplicate unreviewed proposal ID",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: rejects an unreviewed ID that does not belong to the queue",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: valid payload imports cleanly, never partially",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: one invalid decision in the batch invalidates the whole import (no partial import)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "validateImportPayload: THE REPORTED BUG reproduced end-to-end — malformed APPROVE inside a real import is rejected",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "isValidIsoDateTime: accepts real ISO date-times, rejects near-misses",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "isValidFingerprintFormat: exactly 64 lowercase hex chars",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: fully populated record scores 100",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: empty record scores 0 and bands red",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: bare-URL text does NOT count as a substantive description",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: null canonicalType + workflow.state=research is \"researched_empty\", not \"not_yet_researched\"",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: null canonicalType + workflow.state=review is \"not_yet_researched\"",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: phases dimension is always \"unavailable\" with weight 0 (field does not exist in dataset)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: result is always marked provisional with a documented reason",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "computeCompleteness: weights sum to 100 across scoreable dimensions",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "buildArcheomapsSnapshot: maps fields correctly and never invents data",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "buildArcheomapsSnapshot: surfaces existing heritage.unesco linkage (double-link guard)",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "isSafeHttpUrl: accepts http/https, rejects everything else",
+      "pass": true,
+      "error": null
+    },
+    {
+      "name": "storageNamespace: namespaced by both queueVersion and queueFingerprint",
+      "pass": true,
+      "error": null
+    }
+  ]
+}

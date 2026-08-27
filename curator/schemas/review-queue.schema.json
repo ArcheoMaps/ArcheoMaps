@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://archeomaps.example/schemas/review-queue.schema.json",
+  "title": "ArcheoMaps Curator Review Queue",
+  "description": "Schema for curator/review_queue.json, produced deterministically by scripts/generate-review-queue.js. This file is a curator-workbench artifact, not the authoritative ArcheoMaps dataset.",
+  "type": "object",
+  "required": ["queueVersion", "evidenceVersion", "completenessFormulaVersion", "generatedAt", "itemCount", "queueFingerprint", "knownArcheomapsIds", "inputs", "items"],
+  "additionalProperties": false,
+  "properties": {
+    "queueVersion": { "type": "string" },
+    "evidenceVersion": { "type": "string" },
+    "completenessFormulaVersion": { "type": "string" },
+    "generatedAt": { "type": "string", "format": "date-time", "description": "Informational only. Never part of any fingerprint." },
+    "itemCount": { "type": "integer", "minimum": 0 },
+    "queueFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "knownArcheomapsIds": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Every ArcheoMaps record id in the authoritative dataset (id strings only, not full records) — used client-side to validate a free-typed EDIT target without fetching the full dataset."
+    },
+    "inputs": {
+      "type": "object",
+      "required": ["dataset", "proposals"],
+      "additionalProperties": false,
+      "properties": {
+        "dataset": { "$ref": "#/definitions/inputDescriptor" },
+        "proposals": { "$ref": "#/definitions/inputDescriptor" }
+      }
+    },
+    "items": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/queueItem" }
+    }
+  },
+  "definitions": {
+    "inputDescriptor": {
+      "type": "object",
+      "required": ["path", "recordCount", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string" },
+        "recordCount": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    },
+    "proposalType": {
+      "type": "string",
+      "enum": [
+        "IDENTITY_MATCH",
+        "TAXONOMY_ADDITION",
+        "FIELD_EDIT",
+        "CHRONOLOGY_CONFLICT",
+        "SOURCE_ADDITION",
+        "NEW_RECORD",
+        "PARENT_COMPONENT_RELATIONSHIP",
+        "IMAGE_PROPOSAL"
+      ]
+    },
+    "completeness": {
+      "type": "object",
+      "required": ["formulaVersion", "percentage", "band", "provisional", "dimensions"],
+      "additionalProperties": false,
+      "properties": {
+        "formulaVersion": { "type": "string" },
+        "percentage": { "type": ["integer", "null"], "minimum": 0, "maximum": 100 },
+        "band": { "type": "string", "enum": ["green", "yellow", "red", "grey"] },
+        "provisional": { "type": "boolean" },
+        "provisionalReason": { "type": "string" },
+        "dimensions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key", "label", "weight", "status"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string" },
+              "label": { "type": "string" },
+              "weight": { "type": "number", "minimum": 0 },
+              "status": { "type": "string", "enum": ["populated", "researched_empty", "not_yet_researched", "unavailable"] }
+            }
+          }
+        }
+      }
+    },
+    "archeomapsSnapshot": {
+      "type": "object",
+      "required": ["id", "name", "lat", "lon", "completeness"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": ["string", "null"] },
+        "lat": { "type": "number" },
+        "lon": { "type": "number" },
+        "year": { "type": ["number", "null"] },
+        "canonicalType": { "type": ["string", "null"] },
+        "legacyType": { "type": ["string", "null"] },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "workflowState": { "type": ["string", "null"], "enum": ["review", "research", null] },
+        "completeness": { "$ref": "#/definitions/completeness" }
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "required": ["rank", "archeomapsId", "archeomapsSnapshot"],
+      "additionalProperties": false,
+      "properties": {
+        "rank": { "type": "integer", "minimum": 1 },
+        "archeomapsId": { "type": "string" },
+        "score": { "type": ["number", "null"] },
+        "nameScore": { "type": ["number", "null"] },
+        "distanceMeters": { "type": ["number", "null"] },
+        "band": { "type": ["string", "null"] },
+        "isContainment": { "type": "boolean" },
+        "matchedComponent": { "type": ["object", "null"] },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "archeomapsSnapshot": { "$ref": "#/definitions/archeomapsSnapshot" }
+      }
+    },
+    "queueItem": {
+      "type": "object",
+      "required": [
+        "proposalId", "proposalType", "source", "externalId",
+        "queueVersion", "evidenceVersion", "targetArcheomapsId",
+        "unesco", "proposal", "evidence", "proposalFingerprint"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "proposalId": { "type": "string", "minLength": 1 },
+        "proposalType": { "$ref": "#/definitions/proposalType" },
+        "source": { "type": "string" },
+        "externalId": { "type": "string" },
+        "queueVersion": { "type": "string" },
+        "evidenceVersion": { "type": "string" },
+        "targetArcheomapsId": { "type": "string" },
+        "proposalFingerprint": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "unesco": {
+          "type": "object",
+          "required": ["unescoId", "officialName"],
+          "additionalProperties": true,
+          "properties": {
+            "unescoId": { "type": "string" },
+            "officialName": { "type": ["string", "null"] },
+            "category": { "type": ["string", "null"] },
+            "states": { "type": "array", "items": { "type": "string" } },
+            "region": { "type": ["string", "null"] },
+            "transboundary": { "type": "boolean" },
+            "componentsCount": { "type": ["integer", "null"] },
+            "secondaryFlags": { "type": "array", "items": { "type": "string" } },
+            "dateInscribed": { "type": ["integer", "null"] },
+            "dateInscribedAvailable": { "type": "boolean" },
+            "criteria": { "type": ["object", "null"] },
+            "criteriaAvailable": { "type": "boolean" },
+            "sourceUrl": { "type": ["string", "null"] }
+          }
+        },
+        "proposal": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "primaryProposedClass": { "type": "string" },
+            "automatedRuleId": { "type": ["string", "null"] },
+            "confidence": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "reasons": { "type": "array", "items": { "type": "string" } },
+            "requiresHumanReview": { "type": "boolean" },
+            "reviewReason": { "type": ["string", "null"] }
+          }
+        },
+        "evidence": {
+          "type": "object",
+          "required": ["candidates"],
+          "additionalProperties": true,
+          "properties": {
+            "candidates": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/definitions/candidate" }
+            }
+          }
+        }
+      }
+    }
+  }
+}
