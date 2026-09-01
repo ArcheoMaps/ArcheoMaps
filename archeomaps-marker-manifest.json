@@ -1,0 +1,1467 @@
+{
+  "version": "archeomaps-marker-manifest-v3",
+  "atlases": {
+    "sprites": {
+      "image": "archeomaps-marker-atlas.png",
+      "columns": 16,
+      "rows": 8,
+      "cellWidth": 48,
+      "cellHeight": 48,
+      "width": 768,
+      "height": 384,
+      "anchor": "bottom-centre"
+    },
+    "heroes": {
+      "image": "archeomaps-hero-atlas.png",
+      "columns": 16,
+      "rows": 12,
+      "cellWidth": 96,
+      "cellHeight": 96,
+      "width": 1536,
+      "height": 1152,
+      "anchor": "bottom-centre"
+    },
+    "events": {
+      "status": "reserved",
+      "cellWidth": 48,
+      "prefix": "E"
+    },
+    "interface": {
+      "status": "reserved",
+      "cellWidth": 16,
+      "prefix": "U"
+    }
+  },
+  "sprites": [
+    {
+      "address": "S000",
+      "name": "Generic archaeological site",
+      "id": "sprite:generic-archaeological-site",
+      "matches": [],
+      "fallback": true,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 0
+    },
+    {
+      "address": "S001",
+      "name": "Archaeological dig site",
+      "id": "sprite:archaeological-dig-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 1
+    },
+    {
+      "address": "S002",
+      "name": "Multi-component complex",
+      "id": "sprite:multi-component-complex",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 2
+    },
+    {
+      "address": "S003",
+      "name": "Generic settlement",
+      "id": "sprite:generic-settlement",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 3
+    },
+    {
+      "address": "S004",
+      "name": "Urban settlement",
+      "id": "sprite:urban-settlement",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 4
+    },
+    {
+      "address": "S005",
+      "name": "Tell settlement",
+      "id": "sprite:tell-settlement",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 5
+    },
+    {
+      "address": "S006",
+      "name": "Cliff dwelling",
+      "id": "sprite:cliff-dwelling",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 6
+    },
+    {
+      "address": "S007",
+      "name": "Cave settlement",
+      "id": "sprite:cave-settlement",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 7
+    },
+    {
+      "address": "S008",
+      "name": "Pile or lakeside settlement",
+      "id": "sprite:pile-or-lakeside-settlement",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 8
+    },
+    {
+      "address": "S009",
+      "name": "Fortified settlement",
+      "id": "sprite:fortified-settlement",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 9
+    },
+    {
+      "address": "S010",
+      "name": "Farmstead or villa",
+      "id": "sprite:farmstead-or-villa",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 10
+    },
+    {
+      "address": "S011",
+      "name": "Palace or elite residence",
+      "id": "sprite:palace-or-elite-residence",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 11
+    },
+    {
+      "address": "S012",
+      "name": "Generic religious site",
+      "id": "sprite:generic-religious-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 12
+    },
+    {
+      "address": "S013",
+      "name": "Shrine or sanctuary",
+      "id": "sprite:shrine-or-sanctuary",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 13
+    },
+    {
+      "address": "S014",
+      "name": "Classical temple",
+      "id": "sprite:classical-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 14
+    },
+    {
+      "address": "S015",
+      "name": "Pylon temple",
+      "id": "sprite:pylon-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 15
+    },
+    {
+      "address": "S016",
+      "name": "Ziggurat",
+      "id": "sprite:ziggurat",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 16
+    },
+    {
+      "address": "S017",
+      "name": "Stepped pyramid temple",
+      "id": "sprite:stepped-pyramid-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 17
+    },
+    {
+      "address": "S018",
+      "name": "Pagoda",
+      "id": "sprite:pagoda",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 18
+    },
+    {
+      "address": "S019",
+      "name": "Stupa",
+      "id": "sprite:stupa",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 19
+    },
+    {
+      "address": "S020",
+      "name": "Shikhara temple",
+      "id": "sprite:shikhara-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 20
+    },
+    {
+      "address": "S021",
+      "name": "Rock-cut temple",
+      "id": "sprite:rock-cut-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 21
+    },
+    {
+      "address": "S022",
+      "name": "Basilica or church",
+      "id": "sprite:basilica-or-church",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 22
+    },
+    {
+      "address": "S023",
+      "name": "Monastery",
+      "id": "sprite:monastery",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 23
+    },
+    {
+      "address": "S024",
+      "name": "Mosque",
+      "id": "sprite:mosque",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 24
+    },
+    {
+      "address": "S025",
+      "name": "Generic burial site",
+      "id": "sprite:generic-burial-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 25
+    },
+    {
+      "address": "S026",
+      "name": "Cemetery or necropolis",
+      "id": "sprite:cemetery-or-necropolis",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 26
+    },
+    {
+      "address": "S027",
+      "name": "Built chamber tomb",
+      "id": "sprite:built-chamber-tomb",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 27
+    },
+    {
+      "address": "S028",
+      "name": "Rock-cut tomb",
+      "id": "sprite:rock-cut-tomb",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 28
+    },
+    {
+      "address": "S029",
+      "name": "Tumulus",
+      "id": "sprite:tumulus",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 29
+    },
+    {
+      "address": "S030",
+      "name": "Passage grave",
+      "id": "sprite:passage-grave",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 30
+    },
+    {
+      "address": "S031",
+      "name": "Mastaba",
+      "id": "sprite:mastaba",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 31
+    },
+    {
+      "address": "S032",
+      "name": "Mausoleum",
+      "id": "sprite:mausoleum",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 32
+    },
+    {
+      "address": "S033",
+      "name": "Egyptian-form pyramid",
+      "id": "sprite:egyptian-form-pyramid",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 33
+    },
+    {
+      "address": "S034",
+      "name": "Nubian-form pyramid",
+      "id": "sprite:nubian-form-pyramid",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 34
+    },
+    {
+      "address": "S035",
+      "name": "Monumental East Asian mound",
+      "id": "sprite:monumental-east-asian-mound",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 35
+    },
+    {
+      "address": "S036",
+      "name": "Catacomb",
+      "id": "sprite:catacomb",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 36
+    },
+    {
+      "address": "S037",
+      "name": "Funerary tower",
+      "id": "sprite:funerary-tower",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 37
+    },
+    {
+      "address": "S038",
+      "name": "Generic fortification",
+      "id": "sprite:generic-fortification",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 38
+    },
+    {
+      "address": "S039",
+      "name": "Fort or citadel",
+      "id": "sprite:fort-or-citadel",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 39
+    },
+    {
+      "address": "S040",
+      "name": "Hillfort",
+      "id": "sprite:hillfort",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 40
+    },
+    {
+      "address": "S041",
+      "name": "Castle",
+      "id": "sprite:castle",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 41
+    },
+    {
+      "address": "S042",
+      "name": "Defensive wall",
+      "id": "sprite:defensive-wall",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 42
+    },
+    {
+      "address": "S043",
+      "name": "Monumental city gate",
+      "id": "sprite:monumental-city-gate",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 43
+    },
+    {
+      "address": "S044",
+      "name": "Watchtower",
+      "id": "sprite:watchtower",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 44
+    },
+    {
+      "address": "S045",
+      "name": "Military camp or frontier fort",
+      "id": "sprite:military-camp-or-frontier-fort",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 45
+    },
+    {
+      "address": "S046",
+      "name": "Rampart and ditch",
+      "id": "sprite:rampart-and-ditch",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 46
+    },
+    {
+      "address": "S047",
+      "name": "Bunker or coastal battery",
+      "id": "sprite:bunker-or-coastal-battery",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 47
+    },
+    {
+      "address": "S048",
+      "name": "Roman amphitheatre",
+      "id": "sprite:roman-amphitheatre",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 48
+    },
+    {
+      "address": "S049",
+      "name": "Theatre",
+      "id": "sprite:theatre",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 49
+    },
+    {
+      "address": "S050",
+      "name": "Stadium or hippodrome",
+      "id": "sprite:stadium-or-hippodrome",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 50
+    },
+    {
+      "address": "S051",
+      "name": "Bath complex",
+      "id": "sprite:bath-complex",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 51
+    },
+    {
+      "address": "S052",
+      "name": "Forum, agora or civic precinct",
+      "id": "sprite:forum-agora-or-civic-precinct",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 52
+    },
+    {
+      "address": "S053",
+      "name": "Obelisk",
+      "id": "sprite:obelisk",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 53
+    },
+    {
+      "address": "S054",
+      "name": "Stele or inscribed stone",
+      "id": "sprite:stele-or-inscribed-stone",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 54
+    },
+    {
+      "address": "S055",
+      "name": "Monumental column",
+      "id": "sprite:monumental-column",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 55
+    },
+    {
+      "address": "S056",
+      "name": "Triumphal arch",
+      "id": "sprite:triumphal-arch",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 56
+    },
+    {
+      "address": "S057",
+      "name": "Monumental statue or colossus",
+      "id": "sprite:monumental-statue-or-colossus",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 57
+    },
+    {
+      "address": "S058",
+      "name": "Moai",
+      "id": "sprite:moai",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 58
+    },
+    {
+      "address": "S059",
+      "name": "Geoglyph",
+      "id": "sprite:geoglyph",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 59
+    },
+    {
+      "address": "S060",
+      "name": "Dolmen",
+      "id": "sprite:dolmen",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 60
+    },
+    {
+      "address": "S061",
+      "name": "Menhir",
+      "id": "sprite:menhir",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 61
+    },
+    {
+      "address": "S062",
+      "name": "Stone circle",
+      "id": "sprite:stone-circle",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 62
+    },
+    {
+      "address": "S063",
+      "name": "Stone row or alignment",
+      "id": "sprite:stone-row-or-alignment",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 63
+    },
+    {
+      "address": "S064",
+      "name": "Henge or earthwork enclosure",
+      "id": "sprite:henge-or-earthwork-enclosure",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 64
+    },
+    {
+      "address": "S065",
+      "name": "Cairn",
+      "id": "sprite:cairn",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 65
+    },
+    {
+      "address": "S066",
+      "name": "Rock-art or petroglyph site",
+      "id": "sprite:rock-art-or-petroglyph-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 66
+    },
+    {
+      "address": "S067",
+      "name": "Cave",
+      "id": "sprite:cave",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 67
+    },
+    {
+      "address": "S068",
+      "name": "Rock shelter",
+      "id": "sprite:rock-shelter",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 68
+    },
+    {
+      "address": "S069",
+      "name": "Shell midden",
+      "id": "sprite:shell-midden",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 69
+    },
+    {
+      "address": "S070",
+      "name": "Shipwreck",
+      "id": "sprite:shipwreck",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 70
+    },
+    {
+      "address": "S071",
+      "name": "Harbour or port",
+      "id": "sprite:harbour-or-port",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 71
+    },
+    {
+      "address": "S072",
+      "name": "Bridge",
+      "id": "sprite:bridge",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 72
+    },
+    {
+      "address": "S073",
+      "name": "Aqueduct",
+      "id": "sprite:aqueduct",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 73
+    },
+    {
+      "address": "S074",
+      "name": "Road",
+      "id": "sprite:road",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 74
+    },
+    {
+      "address": "S075",
+      "name": "Waystation or caravanserai",
+      "id": "sprite:waystation-or-caravanserai",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 75
+    },
+    {
+      "address": "S076",
+      "name": "Canal",
+      "id": "sprite:canal",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 76
+    },
+    {
+      "address": "S077",
+      "name": "Dam or reservoir",
+      "id": "sprite:dam-or-reservoir",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 77
+    },
+    {
+      "address": "S078",
+      "name": "Well or cistern",
+      "id": "sprite:well-or-cistern",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 78
+    },
+    {
+      "address": "S079",
+      "name": "Mine",
+      "id": "sprite:mine",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 79
+    },
+    {
+      "address": "S080",
+      "name": "Quarry",
+      "id": "sprite:quarry",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 80
+    },
+    {
+      "address": "S081",
+      "name": "Workshop, furnace or kiln",
+      "id": "sprite:workshop-furnace-or-kiln",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 81
+    },
+    {
+      "address": "S082",
+      "name": "Agricultural terraces or field system",
+      "id": "sprite:agricultural-terraces-or-field-system",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 82
+    }
+  ],
+  "heroes": [
+    {
+      "address": "H000",
+      "name": "Great Pyramid of Giza",
+      "id": "hero:great-pyramid-of-giza",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 0
+    },
+    {
+      "address": "H001",
+      "name": "Great Sphinx of Giza",
+      "id": "hero:great-sphinx-of-giza",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 1
+    },
+    {
+      "address": "H002",
+      "name": "Step Pyramid of Djoser",
+      "id": "hero:step-pyramid-of-djoser",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 2
+    },
+    {
+      "address": "H003",
+      "name": "Abu Simbel",
+      "id": "hero:abu-simbel",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 3
+    },
+    {
+      "address": "H004",
+      "name": "Temple of Karnak",
+      "id": "hero:temple-of-karnak",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 4
+    },
+    {
+      "address": "H005",
+      "name": "Temple of Luxor",
+      "id": "hero:temple-of-luxor",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 5
+    },
+    {
+      "address": "H006",
+      "name": "Temple of Hatshepsut",
+      "id": "hero:temple-of-hatshepsut",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 6
+    },
+    {
+      "address": "H007",
+      "name": "Philae Temple",
+      "id": "hero:philae-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 7
+    },
+    {
+      "address": "H008",
+      "name": "Meroë Pyramids",
+      "id": "hero:meroe-pyramids",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 8
+    },
+    {
+      "address": "H009",
+      "name": "Colossi of Memnon",
+      "id": "hero:colossi-of-memnon",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 9
+    },
+    {
+      "address": "H010",
+      "name": "Ziggurat of Ur",
+      "id": "hero:ziggurat-of-ur",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 10
+    },
+    {
+      "address": "H027",
+      "name": "Knossos",
+      "id": "hero:knossos",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 27
+    },
+    {
+      "address": "H030",
+      "name": "Colosseum",
+      "id": "hero:colosseum",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 30
+    },
+    {
+      "address": "H035",
+      "name": "Pont du Gard",
+      "id": "hero:pont-du-gard",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 35
+    },
+    {
+      "address": "H043",
+      "name": "Stonehenge",
+      "id": "hero:stonehenge",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 43
+    },
+    {
+      "address": "H081",
+      "name": "Great Wall of China",
+      "id": "hero:great-wall-of-china",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 81
+    },
+    {
+      "address": "H088",
+      "name": "Angkor Wat",
+      "id": "hero:angkor-wat",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 88
+    },
+    {
+      "address": "H096",
+      "name": "Chichén Itzá – El Castillo",
+      "id": "hero:chichen-itza-el-castillo",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 96
+    },
+    {
+      "address": "H112",
+      "name": "Machu Picchu",
+      "id": "hero:machu-picchu",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 112
+    }
+  ]
+}
