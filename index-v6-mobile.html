@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>ArcheoMaps ’98 — A Field Atlas of Ancient Places</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
@@ -2026,28 +2026,47 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 #mobileSearchInput{min-width:0;flex:1;height:34px;padding:5px 7px;background:#fff;border:2px inset var(--win-grey);font:16px var(--ms-sans);}
 #mobileSearchClose{width:36px;background:var(--win-grey);border:2px outset var(--win-grey);font:700 16px var(--ms-sans);}
 
-@media(max-width:860px){
+@media(max-width:860px), (hover:none) and (pointer:coarse){
   html,body,#app{height:100dvh;min-height:100dvh;overflow:hidden;}
-  #topbar{min-height:54px;padding-top:max(4px,env(safe-area-inset-top));grid-template-columns:52px minmax(0,1fr);}
+  html,body{overscroll-behavior:none;touch-action:none;}
+  #map,.leaflet-container{touch-action:none;}
+  #topbar{min-height:68px;padding:max(5px,env(safe-area-inset-top)) 6px 5px;grid-template-columns:56px minmax(0,1fr);}
   .topbar-workspace{display:contents;}
-  .brand{grid-column:2;grid-row:1;width:min(220px,100%);min-width:0;height:44px;justify-self:start;}
+  .brand{grid-column:2;grid-row:1;width:min(300px,100%);min-width:0;height:56px;justify-self:center;}
+  .brand-logo-v51{object-position:center;}
   .application-menu-bar{grid-column:1;grid-row:1;align-self:center;justify-self:start;}
-  #applicationMenuToggle{width:46px;height:42px;padding:0;font-size:0;}
+  #applicationMenuToggle{display:block;width:50px;height:48px;padding:0;font-size:0;border:2px outset var(--win-grey);}
   #applicationMenuToggle::before{content:"☰";font:700 22px/1 var(--ms-sans);}
-  .application-menu-roots{left:0;top:calc(100% + 4px);width:min(286px,calc(100vw - 12px));max-height:calc(100dvh - 72px);}
-  .application-menu-root,.application-menu-dropdown button{min-height:34px;font-size:13px;}
+  .application-menu-roots{display:none;position:absolute;left:0;top:calc(100% + 4px);width:min(286px,calc(100vw - 78px));max-height:calc(100dvh - 84px);overflow:auto;flex-direction:column;align-items:stretch;padding:2px;background:var(--win-grey);border:2px outset var(--win-grey);box-shadow:2px 2px 0 rgba(0,0,0,.55);}
+  .application-menu-bar.mobile-open .application-menu-roots{display:flex;}
+  .application-menu-root{display:block;width:100%;text-align:left;}
+  .application-menu-group.open>.application-menu-dropdown,.application-submenu-group.open>.application-submenu{position:static;width:100%;min-width:0;box-shadow:none;}
+  .application-menu-root,.application-menu-dropdown button{min-height:42px;font-size:15px;}
   .topbar-actions{display:none!important;}
   #mobileCommandRail{position:fixed;display:flex;gap:2px;}
   #statusBar{padding-bottom:env(safe-area-inset-bottom);}
-  #mobileSearchTray{left:6px;right:6px;bottom:calc(65px + env(safe-area-inset-bottom));}
+  #mobileSearchTray{left:6px;right:6px;bottom:calc(65px + env(safe-area-inset-bottom));max-height:52px;}
   #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window{
-    top:auto!important;left:6px!important;right:6px!important;bottom:calc(65px + env(safe-area-inset-bottom))!important;width:auto!important;
-    height:min(62dvh,520px)!important;max-height:calc(100dvh - 130px)!important;border-width:2px;box-shadow:3px 3px 0 rgba(0,0,0,.55);
+    top:auto!important;left:auto!important;right:6px!important;bottom:calc(65px + env(safe-area-inset-bottom))!important;
+    width:min(430px,calc(100vw - 70px))!important;height:min(68dvh,580px)!important;max-height:calc(100dvh - 148px)!important;
+    border-width:2px;box-shadow:3px 3px 0 rgba(0,0,0,.55);
   }
-  #timelineBar.managed-window{max-height:55dvh!important;}
-  .managed-window .window-titlebar{min-height:32px;}
-  .managed-window .window-title-actions button{min-width:34px;min-height:28px;}
-  .managed-window button,.managed-window select,.managed-window input{min-height:30px;}
+  #timelineBar.managed-window{height:min(42dvh,330px)!important;max-height:42dvh!important;}
+  .managed-window .window-titlebar{min-height:40px;font-size:14px;}
+  .managed-window .window-lock,.managed-window [data-window-action="collapse"],#timelineMinimizeBtn{display:none!important;}
+  .managed-window .window-title-actions{margin-left:auto;order:3;}
+  .managed-window .window-title-actions button{min-width:42px;min-height:36px;font-size:19px!important;}
+  .managed-window .window-body,.managed-window .filter-window-body,.managed-window .sites-window-body,.managed-window .drawer-window-body{font-size:14px;line-height:1.35;}
+  .managed-window button,.managed-window select,.managed-window input{min-height:40px;font-size:14px;}
+  .managed-window input[type="range"]{min-height:46px;touch-action:pan-x;}
+  .managed-window input[type="range"]::-webkit-slider-thumb{width:28px;height:28px;}
+  .timeline-window-body{padding:8px 10px!important;}
+  .timeline-window-body input[type="range"]{height:48px;}
+  #settingsAppearance #interfaceScale{pointer-events:none;opacity:.45;}
+  #settingsAppearance label:has(#interfaceScale)::after{content:"Desktop only";margin-left:6px;color:#666;font-size:12px;}
+  #settingsLayouts .settings-live-note{display:none;}
+  #settingsLayouts::before{content:"Layout presets and window arrangements are available on desktop only.";display:block;margin:6px;padding:8px;border:2px inset var(--win-grey);color:#606060;font:14px/1.3 var(--ms-sans);}
+  #settingsLayouts button[data-layout-preset],#settingsLayouts button[data-arrange]{pointer-events:none;color:#808080;text-shadow:1px 1px #fff;}
   #mapToolHud{top:6px;left:6px;right:6px;max-width:none;transform:none!important;flex-wrap:wrap;}
   #mapToolReadout{flex:1 1 100%;min-width:0;}
   #settingsBackdrop{padding:max(6px,env(safe-area-inset-top)) max(6px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(6px,env(safe-area-inset-left));}
@@ -2057,22 +2076,23 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .settings-content{min-height:0;}
   .settings-actions button{min-width:64px;min-height:34px;}
 }
-@media(max-width:860px) and (orientation:portrait){
+@media(max-width:860px) and (orientation:portrait), (hover:none) and (pointer:coarse) and (orientation:portrait){
   #mobileCommandRail{left:0;right:0;bottom:0;height:calc(58px + env(safe-area-inset-bottom));padding:3px 3px env(safe-area-inset-bottom);overflow-x:auto;overflow-y:hidden;flex-direction:row;align-items:stretch;scrollbar-width:thin;}
   .mobile-command-button{flex:1 0 54px;}
   #map{bottom:calc(77px + env(safe-area-inset-bottom));}
   #statusBar{bottom:calc(58px + env(safe-area-inset-bottom));}
-  .leaflet-control-scale{margin-bottom:calc(81px + env(safe-area-inset-bottom))!important;}
+  .leaflet-bottom.leaflet-right{bottom:calc(64px + env(safe-area-inset-bottom));}
+  .leaflet-control-scale{margin-left:8px!important;margin-bottom:calc(86px + env(safe-area-inset-bottom))!important;}
 }
-@media(max-width:860px) and (orientation:landscape){
-  #mobileCommandRail{top:54px;bottom:0;width:58px;padding:3px env(safe-area-inset-right) 3px 3px;overflow-x:hidden;overflow-y:auto;flex-direction:column;}
+@media(max-width:860px) and (orientation:landscape), (hover:none) and (pointer:coarse) and (orientation:landscape){
+  #mobileCommandRail{top:68px;bottom:0;width:62px;padding:3px env(safe-area-inset-right) 3px 3px;overflow-x:hidden;overflow-y:auto;flex-direction:column;}
   .mobile-command-button{flex:0 0 50px;width:50px;}
   html[data-mobile-rail-side="right"] #mobileCommandRail{right:0;left:auto;}
   html[data-mobile-rail-side="left"] #mobileCommandRail{left:0;right:auto;padding-left:env(safe-area-inset-left);padding-right:3px;}
-  html[data-mobile-rail-side="right"] #map{right:58px;}
-  html[data-mobile-rail-side="left"] #map{left:58px;}
-  html[data-mobile-rail-side="right"] #statusBar{right:58px;}
-  html[data-mobile-rail-side="left"] #statusBar{left:58px;}
+  html[data-mobile-rail-side="right"] #map{right:62px;}
+  html[data-mobile-rail-side="left"] #map{left:62px;}
+  html[data-mobile-rail-side="right"] #statusBar{right:62px;}
+  html[data-mobile-rail-side="left"] #statusBar{left:62px;}
   html[data-mobile-rail-side="right"] #mobileSearchTray{right:64px;bottom:24px;}
   html[data-mobile-rail-side="left"] #mobileSearchTray{left:64px;bottom:24px;}
   html[data-mobile-rail-side="right"] .managed-window{right:64px!important;}
@@ -2082,6 +2102,13 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   }
   html[data-mobile-rail-side="right"] #panel.managed-window,html[data-mobile-rail-side="right"] #sitesPanel.managed-window,html[data-mobile-rail-side="right"] #drawer.managed-window,html[data-mobile-rail-side="right"] #timelineBar.managed-window,html[data-mobile-rail-side="right"] #layersPanel.managed-window,html[data-mobile-rail-side="right"] #legendPanel.managed-window,html[data-mobile-rail-side="right"] #overviewPanel.managed-window{left:6px!important;right:auto!important;}
   html[data-mobile-rail-side="left"] #panel.managed-window,html[data-mobile-rail-side="left"] #sitesPanel.managed-window,html[data-mobile-rail-side="left"] #drawer.managed-window,html[data-mobile-rail-side="left"] #timelineBar.managed-window,html[data-mobile-rail-side="left"] #layersPanel.managed-window,html[data-mobile-rail-side="left"] #legendPanel.managed-window,html[data-mobile-rail-side="left"] #overviewPanel.managed-window{left:auto!important;right:6px!important;}
+}
+
+@media(max-width:860px), (hover:none) and (pointer:coarse){
+  .leaflet-control-zoom a{width:42px!important;height:42px!important;font:700 24px/38px var(--ms-sans)!important;}
+  .leaflet-control-scale-line{min-width:105px;padding:4px 7px 3px!important;border-width:0 2px 2px!important;font:700 14px/1.2 var(--ms-sans)!important;}
+  #mapToolHud button{min-width:82px;height:42px;font-size:14px;}
+  #mapToolReadout{min-height:34px;padding:7px;font-size:14px;}
 }
 
 /* V5.7 clustered sprite markers. The cluster engine supplies geography and
@@ -2497,6 +2524,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
           <div class="window-title-actions">
           <span id="timelineCollapsedRange" class="timeline-collapsed-range" aria-live="polite">—</span>
           <button id="timelineMinimizeBtn" type="button" title="Minimise timeline" aria-label="Minimise timeline" aria-expanded="true" aria-controls="timelineBar">▼</button>
+          <button id="timelineCloseBtn" type="button" title="Close" aria-label="Close Chronological Navigator">×</button>
           </div>
         </div>
         <div class="window-body timeline-window-body">
@@ -2807,13 +2835,17 @@ function freqBy(items, keyFn){
 }
 
 /* ---------- map (no external tile server — everything embedded) ---------- */
+const MOBILE_UI_QUERY='(max-width:860px), (hover:none) and (pointer:coarse)';
+function isMobileUi(){return window.matchMedia(MOBILE_UI_QUERY).matches;}
+function defaultMapZoom(){return isMobileUi()?(window.matchMedia('(orientation:portrait)').matches?3:2.5):2.4;}
 const DEFAULT_MAP_CENTER=[20,10];
-const DEFAULT_MAP_ZOOM=2.4;
+const DEFAULT_MAP_ZOOM=defaultMapZoom();
 const map = L.map('map', {
   preferCanvas:true,
   zoomControl:false,
   minZoom: 2,
   maxZoom: 20,
+  zoomSnap: .25,
   worldCopyJump: true,
   maxBounds: [[-89,-200],[89,200]],
   maxBoundsViscosity: 0.6
@@ -5136,6 +5168,7 @@ const filterToggle = document.getElementById('panelToggle');
 const filterClose = document.getElementById('panelClose');
 const timelineBar = document.getElementById('timelineBar');
 const timelineMinimizeBtn = document.getElementById('timelineMinimizeBtn');
+const timelineCloseBtn = document.getElementById('timelineCloseBtn');
 const timelineCollapsedRange = document.getElementById('timelineCollapsedRange');
 
 function refreshMapLayout(){
@@ -5144,14 +5177,14 @@ function refreshMapLayout(){
 
 function filterPanelIsOpen(){
   if(window.ArcheoWindowManager) return window.ArcheoWindowManager.getState('filter').open;
-  return window.matchMedia('(max-width: 860px)').matches
+  return isMobileUi()
     ? filterPanel.classList.contains('open')
     : !filterPanel.classList.contains('closed');
 }
 
 function setFilterPanelOpen(open){
   if(window.ArcheoWindowManager){ window.ArcheoWindowManager.setOpen('filter',open); return; }
-  if(window.matchMedia('(max-width: 860px)').matches){
+  if(isMobileUi()){
     filterPanel.classList.toggle('open', open);
     filterPanel.classList.remove('closed');
   } else {
@@ -5162,7 +5195,7 @@ function setFilterPanelOpen(open){
   refreshMapLayout();
 }
 
-if(window.matchMedia('(max-width: 860px)').matches){
+if(isMobileUi()){
   filterToggle.setAttribute('aria-expanded', 'false');
 }
 filterToggle.addEventListener('click', ()=> setFilterPanelOpen(!filterPanelIsOpen()));
@@ -5185,14 +5218,18 @@ function syncCollapsedTimelineRange(){
 timelineMinimizeBtn.addEventListener('click', ()=>{
   setTimelineMinimized(!timelineBar.classList.contains('minimized'));
 });
+timelineCloseBtn.addEventListener('click',()=>{
+  if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('timeline',false);
+  else timelineBar.classList.remove('open');
+});
 new MutationObserver(syncCollapsedTimelineRange).observe(document.getElementById('rangeLabel'), {childList:true,subtree:true,characterData:true});
 syncCollapsedTimelineRange();
-try{ setTimelineMinimized(sessionStorage.getItem('archeomapsTimelineMinimized') === '1'); }catch(_err){}
+try{ setTimelineMinimized(!isMobileUi()&&sessionStorage.getItem('archeomapsTimelineMinimized') === '1'); }catch(_err){}
 
 window.addEventListener('resize', ()=>{
   if(window.ArcheoWindowManager){ refreshMapLayout(); return; }
   const open = filterToggle.getAttribute('aria-expanded') === 'true';
-  if(window.matchMedia('(max-width: 860px)').matches){
+  if(isMobileUi()){
     filterPanel.classList.remove('closed');
     filterPanel.classList.toggle('open', open);
   } else {
@@ -5277,9 +5314,10 @@ window.ArcheoWindowManager = (function(){
   function applyAppearance(){
     document.documentElement.style.setProperty('--window-title-hue',String(appearance.hue));
     document.documentElement.style.setProperty('--managed-window-opacity',String(appearance.panelOpacity));
-    appEl.style.zoom=String(appearance.scale);
-    appEl.style.width=(100/appearance.scale)+'vw';
-    appEl.style.height=(100/appearance.scale)+'vh';
+    const renderedScale=isMobileUi()?1:appearance.scale;
+    appEl.style.zoom=String(renderedScale);
+    appEl.style.width=(100/renderedScale)+'vw';
+    appEl.style.height=(100/renderedScale)+'vh';
     const slider=document.getElementById('headerHue'); if(slider) slider.value=String(appearance.hue);
     const hueValue=document.getElementById('headerHueValue');if(hueValue)hueValue.value=Math.round(appearance.hue)+'°';
     const hueSwatch=document.getElementById('headerHueSwatch');if(hueSwatch)hueSwatch.style.background=`hsl(${appearance.hue} 100% 30%)`;
@@ -5306,25 +5344,26 @@ window.ArcheoWindowManager = (function(){
   function syncControl(id){
     const st=states[id],el=elements[id],button=toolbarButtons[id];
     if(!st||!el) return;
+    const visuallyCollapsed=st.collapsed&&!isMobileUi();
     el.classList.toggle('open',st.open);
     el.classList.toggle('locked',st.locked);
     el.classList.toggle('collapsed',st.collapsed);
-    if(id==='timeline')el.classList.toggle('minimized',st.collapsed);
+    if(id==='timeline')el.classList.toggle('minimized',visuallyCollapsed);
     el.setAttribute('aria-hidden',String(!st.open));
     el.style.left=Math.round(st.x)+'px'; el.style.top=Math.round(st.y)+'px';
     el.style.right='auto'; el.style.bottom='auto'; el.style.transform='none';
-    el.style.width=Math.round(st.w)+'px'; el.style.height=Math.round(st.collapsed?28:st.h)+'px';
+    el.style.width=Math.round(st.w)+'px'; el.style.height=Math.round(visuallyCollapsed?28:st.h)+'px';
     el.style.zIndex=String(st.z||1160);
     const lock=el.querySelector('[data-window-action="lock"]');
     if(lock){ lock.setAttribute('aria-pressed',String(st.locked)); lock.setAttribute('aria-label',st.locked?'Unlock window position and size':'Lock window position and size'); }
     const collapse=el.querySelector('[data-window-action="collapse"]');
-    if(collapse){ collapse.textContent=st.collapsed?'□':'—'; collapse.setAttribute('aria-label',(st.collapsed?'Expand ':'Collapse ')+(id.charAt(0).toUpperCase()+id.slice(1))); }
+    if(collapse){ collapse.textContent=visuallyCollapsed?'□':'—'; collapse.setAttribute('aria-label',(visuallyCollapsed?'Expand ':'Collapse ')+(id.charAt(0).toUpperCase()+id.slice(1))); }
     ['plain','dither','hatch','cross','blueprint','paper'].forEach(p=>el.classList.toggle('window-pattern-'+p,st.pattern===p));
     if(button) button.setAttribute('aria-expanded',String(st.open));
     if(id==='timeline'){
-      timelineMinimizeBtn.textContent=st.collapsed?'▲':'▼';
-      timelineMinimizeBtn.setAttribute('aria-expanded',String(!st.collapsed));
-      timelineMinimizeBtn.setAttribute('aria-label',st.collapsed?'Expand timeline':'Minimise timeline');
+      timelineMinimizeBtn.textContent=visuallyCollapsed?'▲':'▼';
+      timelineMinimizeBtn.setAttribute('aria-expanded',String(!visuallyCollapsed));
+      timelineMinimizeBtn.setAttribute('aria-label',visuallyCollapsed?'Expand timeline':'Minimise timeline');
     }
     if(id==='overview' && st.open && !st.collapsed){ window.setTimeout(()=>{resizeOverviewCanvas();scheduleOverviewDraw();},0); }
   }
@@ -5336,7 +5375,7 @@ window.ArcheoWindowManager = (function(){
   }
   function setOpen(id,open){
     if(!states[id]) return;
-    if(open && window.matchMedia('(max-width:860px)').matches){ ids.filter(x=>x!==id).forEach(x=>states[x].open=false); }
+    if(open && isMobileUi()){ ids.filter(x=>x!==id).forEach(x=>states[x].open=false); }
     states[id].open=Boolean(open); syncAll();
     if(open){ bringFront(id); if(id==='legend')renderLegend(); if(id==='sites')renderSiteList(); }
     refreshMapLayout();
@@ -5344,7 +5383,7 @@ window.ArcheoWindowManager = (function(){
   }
   function setLocked(id,locked){ if(states[id]){states[id].locked=Boolean(locked);syncControl(id);syncSettings();save();} }
   function setCollapsed(id,collapsed){
-    if(!states[id]) return;
+    if(!states[id]||isMobileUi()) return;
     const st=states[id];
     if(collapsed && !st.collapsed) st.expandedHeight=st.h;
     st.collapsed=Boolean(collapsed);
@@ -5366,7 +5405,7 @@ window.ArcheoWindowManager = (function(){
   }
 
   function startPointer(ev,id,mode){
-    const st=states[id]; if(!st||st.locked||window.matchMedia('(max-width:860px)').matches)return;
+    const st=states[id]; if(!st||st.locked||isMobileUi())return;
     if(mode==='drag'&&ev.target.closest('button'))return;
     bringFront(id);ev.preventDefault();ev.stopPropagation();
     pointerOp={id,mode,startX:ev.clientX,startY:ev.clientY,x:st.x,y:st.y,w:st.w,h:st.h};
@@ -5463,7 +5502,7 @@ window.ArcheoWindowManager = (function(){
 
 document.getElementById('resetLayoutBtn').addEventListener('click',()=>window.ArcheoWindowManager.resetLayout());
 document.getElementById('mapHomeBtn').addEventListener('click',()=>{
-  map.setView(DEFAULT_MAP_CENTER,DEFAULT_MAP_ZOOM,{animate:true});
+  map.setView(DEFAULT_MAP_CENTER,defaultMapZoom(),{animate:true});
   const hint=document.getElementById('statusHint');if(hint)hint.textContent='Map returned to the default world view';
 });
 
@@ -5618,17 +5657,20 @@ function updateMapToolPreview(){
   }
   const previewPoints=mapToolCursorLatLng?[...mapToolPoints,mapToolCursorLatLng]:mapToolPoints.slice();
   if(activeMapTool==='distance'){
-    mapToolPoints.forEach(point=>L.circleMarker(point,{pane:'paneMapTools',interactive:false,radius:4,color:'#000080',weight:2,fillColor:'#ffff00',fillOpacity:1}).addTo(mapToolDraftLayer));
+    mapToolPoints.forEach(point=>L.circleMarker(point,{pane:'paneMapTools',interactive:false,radius:isMobileUi()?7:4,color:'#000080',weight:2,fillColor:'#ffff00',fillOpacity:1}).addTo(mapToolDraftLayer));
     mapToolPreview=L.polyline(previewPoints,{pane:'paneMapTools',interactive:false,color:'#000080',weight:3,dashArray:'7 4'}).addTo(mapToolDraftLayer);
-    setMapToolMessage(`Measure distance — ${formatDistance(lineDistance(previewPoints))} · click to add point; Enter to finish`);
+    setMapToolMessage(`Measure distance — ${formatDistance(lineDistance(previewPoints))} · ${isMobileUi()?'tap another point or Finish':'click to add point; Enter to finish'}`);
   }else if(activeMapTool==='area'){
-    mapToolPoints.forEach(point=>L.circleMarker(point,{pane:'paneMapTools',interactive:false,radius:4,color:'#800080',weight:2,fillColor:'#ffff00',fillOpacity:1}).addTo(mapToolDraftLayer));
+    mapToolPoints.forEach(point=>L.circleMarker(point,{pane:'paneMapTools',interactive:false,radius:isMobileUi()?7:4,color:'#800080',weight:2,fillColor:'#ffff00',fillOpacity:1}).addTo(mapToolDraftLayer));
     if(previewPoints.length>=3)mapToolPreview=L.polygon(previewPoints,{pane:'paneMapTools',interactive:false,color:'#800080',weight:3,fillColor:'#ffff00',fillOpacity:.16,dashArray:'7 4'}).addTo(mapToolDraftLayer);
     else mapToolPreview=L.polyline(previewPoints,{pane:'paneMapTools',interactive:false,color:'#800080',weight:3,dashArray:'7 4'}).addTo(mapToolDraftLayer);
-    setMapToolMessage(`Measure area — ${formatArea(sphericalPolygonArea(previewPoints))} · click to add point; Enter to finish`);
+    setMapToolMessage(`Measure area — ${formatArea(sphericalPolygonArea(previewPoints))} · ${isMobileUi()?'tap another point or Finish':'click to add point; Enter to finish'}`);
   }else if(activeMapTool==='lasso'){
-    mapToolPreview=L.polygon(mapToolPoints,{pane:'paneMapTools',interactive:false,color:'#008000',weight:2,fillColor:'#00ff00',fillOpacity:.1,dashArray:'4 3'}).addTo(mapToolDraftLayer);
-    setMapToolMessage(`Select region — ${mapToolPoints.length} trace points · release to select`);
+    mapToolPoints.forEach(point=>L.circleMarker(point,{pane:'paneMapTools',interactive:false,radius:isMobileUi()?7:4,color:'#008000',weight:2,fillColor:'#ffff00',fillOpacity:1}).addTo(mapToolDraftLayer));
+    mapToolPreview=mapToolPoints.length>=3
+      ?L.polygon(mapToolPoints,{pane:'paneMapTools',interactive:false,color:'#008000',weight:3,fillColor:'#00ff00',fillOpacity:.1,dashArray:'6 4'}).addTo(mapToolDraftLayer)
+      :L.polyline(mapToolPoints,{pane:'paneMapTools',interactive:false,color:'#008000',weight:3,dashArray:'6 4'}).addTo(mapToolDraftLayer);
+    setMapToolMessage(isMobileUi()?`Select region — ${mapToolPoints.length} points · tap Finish when ready`:`Select region — ${mapToolPoints.length} trace points · release to select`);
   }
 }
 
@@ -5654,14 +5696,15 @@ function startMapTool(tool){
   document.querySelectorAll('[data-map-tool]').forEach(item=>item.setAttribute('aria-checked',String(item.dataset.mapTool===tool)));
   mapToolHud.classList.add('open');
   document.getElementById('mapWrap').classList.add('map-tool-active');
-  mapToolFinish.hidden=tool==='lasso';
-  mapToolUndo.hidden=tool==='lasso';
+  const mobileTool=isMobileUi();
+  mapToolFinish.hidden=tool==='lasso'&&!mobileTool;
+  mapToolUndo.hidden=tool==='lasso'&&!mobileTool;
   mapToolUndo.disabled=true;
   if(map.doubleClickZoom)map.doubleClickZoom.disable();
   if(tool==='lasso'){
     clearSpatialSelection();
-    if(map.dragging)map.dragging.disable();
-    setMapToolMessage('Select region — hold and drag around the sites to include');
+    if(!mobileTool&&map.dragging)map.dragging.disable();
+    setMapToolMessage(mobileTool?'Select region — tap boundary points, then Finish':'Select region — hold and drag around the sites to include');
   }else if(tool==='distance'){
     setMapToolMessage('Measure distance — click to add points; Enter or Finish to complete');
   }else{
@@ -5670,7 +5713,7 @@ function startMapTool(tool){
 }
 
 function undoMapToolPoint(){
-  if(activeMapTool!=='distance'&&activeMapTool!=='area')return;
+  if(activeMapTool!=='distance'&&activeMapTool!=='area'&&activeMapTool!=='lasso')return;
   if(mapToolPoints.length)mapToolPoints.pop();
   updateMapToolPreview();
 }
@@ -5715,12 +5758,17 @@ function finishLasso(){
 
 document.querySelectorAll('[data-map-tool]').forEach(item=>item.addEventListener('click',()=>startMapTool(item.dataset.mapTool)));
 mapToolUndo.addEventListener('click',undoMapToolPoint);
-mapToolFinish.addEventListener('click',finishMeasurement);
+mapToolFinish.addEventListener('click',()=>{if(activeMapTool==='lasso')finishLasso();else finishMeasurement();});
 mapToolCancel.addEventListener('click',deactivateMapTool);
 document.getElementById('clearSpatialSelectionItem').addEventListener('click',()=>{setEditMenuOpen(false);clearSpatialSelection();setMapToolMessage('Region selection cleared');});
 document.getElementById('clearMeasurements').addEventListener('click',()=>{setEditMenuOpen(false);measurementLayer.clearLayers();setMapToolMessage('Measurements cleared');});
 
 map.on('click',ev=>{
+  if(activeMapTool==='lasso'&&isMobileUi()){
+    mapToolPoints.push(ev.latlng);
+    updateMapToolPreview();
+    return;
+  }
   if(activeMapTool!=='distance'&&activeMapTool!=='area')return;
   mapToolPoints.push(ev.latlng);
   mapToolCursorLatLng=null;
@@ -5728,7 +5776,7 @@ map.on('click',ev=>{
 });
 map.on('dblclick',()=>{if(activeMapTool==='distance'||activeMapTool==='area')finishMeasurement();});
 map.on('mousedown',ev=>{
-  if(activeMapTool!=='lasso')return;
+  if(activeMapTool!=='lasso'||isMobileUi())return;
   lassoDrawing=true;
   mapToolPoints=[ev.latlng];
   updateMapToolPreview();
@@ -5752,7 +5800,7 @@ map.on('mouseout',()=>{
     updateMapToolPreview();
   }
 });
-map.on('mouseup',()=>{if(activeMapTool==='lasso'&&lassoDrawing)finishLasso();});
+map.on('mouseup',()=>{if(activeMapTool==='lasso'&&lassoDrawing&&!isMobileUi())finishLasso();});
 
 document.getElementById('copyCoordsMenuItem').addEventListener('click',async()=>{
   setEditMenuOpen(false);
@@ -5803,10 +5851,21 @@ applyMobileUiPreferences();
 const mobileSearchTray=document.getElementById('mobileSearchTray');
 const mobileSearchInput=document.getElementById('mobileSearchInput');
 const mobileSearchClose=document.getElementById('mobileSearchClose');
+function positionMobileSearchAboveKeyboard(){
+  if(!mobileSearchTray.classList.contains('open')||!isMobileUi())return;
+  const viewport=window.visualViewport;
+  if(!viewport){mobileSearchTray.style.top='';mobileSearchTray.style.bottom='calc(65px + env(safe-area-inset-bottom))';return;}
+  const trayHeight=mobileSearchTray.offsetHeight||48;
+  mobileSearchTray.style.bottom='auto';
+  mobileSearchTray.style.top=Math.max(6,viewport.offsetTop+viewport.height-trayHeight-8)+'px';
+}
 function setMobileSearchOpen(open){
   mobileSearchTray.classList.toggle('open',open);
   document.querySelector('[data-mobile-command="search"]')?.setAttribute('aria-pressed',String(open));
-  if(open){mobileSearchInput.value=document.getElementById('searchBox').value;requestAnimationFrame(()=>mobileSearchInput.focus());}
+  if(open){
+    mobileSearchInput.value=document.getElementById('searchBox').value;
+    requestAnimationFrame(()=>{mobileSearchInput.focus({preventScroll:true});positionMobileSearchAboveKeyboard();mobileSearchInput.scrollIntoView({block:'nearest'});});
+  }else{mobileSearchTray.style.top='';mobileSearchTray.style.bottom='';}
 }
 function syncMobileRail(){
   ['filter','sites','layers','timeline'].forEach(id=>{
@@ -5829,8 +5888,9 @@ mobileSearchInput.addEventListener('input',()=>{
 });
 document.getElementById('searchBox').addEventListener('input',()=>{if(document.activeElement!==mobileSearchInput)mobileSearchInput.value=document.getElementById('searchBox').value;});
 mobileSearchClose.addEventListener('click',()=>setMobileSearchOpen(false));
+if(window.visualViewport){window.visualViewport.addEventListener('resize',positionMobileSearchAboveKeyboard);window.visualViewport.addEventListener('scroll',positionMobileSearchAboveKeyboard);}
 new MutationObserver(syncMobileRail).observe(document.getElementById('mapWrap'),{subtree:true,attributes:true,attributeFilter:['aria-hidden']});
-window.addEventListener('orientationchange',()=>window.setTimeout(()=>{syncMobileRail();refreshMapLayout();map.invalidateSize({pan:false});},180));
+window.addEventListener('orientationchange',()=>window.setTimeout(()=>{syncMobileRail();applyMobileUiPreferences();map.setView(map.getCenter(),Math.max(map.getZoom(),defaultMapZoom()),{animate:false});refreshMapLayout();map.invalidateSize({pan:false});positionMobileSearchAboveKeyboard();},180));
 syncMobileRail();
 
 /* Settings property sheet: changes preview immediately; Apply commits the
@@ -5907,11 +5967,13 @@ document.querySelectorAll('[data-pattern]').forEach(btn=>btn.addEventListener('c
   syncPatternPicker();
 }));
 document.querySelectorAll('[data-layout-preset]').forEach(btn=>btn.addEventListener('click',()=>{
+  if(isMobileUi())return;
   window.ArcheoWindowManager.applyLayout(btn.dataset.layoutPreset);
   document.querySelectorAll('[data-layout-preset],[data-arrange]').forEach(other=>other.classList.toggle('preview-active',other===btn));
   document.getElementById('settingsPreviewStatus').textContent=`Previewing ${btn.textContent.trim()} layout. Cancel restores the previous workspace.`;
 }));
 document.querySelectorAll('[data-arrange]').forEach(btn=>btn.addEventListener('click',()=>{
+  if(isMobileUi())return;
   window.ArcheoWindowManager.arrange(btn.dataset.arrange);
   document.querySelectorAll('[data-layout-preset],[data-arrange]').forEach(other=>other.classList.toggle('preview-active',other===btn));
   document.getElementById('settingsPreviewStatus').textContent=`Previewing “${btn.textContent.trim()}”. Cancel restores the previous workspace.`;
@@ -5974,7 +6036,7 @@ function setApplicationMenuOpen(id,focusFirst=false){
       const panel=document.querySelector(`[data-menu-panel="${id}"]`);
       requestAnimationFrame(()=>menuItems(panel)[0]?.focus());
     }
-  }else if(window.matchMedia('(max-width:860px)').matches){
+  }else if(isMobileUi()){
     applicationMenuBar.classList.remove('mobile-open');
     applicationMenuToggle.setAttribute('aria-expanded','false');
   }
