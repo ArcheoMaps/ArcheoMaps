@@ -1,14 +1,14 @@
 {
-  "version": "archeomaps-marker-manifest-v3",
+  "version": "archeomaps-marker-manifest-v4",
   "atlases": {
     "sprites": {
       "image": "archeomaps-marker-atlas.png",
       "columns": 16,
       "rows": 8,
-      "cellWidth": 48,
-      "cellHeight": 48,
-      "width": 768,
-      "height": 384,
+      "cellWidth": 64,
+      "cellHeight": 64,
+      "width": 1024,
+      "height": 512,
       "anchor": "bottom-centre"
     },
     "heroes": {
@@ -441,7 +441,7 @@
     },
     {
       "address": "S029",
-      "name": "Tumulus",
+      "name": "Tumulus or kurgan",
       "id": "sprite:tumulus",
       "matches": [],
       "fallback": false,
@@ -1099,7 +1099,7 @@
     },
     {
       "address": "S076",
-      "name": "Canal",
+      "name": "Canal or irrigation channel",
       "id": "sprite:canal",
       "matches": [],
       "fallback": false,
@@ -1169,7 +1169,7 @@
     },
     {
       "address": "S081",
-      "name": "Workshop, furnace or kiln",
+      "name": "Workshop, furnace, kiln or production site",
       "id": "sprite:workshop-furnace-or-kiln",
       "matches": [],
       "fallback": false,
@@ -1194,6 +1194,188 @@
       "priority": "normal",
       "locked": false,
       "index": 82
+    },
+    {
+      "address": "S083",
+      "name": "Generic monument",
+      "id": "sprite:generic-monument",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 83
+    },
+    {
+      "address": "S084",
+      "name": "Generic infrastructure site",
+      "id": "sprite:generic-infrastructure-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 84
+    },
+    {
+      "address": "S085",
+      "name": "Cultural or archaeological landscape",
+      "id": "sprite:cultural-or-archaeological-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 85
+    },
+    {
+      "address": "S086",
+      "name": "Battlefield or conflict landscape",
+      "id": "sprite:battlefield-or-conflict-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 86
+    },
+    {
+      "address": "S087",
+      "name": "Purpose-built observatory",
+      "id": "sprite:purpose-built-observatory",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 87
+    },
+    {
+      "address": "S088",
+      "name": "Lighthouse",
+      "id": "sprite:lighthouse",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 88
+    },
+    {
+      "address": "S089",
+      "name": "Tunnel",
+      "id": "sprite:tunnel",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 89
+    },
+    {
+      "address": "S090",
+      "name": "Stepwell",
+      "id": "sprite:stepwell",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 90
+    },
+    {
+      "address": "S091",
+      "name": "Nuraghe",
+      "id": "sprite:nuraghe",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 91
+    },
+    {
+      "address": "S092",
+      "name": "Broch",
+      "id": "sprite:broch",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 92
+    },
+    {
+      "address": "S093",
+      "name": "Medicine wheel",
+      "id": "sprite:medicine-wheel",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 93
+    },
+    {
+      "address": "S094",
+      "name": "Effigy mound",
+      "id": "sprite:effigy-mound",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 94
+    },
+    {
+      "address": "S095",
+      "name": "Shaft tomb",
+      "id": "sprite:shaft-tomb",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 95
     }
   ],
   "heroes": [
@@ -1226,20 +1408,6 @@
       "index": 1
     },
     {
-      "address": "H002",
-      "name": "Step Pyramid of Djoser",
-      "id": "hero:step-pyramid-of-djoser",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 2
-    },
-    {
       "address": "H003",
       "name": "Abu Simbel",
       "id": "hero:abu-simbel",
@@ -1252,90 +1420,6 @@
       "priority": "normal",
       "locked": false,
       "index": 3
-    },
-    {
-      "address": "H004",
-      "name": "Temple of Karnak",
-      "id": "hero:temple-of-karnak",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 4
-    },
-    {
-      "address": "H005",
-      "name": "Temple of Luxor",
-      "id": "hero:temple-of-luxor",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 5
-    },
-    {
-      "address": "H006",
-      "name": "Temple of Hatshepsut",
-      "id": "hero:temple-of-hatshepsut",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 6
-    },
-    {
-      "address": "H007",
-      "name": "Philae Temple",
-      "id": "hero:philae-temple",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 7
-    },
-    {
-      "address": "H008",
-      "name": "Meroë Pyramids",
-      "id": "hero:meroe-pyramids",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 8
-    },
-    {
-      "address": "H009",
-      "name": "Colossi of Memnon",
-      "id": "hero:colossi-of-memnon",
-      "matches": [],
-      "fallback": false,
-      "anchor": [
-        48,
-        96
-      ],
-      "priority": "normal",
-      "locked": false,
-      "index": 9
     },
     {
       "address": "H010",
@@ -1352,9 +1436,9 @@
       "index": 10
     },
     {
-      "address": "H027",
-      "name": "Knossos",
-      "id": "hero:knossos",
+      "address": "H011",
+      "name": "Persepolis",
+      "id": "hero:persepolis",
       "matches": [],
       "fallback": false,
       "anchor": [
@@ -1363,7 +1447,105 @@
       ],
       "priority": "normal",
       "locked": false,
-      "index": 27
+      "index": 11
+    },
+    {
+      "address": "H013",
+      "name": "Ishtar Gate",
+      "id": "hero:ishtar-gate",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 13
+    },
+    {
+      "address": "H014",
+      "name": "Dur-Sharrukin Lamassu",
+      "id": "hero:dur-sharrukin-lamassu",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 14
+    },
+    {
+      "address": "H015",
+      "name": "Baalbek – Temple of Bacchus",
+      "id": "hero:baalbek-temple-of-bacchus",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 15
+    },
+    {
+      "address": "H019",
+      "name": "Jerash – Oval Plaza",
+      "id": "hero:jerash-oval-plaza",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 19
+    },
+    {
+      "address": "H020",
+      "name": "Parthenon",
+      "id": "hero:parthenon",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 20
+    },
+    {
+      "address": "H022",
+      "name": "Erechtheion",
+      "id": "hero:erechtheion",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 22
+    },
+    {
+      "address": "H025",
+      "name": "Lion Gate, Mycenae",
+      "id": "hero:lion-gate-mycenae",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 25
     },
     {
       "address": "H030",
@@ -1380,6 +1562,34 @@
       "index": 30
     },
     {
+      "address": "H031",
+      "name": "Pantheon",
+      "id": "hero:pantheon",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 31
+    },
+    {
+      "address": "H034",
+      "name": "Trajan’s Column",
+      "id": "hero:trajans-column",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 34
+    },
+    {
       "address": "H035",
       "name": "Pont du Gard",
       "id": "hero:pont-du-gard",
@@ -1392,6 +1602,48 @@
       "priority": "normal",
       "locked": false,
       "index": 35
+    },
+    {
+      "address": "H036",
+      "name": "Segovia Aqueduct",
+      "id": "hero:segovia-aqueduct",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 36
+    },
+    {
+      "address": "H039",
+      "name": "Library of Celsus, Ephesus",
+      "id": "hero:library-of-celsus-ephesus",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 39
+    },
+    {
+      "address": "H040",
+      "name": "Aspendos Theatre",
+      "id": "hero:aspendos-theatre",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 40
     },
     {
       "address": "H043",
@@ -1408,6 +1660,160 @@
       "index": 43
     },
     {
+      "address": "H044",
+      "name": "Newgrange",
+      "id": "hero:newgrange",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 44
+    },
+    {
+      "address": "H045",
+      "name": "Maeshowe",
+      "id": "hero:maeshowe",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 45
+    },
+    {
+      "address": "H047",
+      "name": "Callanish Stones",
+      "id": "hero:callanish-stones",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 47
+    },
+    {
+      "address": "H048",
+      "name": "Carnac Alignments",
+      "id": "hero:carnac-alignments",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 48
+    },
+    {
+      "address": "H050",
+      "name": "Silbury Hill",
+      "id": "hero:silbury-hill",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 50
+    },
+    {
+      "address": "H052",
+      "name": "Ħal Saflieni Hypogeum",
+      "id": "hero:al-saflieni-hypogeum",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 52
+    },
+    {
+      "address": "H061",
+      "name": "Biskupin",
+      "id": "hero:biskupin",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 61
+    },
+    {
+      "address": "H063",
+      "name": "L’Anse aux Meadows",
+      "id": "hero:lanse-aux-meadows",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 63
+    },
+    {
+      "address": "H068",
+      "name": "Great Stupa at Sanchi",
+      "id": "hero:great-stupa-at-sanchi",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 68
+    },
+    {
+      "address": "H074",
+      "name": "Ellora – Kailasa Temple",
+      "id": "hero:ellora-kailasa-temple",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 74
+    },
+    {
+      "address": "H079",
+      "name": "Terracotta Army",
+      "id": "hero:terracotta-army",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 79
+    },
+    {
       "address": "H081",
       "name": "Great Wall of China",
       "id": "hero:great-wall-of-china",
@@ -1422,9 +1828,9 @@
       "index": 81
     },
     {
-      "address": "H088",
-      "name": "Angkor Wat",
-      "id": "hero:angkor-wat",
+      "address": "H083",
+      "name": "Longmen Grottoes",
+      "id": "hero:longmen-grottoes",
       "matches": [],
       "fallback": false,
       "anchor": [
@@ -1433,7 +1839,91 @@
       ],
       "priority": "normal",
       "locked": false,
-      "index": 88
+      "index": 83
+    },
+    {
+      "address": "H085",
+      "name": "Horyu-ji Pagoda",
+      "id": "hero:horyu-ji-pagoda",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 85
+    },
+    {
+      "address": "H086",
+      "name": "Kofun – Daisenryo",
+      "id": "hero:kofun-daisenryo",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 86
+    },
+    {
+      "address": "H090",
+      "name": "Ta Prohm",
+      "id": "hero:ta-prohm",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 90
+    },
+    {
+      "address": "H092",
+      "name": "Borobudur",
+      "id": "hero:borobudur",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 92
+    },
+    {
+      "address": "H093",
+      "name": "Prambanan",
+      "id": "hero:prambanan",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 93
+    },
+    {
+      "address": "H094",
+      "name": "Bagan",
+      "id": "hero:bagan",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 94
     },
     {
       "address": "H096",
@@ -1450,6 +1940,48 @@
       "index": 96
     },
     {
+      "address": "H098",
+      "name": "Tikal – Temple I",
+      "id": "hero:tikal-temple-i",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 98
+    },
+    {
+      "address": "H110",
+      "name": "La Venta Colossal Head",
+      "id": "hero:la-venta-colossal-head",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 110
+    },
+    {
+      "address": "H111",
+      "name": "Quiriguá Stelae",
+      "id": "hero:quirigua-stelae",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 111
+    },
+    {
       "address": "H112",
       "name": "Machu Picchu",
       "id": "hero:machu-picchu",
@@ -1462,6 +1994,132 @@
       "priority": "normal",
       "locked": false,
       "index": 112
+    },
+    {
+      "address": "H113",
+      "name": "Sacsayhuamán",
+      "id": "hero:sacsayhuaman",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 113
+    },
+    {
+      "address": "H115",
+      "name": "Moray",
+      "id": "hero:moray",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 115
+    },
+    {
+      "address": "H116",
+      "name": "Nazca Hummingbird",
+      "id": "hero:nazca-hummingbird",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 116
+    },
+    {
+      "address": "H118",
+      "name": "Tiwanaku – Gate of the Sun",
+      "id": "hero:tiwanaku-gate-of-the-sun",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 118
+    },
+    {
+      "address": "H121",
+      "name": "Chan Chan",
+      "id": "hero:chan-chan",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 121
+    },
+    {
+      "address": "H127",
+      "name": "Mesa Verde – Cliff Palace",
+      "id": "hero:mesa-verde-cliff-palace",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 127
+    },
+    {
+      "address": "H132",
+      "name": "Rapa Nui Moai",
+      "id": "hero:rapa-nui-moai",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 132
+    },
+    {
+      "address": "H133",
+      "name": "Ahu Tongariki",
+      "id": "hero:ahu-tongariki",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 133
+    },
+    {
+      "address": "H134",
+      "name": "Nan Madol",
+      "id": "hero:nan-madol",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        48,
+        96
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 134
     }
   ]
 }
