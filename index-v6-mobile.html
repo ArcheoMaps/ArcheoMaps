@@ -2009,7 +2009,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 .am-sprite-marker.is-selected{z-index:3;filter:drop-shadow(-1px 0 #ffff00) drop-shadow(1px 0 #ffff00) drop-shadow(0 -1px #ffff00) drop-shadow(0 1px #ffff00) drop-shadow(2px 2px #000080);}
 .am-dot-cluster{background:transparent!important;border:0!important;}
 .am-dot-cluster-shell{display:grid;place-items:center;min-width:34px;height:34px;padding:0 5px;color:#fff;background:#000080;border:2px outset #c0c0c0;box-shadow:1px 1px 0 #000;font:700 10px var(--ms-sans);}
-.am-dot-cluster-shell.is-selected{color:#000;background:#ffff00;}
+.am-dot-cluster-shell.is-selected{color:#000;background:#ffff00;font-weight:400;text-shadow:none;}
 
 /* V6 mobile command surface. Desktop controls remain the command source;
    rail buttons dispatch those same controls so behaviour cannot drift. */
@@ -2133,16 +2133,51 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   box-sizing:border-box;text-align:center;font:700 12px/17px "MS Sans Serif",Tahoma,sans-serif;color:#fff;background:#000080;
   border:1px solid #fff;box-shadow:1px 1px 0 #000,-1px -1px 0 #000;text-shadow:1px 0 #000,-1px 0 #000,0 1px #000,0 -1px #000;}
 .am-cluster-shell.is-selected .am-cluster-parent{filter:drop-shadow(-1px 0 #ffff00) drop-shadow(1px 0 #ffff00) drop-shadow(0 -1px #ffff00) drop-shadow(0 1px #ffff00) drop-shadow(2px 2px #000080);}
-.am-cluster-shell.is-selected .am-cluster-count{color:#000;background:#ffff00;border-color:#000;}
+.am-cluster-shell.is-selected .am-cluster-count,.am-hero-cluster-shell.is-selected .am-cluster-count{color:#000;background:#ffff00;border-color:#000;font-weight:400;text-shadow:none;}
 .am-hero-cluster-shell{position:relative;display:block;width:128px;height:112px;overflow:visible;image-rendering:pixelated;}
-.am-hero-cluster-sprite{left:16px;top:8px;width:96px;height:96px;background-size:1536px 1152px;
-  filter:drop-shadow(1px 1px 0 #000);}
-.am-hero-cluster-sprite:nth-child(1){z-index:4;transform:translate(-24px,-3px) scale(.82);}
-.am-hero-cluster-sprite:nth-child(2){z-index:5;transform:translate(24px,-3px) scale(.82);}
-.am-hero-cluster-sprite:nth-child(3){z-index:6;transform:translate(0,9px) scale(.88);}
+.am-hero-cluster-sprite{left:50%;bottom:8px;width:var(--sprite-cell,96px);height:var(--sprite-cell,96px);background-size:var(--sprite-sheet-w,1536px) var(--sprite-sheet-h,1152px);
+  filter:drop-shadow(1px 1px 0 #000);transform:translateX(-50%);}
+.am-hero-cluster-parent{z-index:6;}
+.am-hero-cluster-fan{z-index:3;opacity:0;transition:transform 90ms steps(3,end),opacity 60ms linear;}
+.am-hero-cluster-shell:hover .am-hero-cluster-fan{opacity:1;}
+.am-hero-cluster-shell:hover .am-hero-cluster-fan:nth-child(1){transform:translateX(calc(-50% - 58px)) translateY(-24px) scale(.72);}
+.am-hero-cluster-shell:hover .am-hero-cluster-fan:nth-child(2){transform:translateX(calc(-50% + 58px)) translateY(-24px) scale(.72);}
+.am-hero-cluster-shell:hover .am-hero-cluster-fan:nth-child(3){transform:translateX(-50%) translateY(-62px) scale(.72);}
 .am-hero-cluster-shell .am-cluster-count{right:3px;bottom:0;}
 .am-hero-cluster-shell.is-selected .am-hero-cluster-sprite{filter:drop-shadow(-1px 0 #ffff00) drop-shadow(1px 0 #ffff00) drop-shadow(0 -1px #ffff00) drop-shadow(0 1px #ffff00) drop-shadow(2px 2px #000080);}
 .marker-cluster-spider-leg{stroke:#000080!important;stroke-width:2!important;stroke-dasharray:2 3;stroke-opacity:.75!important;}
+
+/* V6.3 desktop command bar: classic large-icon toolbar plus address row. */
+.topbar-search-row{display:flex;align-items:center;gap:5px;min-width:0;}
+.topbar-command-group{display:flex;align-items:stretch;gap:2px;}
+.topbar-group-divider{align-self:stretch;width:4px;margin:1px 2px;border-left:1px solid #707070;border-right:1px solid #fff;}
+.topbar-placeholder-icon{display:block;font:700 20px/21px "MS Sans Serif",Tahoma,sans-serif;}
+.topbar-hidden-command{display:none!important;}
+@media(min-width:861px) and (hover:hover){
+  #topbar{min-height:126px;height:126px;padding:4px 6px;grid-template-columns:270px minmax(0,1fr);align-items:stretch;}
+  .brand{width:270px;min-width:270px;height:116px;align-self:center;}
+  .topbar-workspace{display:grid;grid-template-rows:24px 66px 28px;gap:2px;justify-content:stretch;}
+  .application-menu-bar{grid-row:1;justify-self:start;min-height:24px;}
+  .topbar-actions{grid-row:2;display:flex;align-items:stretch;justify-content:flex-start;gap:2px;flex-wrap:nowrap;min-width:0;overflow:visible;}
+  .topbar-icon-button,#panelToggle,#listToggle,#layersBtn,#timelineToggle,#fullscreenBtn,#mapHomeBtn,#resetLayoutBtn,#resetBtn,#randomBtn,#shareBtn{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:auto;min-width:58px;height:64px!important;padding:4px 7px!important;
+    color:#000;background:var(--win-grey);border:2px outset var(--win-grey);border-radius:0;box-shadow:none;font:11px/1 var(--ms-sans);white-space:nowrap;
+  }
+  #resetLayoutBtn,#resetBtn{min-width:78px;}
+  #fullscreenBtn{min-width:72px;}
+  #randomBtn{min-width:66px;color:#000;background:var(--win-grey);}
+  .topbar-icon-button:active,#panelToggle:active,#listToggle:active,#layersBtn:active,#timelineToggle:active,#fullscreenBtn:active,#mapHomeBtn:active,#resetLayoutBtn:active,#resetBtn:active,#randomBtn:active,#shareBtn:active{border-style:inset;padding:5px 6px 3px 8px!important;}
+  #panelToggle[aria-expanded="true"],#listToggle[aria-expanded="true"],#layersBtn[aria-expanded="true"],#timelineToggle[aria-expanded="true"]{border-style:inset;background:#d0d0ca;}
+  .topbar-actions>.inline-feedback-wrap{display:flex;align-items:stretch;}
+  .topbar-search-row{grid-row:3;}
+  .topbar-search-row .search-control{display:flex;flex:1 1 auto;min-width:180px;height:27px;}
+  .topbar-search-row #searchBox{flex:1 1 auto;width:auto;height:27px;min-width:0;}
+  .topbar-search-row #searchClearBtn{height:27px;}
+  .topbar-search-row #themeSelect{order:2;flex:0 0 250px;width:250px;height:27px;}
+}
+@media(max-width:860px), (hover:none) and (pointer:coarse){
+  .topbar-search-row{display:none!important;}
+}
 
 /* V6.1 mobile stabilization: phone-native geometry and typography. */
 .mobile-header-fullscreen{display:none;}
@@ -2345,16 +2380,34 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
       </div>
     </nav>
     <button id="mobileFullscreenBtn" class="mobile-header-fullscreen" type="button" title="Enter fullscreen" aria-label="Enter fullscreen" aria-pressed="false"></button>
-    <div class="topbar-actions">
-      <button id="panelToggle" title="Toggle filters" aria-expanded="true" aria-controls="panel">Filter</button>
-      <button id="listToggle" title="Browse sites by name" aria-expanded="false" aria-controls="sitesPanel">List</button>
-      <button id="layersBtn" title="Toggle historical map layers (basemap style is separate, in the dropdown above)" aria-expanded="false" aria-controls="layersPanel">Layers</button>
-      <button id="legendBtn" title="Show map legend" aria-expanded="false" aria-controls="legendPanel">Legend</button>
-      <button id="overviewBtn" title="Show overview map" aria-expanded="false" aria-controls="overviewPanel">Overview</button>
-      <button id="settingsBtn" title="Appearance and window settings" aria-expanded="false" aria-controls="settingsDialog">Settings</button>
-      <button id="fullscreenBtn" type="button" title="Enter fullscreen" aria-pressed="false">Fullscreen</button>
-      <button id="resetLayoutBtn" title="Restore the default window layout">Reset layout</button>
-      <button id="mapHomeBtn" type="button" title="Return to the default world view">Home</button>
+    <div class="topbar-actions" role="toolbar" aria-label="Map commands">
+      <div class="topbar-command-group topbar-window-commands">
+        <button id="panelToggle" class="topbar-icon-button" title="Toggle filters" aria-expanded="true" aria-controls="panel"><span class="topbar-placeholder-icon">▼</span><span>Filter</span></button>
+        <button id="listToggle" class="topbar-icon-button" title="Browse sites by name" aria-expanded="false" aria-controls="sitesPanel"><span class="topbar-placeholder-icon">☷</span><span>List</span></button>
+        <button id="layersBtn" class="topbar-icon-button" title="Toggle historical map layers" aria-expanded="false" aria-controls="layersPanel"><span class="topbar-placeholder-icon">▤</span><span>Layers</span></button>
+        <button id="timelineToggle" class="topbar-icon-button" title="Toggle Chronological Navigator" aria-expanded="false" aria-controls="timelineBar"><span class="topbar-placeholder-icon">◷</span><span>Timeline</span></button>
+      </div>
+      <span class="topbar-group-divider" aria-hidden="true"></span>
+      <div class="topbar-command-group topbar-map-commands">
+        <button id="fullscreenBtn" class="topbar-icon-button" type="button" title="Enter fullscreen" aria-pressed="false"><span class="topbar-placeholder-icon">⛶</span><span>Fullscreen</span></button>
+        <button id="mapHomeBtn" class="topbar-icon-button" type="button" title="Return to the default world view"><span class="topbar-placeholder-icon">⌂</span><span>Home</span></button>
+        <button id="resetLayoutBtn" class="topbar-icon-button" title="Restore the default window layout"><span class="topbar-placeholder-icon">▦</span><span>Reset layout</span></button>
+        <button id="resetBtn" class="topbar-icon-button" title="Reset search, filters and timeline sorting"><span class="topbar-placeholder-icon">↺</span><span>Reset sorting</span></button>
+      </div>
+      <span class="inline-feedback-wrap">
+        <button id="randomBtn" class="topbar-icon-button" title="Jump to a random site among those currently shown"><span class="topbar-placeholder-icon">⚄</span><span>Random</span></button>
+        <span id="randomFeedback" class="inline-feedback"></span>
+      </span>
+      <span class="inline-feedback-wrap">
+        <button id="shareBtn" class="topbar-icon-button" title="Copy a shareable link to this view"><span class="topbar-placeholder-icon">⇱</span><span>Share</span></button>
+        <span id="shareFeedback" class="inline-feedback"></span>
+      </span>
+      <button id="legendBtn" class="topbar-hidden-command" title="Show map legend" aria-expanded="false" aria-controls="legendPanel" tabindex="-1">Legend</button>
+      <button id="overviewBtn" class="topbar-hidden-command" title="Show overview map" aria-expanded="false" aria-controls="overviewPanel" tabindex="-1">Overview</button>
+      <button id="settingsBtn" class="topbar-hidden-command" title="Appearance and window settings" aria-expanded="false" aria-controls="settingsDialog" tabindex="-1">Settings</button>
+    </div>
+    <div class="topbar-search-row">
+      <span class="search-control"><input id="searchBox" type="text" placeholder="Search a site or place…" autocomplete="off" aria-label="Search sites"><button id="searchClearBtn" type="button" title="Clear search" aria-label="Clear search" disabled>×</button></span>
       <select id="themeSelect" title="Map style">
         <option value="parchment">Parchment</option>
         <option value="ink">Ink</option>
@@ -2362,16 +2415,6 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         <option value="openfreemap">OpenFreeMap · Streets</option>
         <option value="satellite" selected>Satellite · Esri + labels</option>
       </select>
-      <span class="search-control"><input id="searchBox" type="text" placeholder="Search a site or place…" autocomplete="off" aria-label="Search sites"><button id="searchClearBtn" type="button" title="Clear search" aria-label="Clear search" disabled>×</button></span>
-      <button id="resetBtn" title="Reset search, filters and timeline sorting">Reset sorting</button>
-      <span class="inline-feedback-wrap">
-        <button id="randomBtn" title="Jump to a random site among those currently shown">🎲 Take me somewhere</button>
-        <span id="randomFeedback" class="inline-feedback"></span>
-      </span>
-      <span class="inline-feedback-wrap">
-        <button id="shareBtn" title="Copy a shareable link to this view">Share</button>
-        <span id="shareFeedback" class="inline-feedback"></span>
-      </span>
     </div>
     </div>
   </header>
@@ -2662,7 +2705,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.2</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.3</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -2746,6 +2789,9 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
           <label class="settings-field">Marker style
             <select id="markerStyle"><option value="sprites">Archaeological sprites</option><option value="dots">Compact dots</option></select>
           </label>
+          <label id="spriteScaleField" class="settings-field">Sprite scale
+            <input id="spriteScale" type="range" min="50" max="100" step="5" value="75"><output id="spriteScaleValue" for="spriteScale">75%</output>
+          </label>
           <label class="settings-check"><input id="markerClustering" type="checkbox" checked> Cluster nearby markers</label>
           <label id="clusterDistanceField" class="settings-field">Cluster distance
             <input id="clusterDistance" type="range" min="35" max="110" step="5" value="65"><output id="clusterDistanceValue" for="clusterDistance">Normal · 65 px</output>
@@ -2754,7 +2800,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
             <input id="clusterSeparateZoom" type="range" min="10" max="18" step="1" value="13"><output id="clusterSeparateZoomValue" for="clusterSeparateZoom">13</output>
           </label>
         </fieldset>
-        <p class="settings-preview-status">Dots are useful for dense regions and unclustered browsing. The later 64×64 atlas can be installed without changing these controls.</p>
+        <p class="settings-preview-status">Scale changes the displayed size without altering the high-detail atlas. Dots are unaffected.</p>
       </div>
       <div id="settingsMobile" class="settings-page" role="tabpanel" hidden>
         <p class="settings-live-note">In portrait the command rail sits along the bottom. In landscape it moves to your preferred side.</p>
@@ -2793,7 +2839,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.2';
+const ARCHEOMAPS_VERSION='6.3';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -3191,12 +3237,17 @@ function repaintLand(){
 const HAS_MARKER_CLUSTER=typeof L.markerClusterGroup==='function';
 if(!HAS_MARKER_CLUSTER)console.warn('Leaflet.markercluster did not load; using the non-clustered compatibility layer.');
 const MARKER_DISPLAY_KEY='archeomapsMarkerDisplayV591';
-const MARKER_DISPLAY_DEFAULTS=Object.freeze({style:'sprites',clustering:true,clusterDistance:65,separateAtZoom:13});
+function defaultSpriteScale(){
+  const phoneLike=window.innerWidth<=860||window.matchMedia('(hover:none) and (pointer:coarse)').matches;
+  return phoneLike||window.screen.width>=2400||window.screen.height>=1400?100:75;
+}
+const MARKER_DISPLAY_DEFAULTS=Object.freeze({style:'sprites',spriteScale:defaultSpriteScale(),clustering:true,clusterDistance:65,separateAtZoom:13});
 function loadMarkerDisplayPreferences(){
   let saved=null;
   try{saved=JSON.parse(localStorage.getItem(MARKER_DISPLAY_KEY)||'null');}catch(_err){}
   return {
     style:saved&&saved.style==='dots'?'dots':'sprites',
+    spriteScale:Math.max(50,Math.min(100,Number(saved&&saved.spriteScale)||defaultSpriteScale())),
     clustering:saved&&typeof saved.clustering==='boolean'?saved.clustering:true,
     clusterDistance:Math.max(35,Math.min(110,Number(saved&&saved.clusterDistance)||65)),
     separateAtZoom:Math.max(10,Math.min(18,Number(saved&&saved.separateAtZoom)||13))
@@ -3205,20 +3256,20 @@ function loadMarkerDisplayPreferences(){
 let markerDisplayPreferences=loadMarkerDisplayPreferences();
 function clusterRadiusForZoom(zoom){
   const baseline=zoom<=3?90:zoom<=5?70:zoom<=7?55:40;
-  return Math.round(baseline*(markerDisplayPreferences.clusterDistance/65));
+  return Math.round(baseline*(markerDisplayPreferences.clusterDistance/65)*(markerDisplayPreferences.spriteScale/75));
 }
 function makeMarkerGroup(options){return HAS_MARKER_CLUSTER?L.markerClusterGroup(options):L.layerGroup()}
 const standardClusterLayer=makeMarkerGroup({
   chunkedLoading:true,chunkInterval:80,chunkDelay:20,removeOutsideVisibleBounds:true,
   animate:false,animateAddingMarkers:false,showCoverageOnHover:false,
   spiderfyOnMaxZoom:true,zoomToBoundsOnClick:true,disableClusteringAtZoom:markerDisplayPreferences.separateAtZoom,
-  maxClusterRadius:clusterRadiusForZoom,clusterPane:'paneSites',iconCreateFunction:createStandardClusterIcon,
+  maxClusterRadius:clusterRadiusForZoom,clusterPane:'paneHeroes',iconCreateFunction:createUnifiedClusterIcon,
   spiderLegPolylineOptions:{weight:2,color:'#000080',opacity:.75,dashArray:'2 3'}
 });
 const heroClusterLayer=makeMarkerGroup({
   chunkedLoading:true,removeOutsideVisibleBounds:true,animate:false,showCoverageOnHover:false,
   spiderfyOnMaxZoom:true,zoomToBoundsOnClick:true,disableClusteringAtZoom:markerDisplayPreferences.separateAtZoom,
-  maxClusterRadius:zoom=>Math.round((zoom<=3?72:zoom<=6?58:44)*(markerDisplayPreferences.clusterDistance/65)),clusterPane:'paneHeroes',iconCreateFunction:createHeroClusterIcon,
+  maxClusterRadius:clusterRadiusForZoom,clusterPane:'paneHeroes',iconCreateFunction:createUnifiedClusterIcon,
   spiderLegPolylineOptions:{weight:2,color:'#000080',opacity:.75,dashArray:'2 3'}
 });
 const standardPlainLayer=L.layerGroup();
@@ -3313,13 +3364,14 @@ function pyramidAddressFor(site){
 function spriteAssignmentFor(site){
   if(!SPRITE_MANIFEST || !Array.isArray(SPRITE_MANIFEST.sprites)) return null;
   const matches=(entry,kind,value)=>(entry.matches||[]).some(m=>m.kind===kind&&String(m.value)===String(value));
+  const heroNameKey=value=>String(value||'').trim().toLocaleLowerCase().replace(/[\u2018\u2019\u02bc]/g,"'").replace(/\s+/g,' ');
   const heroes=Array.isArray(SPRITE_MANIFEST.heroes)?SPRITE_MANIFEST.heroes:[];
   let entry=heroes.find(h=>matches(h,'record',site.id)||matches(h,'record',site.n));
   if(entry)return {id:entry.id,entry,hero:true,reason:'manifest record'};
   const heroAddress=HERO_SITE_OVERRIDES[site.id];
   if(heroAddress&&(entry=manifestEntryAt('heroes',heroAddress)))return {id:entry.id,entry,hero:true,reason:'hero override'};
-  entry=heroes.find(h=>h.name===site.n);
-  if(entry)return {id:entry.id,entry,hero:true,reason:'exact hero name'};
+  entry=heroes.find(h=>heroNameKey(h.name)===heroNameKey(site.n));
+  if(entry)return {id:entry.id,entry,hero:true,reason:'normalized hero name'};
   const sprites=SPRITE_MANIFEST.sprites;
   entry=sprites.find(s=>matches(s,'record',site.id)||matches(s,'record',site.n));
   if(entry)return {id:entry.id,entry,hero:false,reason:'manifest record'};
@@ -3339,10 +3391,11 @@ function spriteAssignmentFor(site){
 function atlasStyleForEntry(entry,hero){
   const group=hero?'heroes':'sprites',atlasMeta=(SPRITE_MANIFEST&&SPRITE_MANIFEST.atlases&&SPRITE_MANIFEST.atlases[group])||{};
   const cell=Number(atlasMeta.cellWidth)||(hero?96:64),columns=Number(atlasMeta.columns)||16,rows=Number(atlasMeta.rows)||(hero?12:8);
+  const scale=markerDisplayPreferences.spriteScale/100,renderCell=cell*scale;
   const index=Number.isInteger(entry.index)?entry.index:Number(String(entry.address||'').slice(1))||0;
   const col=index%columns,row=Math.floor(index/columns);
   const atlas=String(atlasMeta.image||(hero?DEFAULT_HERO_ATLAS:DEFAULT_SPRITE_ATLAS)).replace(/'/g,'%27');
-  return `--sprite-cell:${cell}px;--sprite-sheet-w:${cell*columns}px;--sprite-sheet-h:${cell*rows}px;background-image:url('${encodeURI(atlas)}?v=4');background-position:-${col*cell}px -${row*cell}px`;
+  return `--sprite-cell:${renderCell}px;--sprite-sheet-w:${renderCell*columns}px;--sprite-sheet-h:${renderCell*rows}px;background-image:url('${encodeURI(atlas)}?v=4');background-position:-${col*renderCell}px -${row*renderCell}px`;
 }
 function clusterSpriteStats(cluster){
   const byAddress=new Map();
@@ -3374,10 +3427,15 @@ function createStandardClusterIcon(cluster){
 }
 function createHeroClusterIcon(cluster){
   if(markerDisplayPreferences.style==='dots')return createDotClusterIcon(cluster);
-  const count=cluster.getChildCount(),selected=clusterContainsSelection(cluster)?' is-selected':'';
-  const sprites=clusterSpriteStats(cluster).slice(0,3).map(item=>`<span class="am-hero-cluster-sprite" style="${atlasStyleForEntry(item.entry,true)}"></span>`).join('');
-  const html=`<span class="am-hero-cluster-shell${selected}" title="${count.toLocaleString()} landmark sprites">${sprites}<span class="am-cluster-count">${count.toLocaleString()}</span></span>`;
+  const count=cluster.getChildCount(),selected=clusterContainsSelection(cluster)?' is-selected':'',stats=clusterSpriteStats(cluster).filter(item=>item.hero),parent=stats[0];
+  const fans=stats.slice(1,4).map(item=>`<span class="am-hero-cluster-sprite am-hero-cluster-fan" style="${atlasStyleForEntry(item.entry,true)}"></span>`).join('');
+  const parentHtml=parent?`<span class="am-hero-cluster-sprite am-hero-cluster-parent" style="${atlasStyleForEntry(parent.entry,true)}"></span>`:'';
+  const html=`<span class="am-hero-cluster-shell${selected}" title="${count.toLocaleString()} archaeological sites">${fans}${parentHtml}<span class="am-cluster-count">${count.toLocaleString()}</span></span>`;
   return L.divIcon({className:'am-sprite-cluster',html,iconSize:[128,112],iconAnchor:[64,96]});
+}
+function createUnifiedClusterIcon(cluster){
+  if(markerDisplayPreferences.style==='dots')return createDotClusterIcon(cluster);
+  return clusterSpriteStats(cluster).some(item=>item.hero)?createHeroClusterIcon(cluster):createStandardClusterIcon(cluster);
 }
 function replaceMarkerGroupLayers(group,layers){
   group.clearLayers();
@@ -3400,12 +3458,16 @@ function spriteIconFor(site,assignment=spriteAssignmentFor(site)){
   const entry=assignment.entry,group=assignment.hero?'heroes':'sprites';
   const atlasMeta=(SPRITE_MANIFEST.atlases&&SPRITE_MANIFEST.atlases[group])||{};
   const cell=Number(atlasMeta.cellWidth)||(assignment.hero?96:64),columns=Number(atlasMeta.columns)||16,rows=Number(atlasMeta.rows)||(assignment.hero?12:8);
+  const scale=markerDisplayPreferences.spriteScale/100,renderCell=cell*scale;
   const index=Number.isInteger(entry.index)?entry.index:Number(String(entry.address||'').slice(1))||0;
   const col=index%columns,row=Math.floor(index/columns);
   const atlas=atlasMeta.image||(assignment.hero?DEFAULT_HERO_ATLAS:DEFAULT_SPRITE_ATLAS);
-  const anchor=Array.isArray(entry.anchor)?entry.anchor:[cell/2,cell];
-  const html=`<span class="am-sprite-marker${assignment.hero?' is-hero':''}" data-sprite-id="${escapeHtml(assignment.id)}" style="--sprite-cell:${cell}px;--sprite-sheet-w:${cell*columns}px;--sprite-sheet-h:${cell*rows}px;background-image:url('${encodeURI(atlas)}?v=4');background-position:-${col*cell}px -${row*cell}px"></span>`;
-  return L.divIcon({className:'am-leaflet-sprite',html,iconSize:[cell,cell],iconAnchor:anchor,popupAnchor:[0,-cell]});
+  const rawAnchor=Array.isArray(entry.anchor)?entry.anchor:[cell/2,cell];
+  const legacyStandardAnchor=!assignment.hero&&cell===64&&rawAnchor[0]===24&&rawAnchor[1]===48;
+  const sourceAnchor=legacyStandardAnchor?[cell/2,cell]:rawAnchor;
+  const anchor=[sourceAnchor[0]*scale,sourceAnchor[1]*scale];
+  const html=`<span class="am-sprite-marker${assignment.hero?' is-hero':''}" data-sprite-id="${escapeHtml(assignment.id)}" style="--sprite-cell:${renderCell}px;--sprite-sheet-w:${renderCell*columns}px;--sprite-sheet-h:${renderCell*rows}px;background-image:url('${encodeURI(atlas)}?v=4');background-position:-${col*renderCell}px -${row*renderCell}px"></span>`;
+  return L.divIcon({className:'am-leaflet-sprite',html,iconSize:[renderCell,renderCell],iconAnchor:anchor,popupAnchor:[0,-renderCell]});
 }
 
 function setMarkerVisual(marker,state){
@@ -3450,16 +3512,20 @@ let markerDisplayPreviewing=false;
 function markerDistanceLabel(value){return `${value<=50?'Tight':value>=85?'Broad':'Normal'} · ${value} px`;}
 function syncMarkerDisplaySettings(){
   const style=document.getElementById('markerStyle'),clustering=document.getElementById('markerClustering');
-  const distance=document.getElementById('clusterDistance'),zoom=document.getElementById('clusterSeparateZoom');
+  const scale=document.getElementById('spriteScale'),distance=document.getElementById('clusterDistance'),zoom=document.getElementById('clusterSeparateZoom');
   if(style)style.value=markerDisplayPreferences.style;
+  if(scale)scale.value=String(markerDisplayPreferences.spriteScale);
   if(clustering)clustering.checked=markerDisplayPreferences.clustering;
   if(distance)distance.value=String(markerDisplayPreferences.clusterDistance);
   if(zoom)zoom.value=String(markerDisplayPreferences.separateAtZoom);
+  const scaleValue=document.getElementById('spriteScaleValue');if(scaleValue)scaleValue.value=`${markerDisplayPreferences.spriteScale}%`;
   const distanceValue=document.getElementById('clusterDistanceValue');if(distanceValue)distanceValue.value=markerDistanceLabel(markerDisplayPreferences.clusterDistance);
   const zoomValue=document.getElementById('clusterSeparateZoomValue');if(zoomValue)zoomValue.value=String(markerDisplayPreferences.separateAtZoom);
   ['clusterDistanceField','clusterZoomField'].forEach(id=>document.getElementById(id)?.classList.toggle('is-disabled',!markerDisplayPreferences.clustering));
   if(distance)distance.disabled=!markerDisplayPreferences.clustering;
   if(zoom)zoom.disabled=!markerDisplayPreferences.clustering;
+  document.getElementById('spriteScaleField')?.classList.toggle('is-disabled',markerDisplayPreferences.style==='dots');
+  if(scale)scale.disabled=markerDisplayPreferences.style==='dots';
 }
 function saveMarkerDisplayPreferences(force=false){
   if(markerDisplayPreviewing&&!force)return;
@@ -3481,6 +3547,7 @@ window.ArcheoMarkerDisplayManager={
   commitPreview:()=>{markerDisplayPreviewing=false;saveMarkerDisplayPreferences(true);},
   cancelPreview:snapshot=>{markerDisplayPreviewing=false;markerDisplayPreferences={...MARKER_DISPLAY_DEFAULTS,...snapshot};rebuildMarkerDisplay();saveMarkerDisplayPreferences(true);},
   setStyle:value=>{markerDisplayPreferences.style=value==='dots'?'dots':'sprites';rebuildMarkerDisplay();saveMarkerDisplayPreferences();},
+  setSpriteScale:value=>{markerDisplayPreferences.spriteScale=Math.max(50,Math.min(100,Number(value)||defaultSpriteScale()));rebuildMarkerDisplay();saveMarkerDisplayPreferences();},
   setClustering:value=>{markerDisplayPreferences.clustering=Boolean(value);rebuildMarkerDisplay();saveMarkerDisplayPreferences();},
   setClusterDistance:value=>{markerDisplayPreferences.clusterDistance=Math.max(35,Math.min(110,Number(value)||65));rebuildMarkerDisplay();saveMarkerDisplayPreferences();},
   setSeparateAtZoom:value=>{markerDisplayPreferences.separateAtZoom=Math.max(10,Math.min(18,Number(value)||13));rebuildMarkerDisplay();saveMarkerDisplayPreferences();},
@@ -4087,14 +4154,14 @@ function applyFilters(){
   const clustering=HAS_MARKER_CLUSTER&&markerDisplayPreferences.clustering;
   if(clustering){
     standardPlainLayer.clearLayers();heroPlainLayer.clearLayers();
-    replaceMarkerGroupLayers(standardClusterLayer,standardVisible);
-    replaceMarkerGroupLayers(heroClusterLayer,heroVisible);
+    heroClusterLayer.clearLayers();
+    replaceMarkerGroupLayers(standardClusterLayer,[...standardVisible,...heroVisible]);
   }else{
     standardClusterLayer.clearLayers();heroClusterLayer.clearLayers();
     replaceMarkerGroupLayers(standardPlainLayer,standardVisible);
     replaceMarkerGroupLayers(heroPlainLayer,heroVisible);
   }
-  window.ArcheoMapsClusterAudit={engine:clustering?'Leaflet.markercluster 1.5.3':'unclustered layer groups',markerStyle:markerDisplayPreferences.style,clusterDistance:markerDisplayPreferences.clusterDistance,separateAtZoom:markerDisplayPreferences.separateAtZoom,standardVisible:standardVisible.length,heroVisible:heroVisible.length,totalVisible:count,zoom:map.getZoom()};
+  window.ArcheoMapsClusterAudit={engine:clustering?'unified Leaflet.markercluster 1.5.3':'unclustered layer groups',markerStyle:markerDisplayPreferences.style,spriteScale:markerDisplayPreferences.spriteScale,clusterDistance:markerDisplayPreferences.clusterDistance,separateAtZoom:markerDisplayPreferences.separateAtZoom,standardVisible:standardVisible.length,heroVisible:heroVisible.length,totalVisible:count,zoom:map.getZoom()};
   refreshClusterIcons();
   refreshSelectedMarkerVisual();
   document.getElementById('visibleCount').textContent = count.toLocaleString();
@@ -5313,6 +5380,12 @@ if(isMobileUi()){
 }
 filterToggle.addEventListener('click', ()=> setFilterPanelOpen(!filterPanelIsOpen()));
 filterClose.addEventListener('click', ()=> setFilterPanelOpen(false));
+document.getElementById('timelineToggle').addEventListener('click',()=>{
+  if(window.ArcheoWindowManager){
+    const state=window.ArcheoWindowManager.getState('timeline');
+    window.ArcheoWindowManager.setOpen('timeline',!state.open);
+  }else timelineBar.classList.toggle('open');
+});
 
 function setTimelineMinimized(minimized){
   if(window.ArcheoWindowManager){ window.ArcheoWindowManager.setCollapsed('timeline',minimized); return; }
@@ -5375,7 +5448,7 @@ window.ArcheoWindowManager = (function(){
     filter:document.getElementById('panelToggle'),
     sites:document.getElementById('listToggle'),
     record:null,
-    timeline:null,
+    timeline:document.getElementById('timelineToggle'),
     layers:document.getElementById('layersBtn'),
     legend:document.getElementById('legendBtn'),
     overview:document.getElementById('overviewBtn')
@@ -6077,6 +6150,7 @@ document.getElementById('headerHue').addEventListener('input',ev=>window.ArcheoW
 document.getElementById('interfaceScale').addEventListener('input',ev=>window.ArcheoWindowManager.setScale(ev.target.value));
 document.getElementById('panelTransparency').addEventListener('input',ev=>window.ArcheoWindowManager.setPanelOpacity(ev.target.value));
 document.getElementById('markerStyle').addEventListener('change',ev=>window.ArcheoMarkerDisplayManager.setStyle(ev.target.value));
+document.getElementById('spriteScale').addEventListener('input',ev=>window.ArcheoMarkerDisplayManager.setSpriteScale(ev.target.value));
 document.getElementById('markerClustering').addEventListener('change',ev=>window.ArcheoMarkerDisplayManager.setClustering(ev.target.checked));
 document.getElementById('clusterDistance').addEventListener('change',ev=>window.ArcheoMarkerDisplayManager.setClusterDistance(ev.target.value));
 document.getElementById('clusterSeparateZoom').addEventListener('change',ev=>window.ArcheoMarkerDisplayManager.setSeparateAtZoom(ev.target.value));
