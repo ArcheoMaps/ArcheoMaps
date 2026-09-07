@@ -1994,17 +1994,17 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   #buildVersion{display:none;}
 }
 
-/* V5.6 dual-atlas renderer. The definitive editor exports 48px ordinary
-   sprites plus 96px heroes and one combined manifest. Missing files or
+/* Dual-atlas renderer. Sprite and sheet geometry comes from the manifest;
+   the current editor exports 64px ordinary sprites plus 96px heroes. Missing files or
    unmatched records retain the existing circle-marker fallback. */
 .am-leaflet-sprite{background:transparent!important;border:0!important;}
 .am-sprite-marker{
-  position:relative;display:block;width:48px;height:48px;
-  background-repeat:no-repeat;background-size:768px 384px;
+  position:relative;display:block;width:var(--sprite-cell,64px);height:var(--sprite-cell,64px);
+  background-repeat:no-repeat;background-size:var(--sprite-sheet-w,1024px) var(--sprite-sheet-h,512px);
   image-rendering:pixelated;filter:drop-shadow(1px 1px 0 rgba(0,0,0,.72));
   transform-origin:50% 100%;transition:filter 80ms steps(2,end);
 }
-.am-sprite-marker.is-hero{width:96px;height:96px;background-size:1536px 1152px;}
+.am-sprite-marker.is-hero{width:var(--sprite-cell,96px);height:var(--sprite-cell,96px);background-size:var(--sprite-sheet-w,1536px) var(--sprite-sheet-h,1152px);}
 .am-sprite-marker.is-hovered{z-index:2;filter:drop-shadow(-1px 0 #fff) drop-shadow(1px 0 #fff) drop-shadow(0 -1px #fff) drop-shadow(0 1px #fff) drop-shadow(2px 2px #000080);}
 .am-sprite-marker.is-selected{z-index:3;filter:drop-shadow(-1px 0 #ffff00) drop-shadow(1px 0 #ffff00) drop-shadow(0 -1px #ffff00) drop-shadow(0 1px #ffff00) drop-shadow(2px 2px #000080);}
 .am-dot-cluster{background:transparent!important;border:0!important;}
@@ -2119,9 +2119,9 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   position:absolute;display:block;background-repeat:no-repeat;image-rendering:pixelated;
   pointer-events:none;transform-origin:50% 100%;
 }
-.am-cluster-parent{left:8px;top:8px;width:48px;height:48px;background-size:768px 384px;z-index:4;
+.am-cluster-parent{left:8px;top:0;width:var(--sprite-cell,64px);height:var(--sprite-cell,64px);background-size:var(--sprite-sheet-w,1024px) var(--sprite-sheet-h,512px);z-index:4;
   filter:drop-shadow(1px 1px 0 #000);}
-.am-cluster-fan-sprite{left:8px;top:8px;width:48px;height:48px;background-size:768px 384px;z-index:2;
+.am-cluster-fan-sprite{left:8px;top:0;width:var(--sprite-cell,64px);height:var(--sprite-cell,64px);background-size:var(--sprite-sheet-w,1024px) var(--sprite-sheet-h,512px);z-index:2;
   opacity:0;transform:translate(0,0);transition:transform 90ms steps(3,end),opacity 60ms linear;
   filter:drop-shadow(1px 1px 0 #000);}
 .am-cluster-shell:hover .am-cluster-fan-sprite{opacity:1;}
@@ -2662,7 +2662,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.1</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.2</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -2793,7 +2793,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.1';
+const ARCHEOMAPS_VERSION='6.2';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -3338,11 +3338,11 @@ function spriteAssignmentFor(site){
 
 function atlasStyleForEntry(entry,hero){
   const group=hero?'heroes':'sprites',atlasMeta=(SPRITE_MANIFEST&&SPRITE_MANIFEST.atlases&&SPRITE_MANIFEST.atlases[group])||{};
-  const cell=Number(atlasMeta.cellWidth)||(hero?96:48),columns=Number(atlasMeta.columns)||16;
+  const cell=Number(atlasMeta.cellWidth)||(hero?96:64),columns=Number(atlasMeta.columns)||16,rows=Number(atlasMeta.rows)||(hero?12:8);
   const index=Number.isInteger(entry.index)?entry.index:Number(String(entry.address||'').slice(1))||0;
   const col=index%columns,row=Math.floor(index/columns);
   const atlas=String(atlasMeta.image||(hero?DEFAULT_HERO_ATLAS:DEFAULT_SPRITE_ATLAS)).replace(/'/g,'%27');
-  return `background-image:url('${encodeURI(atlas)}');background-position:-${col*cell}px -${row*cell}px`;
+  return `--sprite-cell:${cell}px;--sprite-sheet-w:${cell*columns}px;--sprite-sheet-h:${cell*rows}px;background-image:url('${encodeURI(atlas)}?v=4');background-position:-${col*cell}px -${row*cell}px`;
 }
 function clusterSpriteStats(cluster){
   const byAddress=new Map();
@@ -3370,7 +3370,7 @@ function createStandardClusterIcon(cluster){
   const fans=stats.slice(1,5).map(item=>`<span class="am-cluster-fan-sprite" style="${atlasStyleForEntry(item.entry,false)}"></span>`).join('');
   const parentHtml=parent?`<span class="am-cluster-parent" style="${atlasStyleForEntry(parent.entry,false)}"></span>`:'';
   const html=`<span class="am-cluster-shell${selected}" title="${count.toLocaleString()} archaeological sites">${fans}${parentHtml}<span class="am-cluster-count">${count.toLocaleString()}</span></span>`;
-  return L.divIcon({className:'am-sprite-cluster',html,iconSize:[64,64],iconAnchor:[32,48]});
+  return L.divIcon({className:'am-sprite-cluster',html,iconSize:[80,72],iconAnchor:[40,64]});
 }
 function createHeroClusterIcon(cluster){
   if(markerDisplayPreferences.style==='dots')return createDotClusterIcon(cluster);
@@ -3399,12 +3399,12 @@ function spriteIconFor(site,assignment=spriteAssignmentFor(site)){
   if(!assignment)return null;
   const entry=assignment.entry,group=assignment.hero?'heroes':'sprites';
   const atlasMeta=(SPRITE_MANIFEST.atlases&&SPRITE_MANIFEST.atlases[group])||{};
-  const cell=Number(atlasMeta.cellWidth)||(assignment.hero?96:48),columns=Number(atlasMeta.columns)||16;
+  const cell=Number(atlasMeta.cellWidth)||(assignment.hero?96:64),columns=Number(atlasMeta.columns)||16,rows=Number(atlasMeta.rows)||(assignment.hero?12:8);
   const index=Number.isInteger(entry.index)?entry.index:Number(String(entry.address||'').slice(1))||0;
   const col=index%columns,row=Math.floor(index/columns);
   const atlas=atlasMeta.image||(assignment.hero?DEFAULT_HERO_ATLAS:DEFAULT_SPRITE_ATLAS);
   const anchor=Array.isArray(entry.anchor)?entry.anchor:[cell/2,cell];
-  const html=`<span class="am-sprite-marker${assignment.hero?' is-hero':''}" data-sprite-id="${escapeHtml(assignment.id)}" style="background-image:url('${encodeURI(atlas)}');background-position:-${col*cell}px -${row*cell}px"></span>`;
+  const html=`<span class="am-sprite-marker${assignment.hero?' is-hero':''}" data-sprite-id="${escapeHtml(assignment.id)}" style="--sprite-cell:${cell}px;--sprite-sheet-w:${cell*columns}px;--sprite-sheet-h:${cell*rows}px;background-image:url('${encodeURI(atlas)}?v=4');background-position:-${col*cell}px -${row*cell}px"></span>`;
   return L.divIcon({className:'am-leaflet-sprite',html,iconSize:[cell,cell],iconAnchor:anchor,popupAnchor:[0,-cell]});
 }
 
@@ -6694,14 +6694,14 @@ function loadData(){
   loadSpinner.style.display = '';
   loadMsg.style.display = '';
   loadError.classList.remove('show');
-  const spriteManifestPromise=fetch('archeomaps-marker-manifest.json',{cache:'no-store'})
+  const spriteManifestPromise=fetch('archeomaps-marker-manifest.json?v=4',{cache:'no-store'})
     .then(res=>res.ok?res.json():null)
     .then(manifest=>new Promise(resolve=>{
       const atlases=manifest&&manifest.atlases,s=atlases&&atlases.sprites,h=atlases&&atlases.heroes;
-      const valid=manifest&&manifest.version==='archeomaps-marker-manifest-v3'&&Array.isArray(manifest.sprites)&&Array.isArray(manifest.heroes)&&s&&h&&s.columns===16&&s.rows===8&&s.cellWidth===48&&s.cellHeight===48&&s.width===768&&s.height===384&&h.columns===16&&h.rows===12&&h.cellWidth===96&&h.cellHeight===96&&h.width===1536&&h.height===1152;
+      const valid=manifest&&manifest.version==='archeomaps-marker-manifest-v4'&&Array.isArray(manifest.sprites)&&Array.isArray(manifest.heroes)&&s&&h&&s.columns===16&&s.rows===8&&s.cellWidth===64&&s.cellHeight===64&&s.width===1024&&s.height===512&&h.columns===16&&h.rows===12&&h.cellWidth===96&&h.cellHeight===96&&h.width===1536&&h.height===1152;
       if(!valid)return resolve(null);
       const loadImage=src=>new Promise((ok,bad)=>{const img=new Image();img.onload=ok;img.onerror=bad;img.src=src});
-      Promise.all([loadImage(s.image||DEFAULT_SPRITE_ATLAS),loadImage(h.image||DEFAULT_HERO_ATLAS)]).then(()=>{SPRITE_MANIFEST=manifest;resolve(manifest)}).catch(()=>resolve(null));
+      Promise.all([loadImage(`${s.image||DEFAULT_SPRITE_ATLAS}?v=4`),loadImage(`${h.image||DEFAULT_HERO_ATLAS}?v=4`)]).then(()=>{SPRITE_MANIFEST=manifest;resolve(manifest)}).catch(()=>resolve(null));
     }))
     .catch(()=>null);
   Promise.all([fetch(DATA_URL)
