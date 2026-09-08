@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ArcheoMaps ’98 v6.3.1 — A Field Atlas of Ancient Places</title>
+<title>ArcheoMaps ’98 v6.4 — A Field Atlas of Ancient Places</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
@@ -1967,7 +1967,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 @media(max-width:1180px){
   #topbar{grid-template-columns:285px minmax(0,1fr);}
   .brand{width:285px;min-width:235px;height:58px;flex-basis:285px;}
-  .application-menu-group[data-menu-group="window"] .application-submenu{left:auto;right:calc(100% - 2px);}
+  .application-menu-group[data-menu-group="layout"] .application-submenu{left:auto;right:calc(100% - 2px);}
 }
 @media(max-width:860px){
   #topbar{min-height:55px;grid-template-columns:170px minmax(0,1fr);}.brand{width:170px;min-width:140px;height:45px;flex-basis:170px;}
@@ -1978,7 +1978,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .application-menu-root{display:block;width:100%;text-align:left;}
   .application-menu-group.open>.application-menu-dropdown{position:static;width:100%;min-width:0;margin:1px 0 3px;box-shadow:none;border-width:1px 1px 2px;}
   .application-submenu-group.open>.application-submenu{position:static;width:100%;min-width:0;margin:0 0 2px 8px;box-shadow:none;border-width:1px;}
-  .application-menu-group[data-menu-group="window"] .application-submenu{left:auto;right:auto;}
+  .application-menu-group[data-menu-group="layout"] .application-submenu{left:auto;right:auto;}
   .application-menu-align-right{right:auto;}
   #map{bottom:19px;}#statusBar{height:19px;grid-template-columns:1fr 1fr;font-size:9px;}
   #statusHint{display:none;}
@@ -2395,6 +2395,51 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .timeline-date-field input{height:28px;font-size:12px;}
   .timeline-transport button,.timeline-view-controls button,#timelineBar #speedSelect,#timelineBar #repeatToggle{height:32px;}
 }
+
+/* V6.4 contextual map tools, completed-lasso console and Overview dock. */
+.map-context-menu{position:absolute;z-index:4700;display:none;width:210px;padding:2px;background:var(--win-grey);border:2px outset var(--win-grey);box-shadow:2px 2px 0 rgba(0,0,0,.55);font:11px var(--ms-sans);}
+.map-context-menu.open{display:block;}
+.map-context-menu button{display:flex;justify-content:space-between;width:100%;min-height:24px;padding:3px 18px 3px 22px;border:0;background:transparent;color:#000;text-align:left;font:11px var(--ms-sans);}
+.map-context-menu button:hover,.map-context-menu button:focus{background:#000080;color:#fff;outline:0;}
+.map-context-menu button:disabled{color:#808080;text-shadow:1px 1px #fff;background:transparent;}
+.map-context-menu .application-menu-separator{margin:2px 1px;}
+.map-context-coordinates{padding:4px 6px;border-bottom:1px solid #808080;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:9px "Courier New",monospace;}
+.lasso-result-toolbar{position:absolute;z-index:1450;display:none;min-width:260px;max-width:min(420px,calc(100% - 12px));padding:3px;background:var(--win-grey);border:2px outset var(--win-grey);box-shadow:2px 2px 0 rgba(0,0,0,.5);font:10px var(--ms-sans);}
+.lasso-result-toolbar.open{display:block;}
+.lasso-result-summary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;padding:4px 6px;background:#fff;border:2px inset var(--win-grey);}
+.lasso-result-summary strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lasso-result-actions{display:flex;justify-content:flex-end;gap:4px;padding-top:3px;}
+.lasso-result-actions button{height:24px;padding:2px 8px;background:var(--win-grey);border:2px outset var(--win-grey);font:10px var(--ms-sans);}
+.lasso-result-actions button:active{border-style:inset;}
+.overview-dock{display:none;position:relative;min-width:150px;height:116px;padding:22px 3px 3px;background:var(--win-grey);border:2px inset var(--win-grey);overflow:hidden;}
+.overview-dock.open{display:block;}
+.overview-dock-head{position:absolute;inset:2px 2px auto;height:18px;display:flex;align-items:center;padding-left:4px;color:#fff;background:linear-gradient(90deg,var(--window-title-start),var(--window-title-end));font:700 10px var(--ms-sans);}
+.overview-dock-head span{flex:1;}
+.overview-dock-head button{width:18px;height:16px;padding:0;background:var(--win-grey);border:1px outset var(--win-grey);font:10px/12px var(--ms-sans);}
+.overview-dock-frame{width:100%;height:100%;background:#dce3e8;}
+.overview-dock #overviewCanvas{display:block;width:100%;height:100%;cursor:move;}
+.overview-dock-target{position:fixed;z-index:4800;display:none;right:8px;top:8px;width:158px;height:118px;padding:42px 8px 8px;border:3px dashed #000080;background:rgba(255,255,225,.94);color:#000080;text-align:center;font:700 11px/1.35 var(--ms-sans);pointer-events:none;}
+body.overview-dock-dragging .overview-dock-target{display:block;}
+@media(min-width:1200px) and (hover:hover){
+  #topbar.overview-docked{grid-template-columns:270px minmax(0,1fr) 158px;}
+  #topbar.overview-docked .topbar-workspace{grid-column:2;}
+  #topbar.overview-docked .overview-dock{grid-column:3;grid-row:1;align-self:center;}
+}
+.exit-backdrop{position:fixed;inset:0;z-index:5100;display:grid;place-items:center;background:rgba(0,0,0,.08);}
+.exit-backdrop[hidden]{display:none;}
+.exit-dialog{width:min(360px,calc(100vw - 24px));background:var(--win-grey);border:2px outset var(--win-grey);box-shadow:3px 3px 0 rgba(0,0,0,.55);font:11px var(--ms-sans);}
+.exit-dialog-message{min-height:72px;padding:18px 16px;background:var(--win-grey);}
+.exit-dialog-actions{display:flex;justify-content:center;gap:8px;padding:6px 10px 10px;}
+.exit-dialog-actions button{min-width:76px;height:25px;background:var(--win-grey);border:2px outset var(--win-grey);font:11px var(--ms-sans);}
+@media(max-width:860px), (hover:none) and (pointer:coarse){
+  .map-context-menu{position:fixed;width:min(290px,calc(100vw - 16px));font-size:16px;}
+  .map-context-menu button{min-height:46px;font-size:15px;}
+  .map-context-coordinates{font-size:13px;}
+  .lasso-result-toolbar{position:fixed;left:8px!important;right:8px!important;top:auto!important;bottom:calc(var(--mobile-rail-h) + 34px + env(safe-area-inset-bottom))!important;max-width:none;}
+  .lasso-result-summary,.lasso-result-actions button{font-size:14px;}
+  .lasso-result-actions button{min-height:42px;}
+  .overview-dock,.overview-dock-target{display:none!important;}
+}
 </style>
 <body>
 
@@ -2426,6 +2471,8 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
           <div class="application-menu-dropdown" role="menu" data-menu-panel="file">
             <button type="button" role="menuitem" data-command="share"><span>Share map link</span></button>
             <button type="button" role="menuitemcheckbox" data-command="fullscreen" aria-checked="false"><span>Fullscreen</span></button>
+            <div class="application-menu-separator" role="separator"></div>
+            <button type="button" role="menuitem" data-command="exit"><span>Exit ArcheoMaps…</span></button>
           </div>
         </div>
         <div class="application-menu-group" data-menu-group="edit">
@@ -2436,7 +2483,6 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
             <button type="button" role="menuitemradio" aria-checked="false" data-map-tool="area"><span>Measure area</span></button>
             <div class="application-menu-separator" role="separator"></div>
             <button type="button" role="menuitem" id="mapToolUndoMenuItem" data-command="undo-measurement"><span>Undo last point</span><kbd>Backspace</kbd></button>
-            <button type="button" role="menuitem" id="copyCoordsMenuItem"><span>Copy cursor coordinates</span></button>
             <div class="application-menu-separator" role="separator"></div>
             <button type="button" role="menuitem" id="clearSpatialSelectionItem"><span>Clear region selection</span></button>
             <button type="button" role="menuitem" id="clearMeasurements"><span>Clear measurements</span></button>
@@ -2474,9 +2520,9 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
             <button type="button" role="menuitem" data-command="open-layers"><span>Historical layers…</span></button>
           </div>
         </div>
-        <div class="application-menu-group" data-menu-group="window">
-          <button class="application-menu-root" type="button" role="menuitem" aria-haspopup="true" aria-expanded="false" data-menu-root="window"><u>W</u>indow</button>
-          <div class="application-menu-dropdown" role="menu" data-menu-panel="window">
+        <div class="application-menu-group" data-menu-group="layout">
+          <button class="application-menu-root" type="button" role="menuitem" aria-haspopup="true" aria-expanded="false" data-menu-root="layout"><u>L</u>ayout</button>
+          <div class="application-menu-dropdown" role="menu" data-menu-panel="layout">
             <div class="application-submenu-group">
               <button type="button" role="menuitem" aria-haspopup="true" aria-expanded="false" data-submenu-toggle><span>Layout presets</span><span class="submenu-arrow">▶</span></button>
               <div class="application-menu-dropdown application-submenu" role="menu">
@@ -2500,6 +2546,10 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
                 <button type="button" role="menuitem" data-arrange-command="close-all"><span>Close all</span></button>
               </div>
             </div>
+            <div class="application-menu-separator" role="separator"></div>
+            <button type="button" role="menuitemradio" data-overview-mode="docked" aria-checked="false"><span>Dock Overview</span></button>
+            <button type="button" role="menuitemradio" data-overview-mode="floating" aria-checked="false"><span>Float Overview</span></button>
+            <button type="button" role="menuitemradio" data-overview-mode="hidden" aria-checked="false"><span>Hide Overview</span></button>
             <div class="application-menu-separator" role="separator"></div>
             <button type="button" role="menuitem" data-command="reset-layout"><span>Reset window layout</span></button>
             <button type="button" role="menuitem" data-command="settings"><span>Settings…</span></button>
@@ -2552,6 +2602,10 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         <option value="satellite" selected>Satellite · Esri + labels</option>
       </select>
     </div>
+    </div>
+    <div id="overviewDock" class="overview-dock" aria-label="Docked Overview navigator">
+      <div class="overview-dock-head"><span>Overview</span><button id="overviewUndockBtn" type="button" title="Float Overview" aria-label="Float Overview">□</button><button id="overviewDockClose" type="button" title="Hide Overview" aria-label="Hide Overview">×</button></div>
+      <div id="overviewDockFrame" class="overview-dock-frame"></div>
     </div>
   </header>
 
@@ -2750,6 +2804,22 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         <button id="mapToolFinish" type="button">Finish</button>
         <button id="mapToolCancel" type="button">Cancel</button>
       </div>
+      <div id="mapContextMenu" class="map-context-menu" role="menu" aria-label="Map actions">
+        <div id="mapContextCoordinates" class="map-context-coordinates">—</div>
+        <button type="button" role="menuitem" data-context-action="open-site" data-context-site-only hidden><span>Open site</span></button>
+        <button type="button" role="menuitem" data-context-action="zoom-site" data-context-site-only hidden><span>Zoom to site</span></button>
+        <button type="button" role="menuitem" data-context-action="measure-distance"><span>Measure distance from here</span></button>
+        <button type="button" role="menuitem" data-context-action="measure-area"><span>Measure area</span></button>
+        <button type="button" role="menuitem" data-context-action="lasso"><span>Select area (lasso)</span></button>
+        <div class="application-menu-separator" role="separator"></div>
+        <button type="button" role="menuitem" data-context-action="copy-coordinates"><span>Copy coordinates</span></button>
+        <button type="button" role="menuitem" data-context-action="copy-link"><span id="mapContextLinkLabel">Copy map link</span></button>
+        <button type="button" role="menuitem" data-context-action="nearby" disabled title="Planned for a future update"><span>What’s nearby?</span><span>Later</span></button>
+      </div>
+      <div id="lassoResultToolbar" class="lasso-result-toolbar" role="region" aria-label="Selected map region" aria-live="polite">
+        <div class="lasso-result-summary"><span>Region</span><strong id="lassoRegionName">Custom map region</strong><span>Surface</span><strong id="lassoSurfaceArea">—</strong><span>Sites</span><strong id="lassoSiteCount">0</strong></div>
+        <div class="lasso-result-actions"><button id="lassoRedrawBtn" type="button">Redraw</button><button id="lassoRemoveBtn" type="button">Remove</button></div>
+      </div>
 
       <!-- Historical/geographic overlay layers (Paleogeography / Political
            geography / Networks) — a separate concern from the basemap-style
@@ -2890,7 +2960,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.3.1</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -3035,6 +3105,14 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
     <div class="app-info-actions"><button id="appInfoOk" type="button">OK</button></div>
   </section>
 </div>
+<div id="exitBackdrop" class="exit-backdrop" hidden>
+  <section id="exitDialog" class="exit-dialog" role="dialog" aria-modal="true" aria-labelledby="exitDialogTitle" tabindex="-1">
+    <div class="settings-titlebar"><span id="exitDialogTitle">Exit ArcheoMaps</span><button id="exitDialogClose" type="button" title="Close" aria-label="Close">×</button></div>
+    <div id="exitDialogMessage" class="exit-dialog-message">Are you sure you want to exit ArcheoMaps?</div>
+    <div class="exit-dialog-actions"><button id="exitDialogYes" type="button">Yes</button><button id="exitDialogNo" type="button">No</button></div>
+  </section>
+</div>
+<div id="overviewDockTarget" class="overview-dock-target">Release here to dock Overview</div>
 <div id="winTooltip" role="tooltip" hidden></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -3043,7 +3121,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.3.1';
+const ARCHEOMAPS_VERSION='6.4';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -3288,12 +3366,20 @@ const icelandLayer = L.geoJSON(ICELAND_PATCH, { interactive: false, style: landS
    cached bitmap plus one viewport rectangle. */
 const overviewPanel = document.getElementById('overviewPanel');
 const overviewCanvas = document.getElementById('overviewCanvas');
+const overviewFloatingFrame = overviewPanel.querySelector('.overview-canvas-frame');
+const overviewDock = document.getElementById('overviewDock');
+const overviewDockFrame = document.getElementById('overviewDockFrame');
+const OVERVIEW_MODE_KEY = 'archeomapsOverviewModeV64';
+let overviewMode = 'hidden';
 const overviewCtx = overviewCanvas.getContext('2d');
 const overviewBaseCanvas = document.createElement('canvas');
 overviewBaseCanvas.width = overviewCanvas.width;
 overviewBaseCanvas.height = overviewCanvas.height;
 const overviewBaseCtx = overviewBaseCanvas.getContext('2d');
 let overviewFrame = 0;
+
+function canDockOverview(){ return window.matchMedia('(min-width:1200px) and (hover:hover)').matches&&!isMobileUi(); }
+function overviewIsVisible(){ return overviewMode==='docked'||overviewPanel.classList.contains('open'); }
 
 function overviewPoint(lon,lat){
   return [((lon + 180) / 360) * overviewCanvas.width, ((90 - lat) / 180) * overviewCanvas.height];
@@ -3337,7 +3423,7 @@ function normaliseLongitude(lon){ return ((lon + 180) % 360 + 360) % 360 - 180; 
 
 function drawOverview(){
   overviewFrame = 0;
-  if(!overviewPanel.classList.contains('open')) return;
+  if(!overviewIsVisible()) return;
   const w = overviewCanvas.width, h = overviewCanvas.height;
   overviewCtx.clearRect(0,0,w,h);
   overviewCtx.drawImage(overviewBaseCanvas,0,0);
@@ -3381,13 +3467,13 @@ function drawOverview(){
 }
 
 function scheduleOverviewDraw(){
-  if(!overviewPanel.classList.contains('open') || overviewFrame) return;
+  if(!overviewIsVisible() || overviewFrame) return;
   overviewFrame = requestAnimationFrame(drawOverview);
 }
 
 function resizeOverviewCanvas(){
-  const frame = overviewPanel.querySelector('.overview-canvas-frame');
-  if(!frame || overviewPanel.classList.contains('collapsed')) return;
+  const frame = overviewMode==='docked'?overviewDockFrame:overviewFloatingFrame;
+  if(!frame || (overviewMode!=='docked'&&overviewPanel.classList.contains('collapsed'))) return;
   const width = Math.max(120,Math.floor(frame.clientWidth));
   const height = Math.max(70,Math.floor(frame.clientHeight));
   if(overviewCanvas.width === width && overviewCanvas.height === height) return;
@@ -3399,26 +3485,55 @@ function resizeOverviewCanvas(){
 
 buildOverviewBase();
 map.on('move zoom resize',scheduleOverviewDraw);
-overviewCanvas.addEventListener('click',(ev)=>{
+function overviewEventLatLng(ev){
   const rect = overviewCanvas.getBoundingClientRect();
   const x = (ev.clientX-rect.left)/rect.width;
   const y = (ev.clientY-rect.top)/rect.height;
-  map.panTo([90-y*180,x*360-180]);
+  return L.latLng(90-y*180,x*360-180);
+}
+let overviewPointerId=null;
+overviewCanvas.addEventListener('pointerdown',ev=>{
+  overviewPointerId=ev.pointerId;overviewCanvas.setPointerCapture?.(ev.pointerId);
+  map.panTo(overviewEventLatLng(ev));ev.preventDefault();
 });
+overviewCanvas.addEventListener('pointermove',ev=>{
+  if(overviewPointerId!==ev.pointerId)return;
+  map.panTo(overviewEventLatLng(ev),{animate:false});ev.preventDefault();
+});
+function endOverviewPan(ev){if(overviewPointerId===ev.pointerId)overviewPointerId=null;}
+overviewCanvas.addEventListener('pointerup',endOverviewPan);
+overviewCanvas.addEventListener('pointercancel',endOverviewPan);
+
+function setOverviewMode(mode,{persist=true}={}){
+  if(mode==='docked'&&!canDockOverview())mode=isMobileUi()?'hidden':'floating';
+  if(!['docked','floating','hidden'].includes(mode))mode='hidden';
+  overviewMode=mode;
+  document.getElementById('topbar').classList.toggle('overview-docked',mode==='docked');
+  overviewDock.classList.toggle('open',mode==='docked');
+  overviewDock.setAttribute('aria-hidden',String(mode!=='docked'));
+  if(mode==='docked')overviewDockFrame.appendChild(overviewCanvas);
+  else overviewFloatingFrame.appendChild(overviewCanvas);
+  if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('overview',mode==='floating');
+  else{overviewPanel.classList.toggle('open',mode==='floating');overviewPanel.setAttribute('aria-hidden',String(mode!=='floating'));}
+  document.getElementById('overviewBtn').setAttribute('aria-expanded',String(mode!=='hidden'));
+  document.querySelectorAll('[data-overview-mode]').forEach(item=>item.setAttribute('aria-checked',String(item.dataset.overviewMode===mode)));
+  if(persist){try{localStorage.setItem(OVERVIEW_MODE_KEY,mode);}catch(_err){}}
+  if(mode!=='hidden')requestAnimationFrame(()=>{resizeOverviewCanvas();scheduleOverviewDraw();refreshMapLayout();});
+}
+
+function restoreOverviewMode(){
+  let saved=null;try{saved=localStorage.getItem(OVERVIEW_MODE_KEY);}catch(_err){}
+  setOverviewMode(saved|| (canDockOverview()?'docked':'hidden'),{persist:false});
+}
+window.addEventListener('resize',()=>{if(overviewMode==='docked'&&!canDockOverview())setOverviewMode(isMobileUi()?'hidden':'floating');});
 
 function setOverviewOpen(open){
-  if(window.ArcheoWindowManager){
-    window.ArcheoWindowManager.setOpen('overview',open);
-    if(open){ resizeOverviewCanvas(); scheduleOverviewDraw(); }
-    return;
-  }
-  overviewPanel.classList.toggle('open',open);
-  overviewPanel.setAttribute('aria-hidden',String(!open));
-  document.getElementById('overviewBtn').setAttribute('aria-expanded',String(open));
-  if(open) scheduleOverviewDraw();
+  setOverviewMode(open?(overviewMode==='docked'?'docked':'floating'):'hidden');
 }
-document.getElementById('overviewBtn').addEventListener('click',()=>setOverviewOpen(!overviewPanel.classList.contains('open')));
-document.getElementById('overviewPanelClose').addEventListener('click',()=>setOverviewOpen(false));
+document.getElementById('overviewBtn').addEventListener('click',()=>setOverviewOpen(overviewMode==='hidden'));
+document.getElementById('overviewPanelClose').addEventListener('click',()=>setOverviewMode('hidden'));
+document.getElementById('overviewUndockBtn').addEventListener('click',()=>setOverviewMode('floating'));
+document.getElementById('overviewDockClose').addEventListener('click',()=>setOverviewMode('hidden'));
 
 const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
   maxZoom: 20,
@@ -3695,6 +3810,7 @@ function buildMarkers(){
     m._usesSprite=Boolean(spriteIcon);
     m._spriteAssignment=assignment;
     m.on('click', ()=> selectSite(s));
+    m.on('contextmenu',ev=>{if(ev.originalEvent)L.DomEvent.stop(ev.originalEvent);showMapContextMenu(ev.latlng,ev.originalEvent,s);});
     m.on('mouseover', ()=>{
       const hint=document.getElementById('statusHint');if(hint)hint.textContent=`Hovering: ${s.n}`;
       highlightListHover(s,true);
@@ -6045,6 +6161,7 @@ window.ArcheoWindowManager = (function(){
     bringFront(id);ev.preventDefault();ev.stopPropagation();
     pointerOp={id,mode,startX:ev.clientX,startY:ev.clientY,x:st.x,y:st.y,w:st.w,h:st.h};
     elements[id].classList.add(mode==='drag'?'dragging':'resizing');
+    if(id==='overview'&&mode==='drag'&&canDockOverview())document.body.classList.add('overview-dock-dragging');
   }
   function pointerMove(ev){
     if(!pointerOp)return;ev.preventDefault();
@@ -6053,8 +6170,16 @@ window.ArcheoWindowManager = (function(){
     else {if(op.mode.includes('e'))st.w=op.w+dx;if(op.mode.includes('s'))st.h=op.h+dy;st.expandedHeight=st.h;}
     clamp(op.id,st);syncControl(op.id);
   }
-  function pointerEnd(){
-    if(!pointerOp)return;elements[pointerOp.id].classList.remove('dragging','resizing');pointerOp=null;save();syncSettings();
+  function pointerEnd(ev){
+    if(!pointerOp)return;
+    const completed=pointerOp;
+    elements[completed.id].classList.remove('dragging','resizing');pointerOp=null;
+    if(completed.id==='overview'){
+      const target=document.getElementById('overviewDockTarget'),rect=target.getBoundingClientRect();
+      document.body.classList.remove('overview-dock-dragging');
+      if(completed.mode==='drag'&&ev&&ev.clientX>=rect.left&&ev.clientX<=rect.right&&ev.clientY>=rect.top&&ev.clientY<=rect.bottom){setOverviewMode('docked');return;}
+    }
+    save();syncSettings();
   }
   ids.forEach(id=>{
     const el=elements[id],title=el.querySelector('.window-titlebar');
@@ -6089,7 +6214,10 @@ window.ArcheoWindowManager = (function(){
     if(mode==='collapse-all')ids.forEach(id=>{if(states[id].open){states[id].expandedHeight=states[id].h;states[id].collapsed=true;}});
     if(mode==='close-all')ids.forEach(id=>states[id].open=false);
     if(mode==='reset')states=defaults();
-    syncAll();save();
+    syncAll();
+    if(mode==='close-all')setOverviewMode('hidden');
+    if(mode==='reset')setOverviewMode(canDockOverview()?'docked':'hidden');
+    save();
   }
   function applyLayout(name){
     states=defaults();
@@ -6116,7 +6244,10 @@ window.ArcheoWindowManager = (function(){
       const periods=document.querySelector('[data-section="periods"]');if(periods){periods.classList.remove('collapsed');periods.querySelector('.section-toggle').setAttribute('aria-expanded','true');}
     }
     if(name==='minimal'){ids.forEach(id=>states[id].open=false);states.timeline.open=true;states.timeline.collapsed=true;states.timeline.x=8;states.timeline.y=Math.max(8,c.h-36);states.timeline.w=Math.max(430,c.w-16);}
-    syncAll();save();refreshMapLayout();
+    const layoutWantsOverview=states.overview.open;
+    syncAll();
+    setOverviewMode(layoutWantsOverview?(canDockOverview()?'docked':'floating'):'hidden');
+    save();refreshMapLayout();
   }
   function snapshot(){return {states:clone(states),appearance:clone(appearance)};}
   function restore(snap){
@@ -6128,12 +6259,14 @@ window.ArcheoWindowManager = (function(){
   function syncSettings(){
     ids.forEach(id=>{
       const v=document.querySelector(`[data-setting-visible="${id}"]`),l=document.querySelector(`[data-setting-locked="${id}"]`),c=document.querySelector(`[data-setting-collapsed="${id}"]`);
-      if(v)v.checked=states[id].open;if(l)l.checked=states[id].locked;if(c)c.checked=states[id].collapsed;
+      if(v)v.checked=id==='overview'?overviewMode!=='hidden':states[id].open;if(l)l.checked=states[id].locked;if(c)c.checked=states[id].collapsed;
     });
   }
   load();syncAll();
-  return {setOpen,setLocked,setCollapsed,setPattern,setHue,setScale,setPanelOpacity,arrange,applyLayout,snapshot,restore,beginPreview,commitPreview,cancelPreview,syncSettings,getState:id=>states[id],resetLayout:()=>{states=defaults();syncAll();save();refreshMapLayout();},reset:()=>{appearance={hue:220,scale:1,panelOpacity:1};applyAppearance();states=defaults();syncAll();save();refreshMapLayout();}};
+  return {setOpen,setLocked,setCollapsed,setPattern,setHue,setScale,setPanelOpacity,arrange,applyLayout,snapshot,restore,beginPreview,commitPreview,cancelPreview,syncSettings,getState:id=>states[id],resetLayout:()=>{states=defaults();syncAll();setOverviewMode(canDockOverview()?'docked':'hidden');save();refreshMapLayout();},reset:()=>{appearance={hue:220,scale:1,panelOpacity:1};applyAppearance();states=defaults();syncAll();setOverviewMode(canDockOverview()?'docked':'hidden');save();refreshMapLayout();}};
 })();
+
+restoreOverviewMode();
 
 document.getElementById('resetLayoutBtn').addEventListener('click',()=>window.ArcheoWindowManager.resetLayout());
 document.getElementById('mapHomeBtn').addEventListener('click',()=>{
@@ -6203,12 +6336,17 @@ const mapToolCancel=document.getElementById('mapToolCancel');
 const mapToolDraftLayer=L.layerGroup().addTo(map);
 const measurementLayer=L.layerGroup().addTo(map);
 const spatialSelectionLayer=L.layerGroup().addTo(map);
+const lassoResultToolbar=document.getElementById('lassoResultToolbar');
+const lassoRegionName=document.getElementById('lassoRegionName');
+const lassoSurfaceArea=document.getElementById('lassoSurfaceArea');
+const lassoSiteCount=document.getElementById('lassoSiteCount');
 let activeMapTool=null;
 let mapToolPoints=[];
 let mapToolPreview=null;
 let mapToolCursorLatLng=null;
 let lassoDrawing=false;
 let lastMapLatLng=null;
+let activeLassoPolygon=null;
 
 async function copyTextToClipboard(text){
   if(!text)return false;
@@ -6330,7 +6468,7 @@ function deactivateMapTool(){
   if(hint)hint.textContent='Move across the map to inspect coordinates';
 }
 
-function startMapTool(tool){
+function startMapTool(tool,startPoint=null){
   deactivateMapTool();
   setEditMenuOpen(false);
   activeMapTool=tool;
@@ -6351,6 +6489,7 @@ function startMapTool(tool){
   }else{
     setMapToolMessage('Measure area — click around the boundary; Enter or Finish to complete');
   }
+  if(startPoint&&(tool==='distance'||tool==='area')){mapToolPoints=[L.latLng(startPoint)];updateMapToolPreview();}
 }
 
 function undoMapToolPoint(){
@@ -6377,8 +6516,38 @@ function finishMeasurement(){
 
 function clearSpatialSelection(runApply=true){
   state.spatialSelectionIds=null;
+  activeLassoPolygon=null;
   spatialSelectionLayer.clearLayers();
+  lassoResultToolbar.classList.remove('open');
   if(runApply&&SITES.length)applyFilters();
+}
+
+function selectedRegionLabel(selected){
+  const counts=new Map();
+  selected.forEach(site=>{const label=sitePlaceLabel(site);if(label&&label!=='Place unknown')counts.set(label,(counts.get(label)||0)+1);});
+  const ordered=[...counts].sort((a,b)=>b[1]-a[1]);
+  if(!ordered.length)return'Custom map region';
+  return ordered.length===1?ordered[0][0]:`${ordered[0][0]} + ${ordered.length-1} more`;
+}
+
+function updateLassoToolbarPosition(){
+  if(!activeLassoPolygon||!lassoResultToolbar.classList.contains('open')||isMobileUi())return;
+  const bounds=L.latLngBounds(activeLassoPolygon),anchor=map.latLngToContainerPoint(bounds.getNorthEast());
+  const width=lassoResultToolbar.offsetWidth||300,height=lassoResultToolbar.offsetHeight||86;
+  let left=anchor.x+10,top=anchor.y-height-10;
+  if(left+width>map.getSize().x-6)left=anchor.x-width-10;
+  if(top<6)top=anchor.y+10;
+  lassoResultToolbar.style.left=Math.max(6,Math.min(left,map.getSize().x-width-6))+'px';
+  lassoResultToolbar.style.top=Math.max(6,Math.min(top,map.getSize().y-height-27))+'px';
+}
+
+function showLassoResult(polygon,selected){
+  activeLassoPolygon=polygon.slice();
+  lassoRegionName.textContent=selectedRegionLabel(selected);
+  lassoSurfaceArea.textContent=formatArea(sphericalPolygonArea(polygon));
+  lassoSiteCount.textContent=`${selected.length.toLocaleString()} inside region`;
+  lassoResultToolbar.classList.add('open');
+  requestAnimationFrame(updateLassoToolbarPosition);
 }
 
 function finishLasso(){
@@ -6391,6 +6560,7 @@ function finishLasso(){
   spatialSelectionLayer.clearLayers();
   L.polygon(polygon,{pane:'paneMapTools',interactive:false,color:'#008000',weight:3,fillColor:'#00ff00',fillOpacity:.08,dashArray:'6 4'}).addTo(spatialSelectionLayer);
   deactivateMapTool();
+  showLassoResult(polygon,selected);
   applyFilters();
   if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('sites',true);
   renderSiteList();
@@ -6403,6 +6573,9 @@ mapToolFinish.addEventListener('click',()=>{if(activeMapTool==='lasso')finishLas
 mapToolCancel.addEventListener('click',deactivateMapTool);
 document.getElementById('clearSpatialSelectionItem').addEventListener('click',()=>{setEditMenuOpen(false);clearSpatialSelection();setMapToolMessage('Region selection cleared');});
 document.getElementById('clearMeasurements').addEventListener('click',()=>{setEditMenuOpen(false);measurementLayer.clearLayers();setMapToolMessage('Measurements cleared');});
+document.getElementById('lassoRedrawBtn').addEventListener('click',()=>startMapTool('lasso'));
+document.getElementById('lassoRemoveBtn').addEventListener('click',()=>{clearSpatialSelection();setMapToolMessage('Region selection cleared');});
+map.on('move zoom resize',updateLassoToolbarPosition);
 
 map.on('click',ev=>{
   if(activeMapTool==='lasso'&&isMobileUi()){
@@ -6443,15 +6616,67 @@ map.on('mouseout',()=>{
 });
 map.on('mouseup',()=>{if(activeMapTool==='lasso'&&lassoDrawing&&!isMobileUi())finishLasso();});
 
-document.getElementById('copyCoordsMenuItem').addEventListener('click',async()=>{
-  setEditMenuOpen(false);
-  const point=lastMapLatLng||map.getCenter();
-  const value=`${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`;
-  const copied=await copyTextToClipboard(value);
-  setMapToolMessage(copied?`Copied coordinates: ${value}`:`Clipboard unavailable — coordinates: ${value}`);
+const mapContextMenu=document.getElementById('mapContextMenu');
+const mapContextCoordinates=document.getElementById('mapContextCoordinates');
+let mapContextLatLng=null;
+let mapContextSite=null;
+
+function closeMapContextMenu(){mapContextMenu.classList.remove('open');mapContextSite=null;}
+function showMapContextMenu(latlng,originalEvent,site=null){
+  if(!latlng)return;
+  mapContextLatLng=L.latLng(latlng);mapContextSite=site;
+  setApplicationMenuOpen(null);hideWinTooltip?.();
+  mapContextCoordinates.textContent=site?`${site.n} · ${mapContextLatLng.lat.toFixed(6)}, ${mapContextLatLng.lng.toFixed(6)}`:`${mapContextLatLng.lat.toFixed(6)}, ${mapContextLatLng.lng.toFixed(6)}`;
+  mapContextMenu.querySelectorAll('[data-context-site-only]').forEach(item=>item.hidden=!site);
+  document.getElementById('mapContextLinkLabel').textContent=site?'Copy site link':'Copy map link';
+  mapContextMenu.classList.add('open');
+  const wrap=document.getElementById('mapWrap').getBoundingClientRect();
+  const fixed=isMobileUi();
+  let x=(originalEvent?.clientX??wrap.left+wrap.width/2)-(fixed?0:wrap.left);
+  let y=(originalEvent?.clientY??wrap.top+wrap.height/2)-(fixed?0:wrap.top);
+  const width=mapContextMenu.offsetWidth,height=mapContextMenu.offsetHeight;
+  const maxW=fixed?innerWidth:wrap.width,maxH=fixed?innerHeight:wrap.height;
+  if(x+width>maxW-5)x-=width;if(y+height>maxH-5)y-=height;
+  mapContextMenu.style.left=Math.max(5,Math.min(x,maxW-width-5))+'px';
+  mapContextMenu.style.top=Math.max(5,Math.min(y,maxH-height-5))+'px';
+  requestAnimationFrame(()=>mapContextMenu.querySelector('button:not([hidden]):not(:disabled)')?.focus());
+}
+
+map.on('contextmenu',ev=>{ev.originalEvent?.preventDefault();showMapContextMenu(ev.latlng,ev.originalEvent);});
+document.getElementById('map').addEventListener('contextmenu',ev=>ev.preventDefault());
+mapContextMenu.addEventListener('click',async ev=>{
+  const button=ev.target.closest('[data-context-action]');if(!button||button.disabled)return;
+  const action=button.dataset.contextAction,point=mapContextLatLng,site=mapContextSite;
+  closeMapContextMenu();
+  if(action==='open-site'&&site)selectSite(site);
+  if(action==='zoom-site'&&site){selectSite(site);map.setView([site.lat,site.lon],Math.max(8,map.getZoom()));}
+  if(action==='measure-distance')startMapTool('distance',point);
+  if(action==='measure-area')startMapTool('area',point);
+  if(action==='lasso')startMapTool('lasso');
+  if(action==='copy-coordinates'){
+    const value=`${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`,copied=await copyTextToClipboard(value);
+    setMapToolMessage(copied?`Copied coordinates: ${value}`:`Clipboard unavailable — coordinates: ${value}`);
+  }
+  if(action==='copy-link'){
+    const copied=await copyTextToClipboard(buildShareUrl(point,site));
+    setMapToolMessage(copied?'Map link copied for this location':'Clipboard unavailable');
+  }
 });
 
+let mapLongPressTimer=null,mapLongPressStart=null;
+const mapElement=document.getElementById('map');
+mapElement.addEventListener('pointerdown',ev=>{
+  if(!isMobileUi()||ev.target.closest('.leaflet-control'))return;
+  mapLongPressStart={x:ev.clientX,y:ev.clientY,event:ev};
+  clearTimeout(mapLongPressTimer);
+  mapLongPressTimer=setTimeout(()=>{const point=map.mouseEventToLatLng(mapLongPressStart.event);showMapContextMenu(point,mapLongPressStart.event);mapLongPressTimer=null;},650);
+},{passive:true});
+mapElement.addEventListener('pointermove',ev=>{if(mapLongPressStart&&Math.hypot(ev.clientX-mapLongPressStart.x,ev.clientY-mapLongPressStart.y)>10){clearTimeout(mapLongPressTimer);mapLongPressTimer=null;}} ,{passive:true});
+['pointerup','pointercancel'].forEach(type=>mapElement.addEventListener(type,()=>{clearTimeout(mapLongPressTimer);mapLongPressTimer=null;mapLongPressStart=null;},{passive:true}));
+map.on('movestart zoomstart click',closeMapContextMenu);
+
 document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'&&mapContextMenu.classList.contains('open')){ev.preventDefault();closeMapContextMenu();return;}
   if(ev.key==='Escape'&&openApplicationMenuId){setApplicationMenuOpen(null);return;}
   if(ev.key==='Escape'&&activeMapTool){ev.preventDefault();deactivateMapTool();return;}
   const typingTarget=ev.target instanceof Element&&ev.target.closest('input,textarea,select,[contenteditable="true"]');
@@ -6592,7 +6817,10 @@ document.querySelectorAll('[data-settings-tab]').forEach(tab=>tab.addEventListen
   document.querySelectorAll('[data-settings-tab]').forEach(t=>t.setAttribute('aria-selected',String(t===tab)));
   document.querySelectorAll('.settings-page').forEach(p=>{const active=p.id===tab.getAttribute('aria-controls');p.hidden=!active;p.classList.toggle('active',active);});
 }));
-document.querySelectorAll('[data-setting-visible]').forEach(cb=>cb.addEventListener('change',()=>window.ArcheoWindowManager.setOpen(cb.dataset.settingVisible,cb.checked)));
+document.querySelectorAll('[data-setting-visible]').forEach(cb=>cb.addEventListener('change',()=>{
+  if(cb.dataset.settingVisible==='overview')setOverviewOpen(cb.checked);
+  else window.ArcheoWindowManager.setOpen(cb.dataset.settingVisible,cb.checked);
+}));
 document.querySelectorAll('[data-setting-locked]').forEach(cb=>cb.addEventListener('change',()=>window.ArcheoWindowManager.setLocked(cb.dataset.settingLocked,cb.checked)));
 document.querySelectorAll('[data-setting-collapsed]').forEach(cb=>cb.addEventListener('change',()=>window.ArcheoWindowManager.setCollapsed(cb.dataset.settingCollapsed,cb.checked)));
 document.getElementById('headerHue').addEventListener('input',ev=>window.ArcheoWindowManager.setHue(ev.target.value));
@@ -6641,8 +6869,13 @@ function syncApplicationMenuState(){
     item.setAttribute('aria-checked',String(Boolean(st&&st.open)));
     if(item.dataset.windowToggle==='record')item.disabled=!state.selectedSiteName;
   });
+  const overviewViewItem=document.querySelector('[data-window-toggle="overview"]');
+  if(overviewViewItem)overviewViewItem.setAttribute('aria-checked',String(overviewMode!=='hidden'));
   document.querySelectorAll('[data-map-style]').forEach(item=>item.setAttribute('aria-checked',String(item.dataset.mapStyle===activeMapStyle)));
   document.querySelectorAll('[data-map-tool]').forEach(item=>item.setAttribute('aria-checked',String(item.dataset.mapTool===activeMapTool)));
+  document.querySelectorAll('[data-overview-mode]').forEach(item=>item.setAttribute('aria-checked',String(item.dataset.overviewMode===overviewMode)));
+  const dockOverviewItem=document.querySelector('[data-overview-mode="docked"]');
+  if(dockOverviewItem)dockOverviewItem.disabled=!canDockOverview();
   const fullscreenItem=document.querySelector('[data-command="fullscreen"]');
   if(fullscreenItem){
     const fullscreenActive=Boolean(document.fullscreenElement);
@@ -6750,7 +6983,7 @@ function openAppInfo(kind){
   if(kind==='controls'){
     title.textContent='Controls & shortcuts';
     content.innerHTML=`<h3>ArcheoMaps controls</h3><table><tbody>
-      <tr><th>Application menus</th><td><kbd>Alt</kbd> or <kbd>Alt+F/E/V/M/W/H</kbd>, then arrow keys and <kbd>Enter</kbd></td></tr>
+      <tr><th>Application menus</th><td><kbd>Alt</kbd> or <kbd>Alt+F/E/V/M/L/H</kbd>, then arrow keys and <kbd>Enter</kbd></td></tr>
       <tr><th>Search</th><td><kbd>Ctrl+F</kbd></td></tr>
       <tr><th>Close or cancel</th><td><kbd>Escape</kbd></td></tr>
       <tr><th>Measurement</th><td>Click to add points; <kbd>Backspace</kbd> undoes; <kbd>Enter</kbd> finishes</td></tr>
@@ -6775,18 +7008,44 @@ document.getElementById('appInfoClose').addEventListener('click',closeAppInfo);
 document.getElementById('appInfoOk').addEventListener('click',closeAppInfo);
 appInfoBackdrop.addEventListener('pointerdown',ev=>{if(ev.target===appInfoBackdrop)closeAppInfo();});
 
+const exitBackdrop=document.getElementById('exitBackdrop');
+const exitDialog=document.getElementById('exitDialog');
+let exitReturnFocus=null;
+function openExitDialog(){
+  exitReturnFocus=document.activeElement;
+  document.getElementById('exitDialogMessage').textContent='Are you sure you want to exit ArcheoMaps?';
+  document.getElementById('exitDialogYes').hidden=false;document.getElementById('exitDialogNo').textContent='No';
+  exitBackdrop.hidden=false;requestAnimationFrame(()=>document.getElementById('exitDialogNo').focus());
+}
+function closeExitDialog(){
+  if(exitBackdrop.hidden)return;exitBackdrop.hidden=true;
+  const target=exitReturnFocus&&exitReturnFocus.isConnected?exitReturnFocus:document.querySelector('[data-menu-root="file"]');
+  exitReturnFocus=null;requestAnimationFrame(()=>target?.focus());
+}
+document.getElementById('exitDialogClose').addEventListener('click',closeExitDialog);
+document.getElementById('exitDialogNo').addEventListener('click',closeExitDialog);
+document.getElementById('exitDialogYes').addEventListener('click',()=>{
+  document.getElementById('exitDialogMessage').textContent='See you next time, pal! You can close this tab now.';
+  document.getElementById('exitDialogYes').hidden=true;document.getElementById('exitDialogNo').textContent='Close';
+  window.setTimeout(()=>{try{window.close();}catch(_err){}},3500);
+});
+exitBackdrop.addEventListener('pointerdown',ev=>{if(ev.target===exitBackdrop)closeExitDialog();});
+
 applicationMenuRoots.addEventListener('click',ev=>{
   const item=ev.target.closest('button');
   if(!item||item.matches('[data-menu-root],[data-submenu-toggle]'))return;
   if(item.dataset.windowToggle){
     const id=item.dataset.windowToggle,st=window.ArcheoWindowManager.getState(id);
-    window.ArcheoWindowManager.setOpen(id,!st.open);
+    if(id==='overview')setOverviewOpen(overviewMode==='hidden');
+    else window.ArcheoWindowManager.setOpen(id,!st.open);
   }else if(item.dataset.mapStyle){
     themeSelect.value=item.dataset.mapStyle;themeSelect.dispatchEvent(new Event('change'));
   }else if(item.dataset.layoutCommand){
     window.ArcheoWindowManager.applyLayout(item.dataset.layoutCommand);
   }else if(item.dataset.arrangeCommand){
     window.ArcheoWindowManager.arrange(item.dataset.arrangeCommand);
+  }else if(item.dataset.overviewMode){
+    setOverviewMode(item.dataset.overviewMode);
   }else if(item.dataset.command){
     const command=item.dataset.command;
     if(command==='share')document.getElementById('shareBtn').click();
@@ -6799,6 +7058,7 @@ applicationMenuRoots.addEventListener('click',ev=>{
     if(command==='undo-measurement')undoMapToolPoint();
     if(command==='controls-help')openAppInfo('controls');
     if(command==='about')openAppInfo('about');
+    if(command==='exit')openExitDialog();
   }
   setApplicationMenuOpen(null);
 });
@@ -6837,11 +7097,11 @@ document.addEventListener('keydown',ev=>{
     ev.preventDefault();setApplicationMenuOpen(null);document.getElementById('searchBox').focus();document.getElementById('searchBox').select();return;
   }
   if(ev.altKey&&!ev.ctrlKey&&!ev.metaKey&&!ev.shiftKey){
-    const access={f:'file',e:'edit',v:'view',m:'map',w:'window',h:'help'}[ev.key.toLowerCase()];
+    const access={f:'file',e:'edit',v:'view',m:'map',l:'layout',h:'help'}[ev.key.toLowerCase()];
     if(access){ev.preventDefault();document.querySelector(`[data-menu-root="${access}"]`)?.focus();setApplicationMenuOpen(access,true);}
   }
   if(ev.key==='Alt'&&!ev.repeat){ev.preventDefault();applicationMenuRootButtons[0]?.focus();}
-  if(ev.key==='Escape'){setApplicationMenuOpen(null);closeAppInfo();}
+  if(ev.key==='Escape'){setApplicationMenuOpen(null);closeAppInfo();closeExitDialog();closeMapContextMenu();}
 });
 
 /* Windows-style delayed tooltips. Existing title text is adopted lazily so
@@ -6898,9 +7158,9 @@ function encodeBucketParam(params, bucketKey, paramKey){
 
 const BUCKET_PARAM_KEYS = { type:'type', tags:'tags', culture:'cult', political:'pol', function:'fn', status:'stat' };
 
-function buildShareUrl(){
+function buildShareUrl(centerOverride=null,siteOverride=null){
   const params = new URLSearchParams();
-  const center = map.getCenter();
+  const center = centerOverride||map.getCenter();
   params.set('lat', center.lat.toFixed(4));
   params.set('lon', center.lng.toFixed(4));
   params.set('z', (Math.round(map.getZoom()*100)/100));
@@ -6916,7 +7176,8 @@ function buildShareUrl(){
 
   Object.keys(BUCKET_PARAM_KEYS).forEach(bucketKey=> encodeBucketParam(params, bucketKey, BUCKET_PARAM_KEYS[bucketKey]));
 
-  if(state.selectedSiteName) params.set('site', state.selectedSiteName);
+  const shareSiteName=siteOverride&&siteOverride.n?siteOverride.n:state.selectedSiteName;
+  if(shareSiteName) params.set('site', shareSiteName);
 
   // Historical layers (spec §10): only ids that are actually enabled, plus
   // opacity for any of those that isn't the 1.0 default. No geometry is
