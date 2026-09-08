@@ -6639,7 +6639,9 @@ function showMapContextMenu(latlng,originalEvent,site=null){
   if(x+width>maxW-5)x-=width;if(y+height>maxH-5)y-=height;
   mapContextMenu.style.left=Math.max(5,Math.min(x,maxW-width-5))+'px';
   mapContextMenu.style.top=Math.max(5,Math.min(y,maxH-height-5))+'px';
-  requestAnimationFrame(()=>mapContextMenu.querySelector('button:not([hidden]):not(:disabled)')?.focus());
+  // Pointer-opened context menus should not look as though the first command is
+  // already hovered. Clicking or tabbing into a command will still focus it.
+  document.activeElement?.blur?.();
 }
 
 map.on('contextmenu',ev=>{ev.originalEvent?.preventDefault();showMapContextMenu(ev.latlng,ev.originalEvent);});
