@@ -2404,9 +2404,9 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 .map-context-menu button:disabled{color:#808080;text-shadow:1px 1px #fff;background:transparent;}
 .map-context-menu .application-menu-separator{margin:2px 1px;}
 .map-context-coordinates{padding:4px 6px;border-bottom:1px solid #808080;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:9px "Courier New",monospace;}
-.lasso-result-toolbar{position:absolute;z-index:1450;display:none;min-width:260px;max-width:min(420px,calc(100% - 12px));padding:3px;background:var(--win-grey);border:2px outset var(--win-grey);box-shadow:2px 2px 0 rgba(0,0,0,.5);font:10px var(--ms-sans);}
-.lasso-result-toolbar.open{display:block;}
-.lasso-result-summary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 7px;padding:4px 6px;background:#fff;border:2px inset var(--win-grey);}
+.lasso-result-window.managed-window{width:310px;height:148px;}
+.lasso-result-window .window-body{padding:5px;font:10px var(--ms-sans);}
+.lasso-result-summary{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 8px;padding:6px;background:#fff;border:2px inset var(--win-grey);}
 .lasso-result-summary strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .lasso-result-actions{display:flex;justify-content:flex-end;gap:4px;padding-top:3px;}
 .lasso-result-actions button{height:24px;padding:2px 8px;background:var(--win-grey);border:2px outset var(--win-grey);font:10px var(--ms-sans);}
@@ -2435,7 +2435,6 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
   .map-context-menu{position:fixed;width:min(290px,calc(100vw - 16px));font-size:16px;}
   .map-context-menu button{min-height:46px;font-size:15px;}
   .map-context-coordinates{font-size:13px;}
-  .lasso-result-toolbar{position:fixed;left:8px!important;right:8px!important;top:auto!important;bottom:calc(var(--mobile-rail-h) + 34px + env(safe-area-inset-bottom))!important;max-width:none;}
   .lasso-result-summary,.lasso-result-actions button{font-size:14px;}
   .lasso-result-actions button{min-height:42px;}
   .overview-dock,.overview-dock-target{display:none!important;}
@@ -2499,6 +2498,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
             <button type="button" role="menuitemcheckbox" data-window-toggle="layers" aria-checked="false"><span>Layers</span></button>
             <button type="button" role="menuitemcheckbox" data-window-toggle="legend" aria-checked="false"><span>Legend</span></button>
             <button type="button" role="menuitemcheckbox" data-window-toggle="overview" aria-checked="false"><span>Overview</span></button>
+            <button type="button" role="menuitemcheckbox" data-window-toggle="lasso" aria-checked="false"><span>Region Selection</span></button>
           </div>
         </div>
         <div class="application-menu-group" data-menu-group="map">
@@ -2816,9 +2816,20 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
         <button type="button" role="menuitem" data-context-action="copy-link"><span id="mapContextLinkLabel">Copy map link</span></button>
         <button type="button" role="menuitem" data-context-action="nearby" disabled title="Planned for a future update"><span>What’s nearby?</span><span>Later</span></button>
       </div>
-      <div id="lassoResultToolbar" class="lasso-result-toolbar" role="region" aria-label="Selected map region" aria-live="polite">
-        <div class="lasso-result-summary"><span>Region</span><strong id="lassoRegionName">Custom map region</strong><span>Surface</span><strong id="lassoSurfaceArea">—</strong><span>Sites</span><strong id="lassoSiteCount">0</strong></div>
-        <div class="lasso-result-actions"><button id="lassoRedrawBtn" type="button">Redraw</button><button id="lassoRemoveBtn" type="button">Remove</button></div>
+      <div id="lassoResultToolbar" class="lasso-result-window managed-window window-pattern-plain" data-window-id="lasso" role="region" aria-label="Selected map region" aria-live="polite" aria-hidden="true">
+        <div class="window-titlebar">
+          <button class="window-lock" type="button" data-window-action="lock" aria-pressed="false" title="Lock window position and size"><span class="lock-glyph" aria-hidden="true"></span></button>
+          <span class="window-title">Region Selection</span>
+          <div class="window-title-actions">
+            <button type="button" data-window-action="collapse" title="Minimise Region Selection" aria-label="Minimise Region Selection">—</button>
+            <button id="lassoResultClose" type="button" title="Close Region Selection" aria-label="Close Region Selection">×</button>
+          </div>
+        </div>
+        <div class="window-body">
+          <div class="lasso-result-summary"><span>Region</span><strong id="lassoRegionName">Custom map region</strong><span>Surface</span><strong id="lassoSurfaceArea">—</strong><span>Sites</span><strong id="lassoSiteCount">0</strong></div>
+          <div class="lasso-result-actions"><button id="lassoRedrawBtn" type="button">Redraw</button><button id="lassoRemoveBtn" type="button">Remove</button></div>
+        </div>
+        <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
 
       <!-- Historical/geographic overlay layers (Paleogeography / Political
@@ -5997,7 +6008,7 @@ window.addEventListener('resize', ()=>{
 window.ArcheoWindowManager = (function(){
   const STORAGE_KEY = 'archeomapsWindowManagerV63';
   const APPEARANCE_KEY = 'archeomapsAppearanceV52';
-  const ids = ['filter','sites','record','timeline','layers','legend','overview'];
+  const ids = ['filter','sites','record','timeline','layers','legend','overview','lasso'];
   const mapWrapEl=document.getElementById('mapWrap');
   const appEl=document.getElementById('app');
   const elements = {
@@ -6007,7 +6018,8 @@ window.ArcheoWindowManager = (function(){
     timeline:document.getElementById('timelineBar'),
     layers:document.getElementById('layersPanel'),
     legend:document.getElementById('legendPanel'),
-    overview:document.getElementById('overviewPanel')
+    overview:document.getElementById('overviewPanel'),
+    lasso:document.getElementById('lassoResultToolbar')
   };
   const toolbarButtons = {
     filter:document.getElementById('panelToggle'),
@@ -6016,9 +6028,10 @@ window.ArcheoWindowManager = (function(){
     timeline:document.getElementById('timelineToggle'),
     layers:document.getElementById('layersBtn'),
     legend:document.getElementById('legendBtn'),
-    overview:document.getElementById('overviewBtn')
+    overview:document.getElementById('overviewBtn'),
+    lasso:null
   };
-  const minSizes = {filter:[285,220],sites:[320,180],record:[290,190],timeline:[620,124],layers:[240,150],legend:[190,130],overview:[190,120]};
+  const minSizes = {filter:[285,220],sites:[320,180],record:[290,190],timeline:[620,124],layers:[240,150],legend:[190,130],overview:[190,120],lasso:[260,128]};
   let states = {};
   let appearance = {hue:220,scale:1,panelOpacity:1};
   let previewing = false;
@@ -6037,7 +6050,8 @@ window.ArcheoWindowManager = (function(){
       timeline:{open:true,locked:false,collapsed:false,x:8,y:Math.max(8,c.h-132),w:Math.max(620,c.w-16),h:124,expandedHeight:124,pattern:'plain',z:1164},
       layers:{open:false,locked:false,collapsed:false,x:Math.max(8,c.w-304),y:12,w:292,h:330,expandedHeight:330,pattern:'plain',z:1161},
       legend:{open:false,locked:false,collapsed:false,x:Math.max(8,c.w-561),y:12,w:245,h:360,expandedHeight:360,pattern:'plain',z:1162},
-      overview:{open:false,locked:false,collapsed:false,x:Math.max(8,c.w-280),y:Math.max(36,c.h-345),w:268,h:190,expandedHeight:190,pattern:'plain',z:1163}
+      overview:{open:false,locked:false,collapsed:false,x:Math.max(8,c.w-280),y:Math.max(36,c.h-345),w:268,h:190,expandedHeight:190,pattern:'plain',z:1163},
+      lasso:{open:false,locked:false,collapsed:false,x:Math.max(8,c.w-706),y:48,w:310,h:148,expandedHeight:148,pattern:'plain',z:1165}
     };
   }
   function clone(value){ return JSON.parse(JSON.stringify(value)); }
@@ -6518,7 +6532,7 @@ function clearSpatialSelection(runApply=true){
   state.spatialSelectionIds=null;
   activeLassoPolygon=null;
   spatialSelectionLayer.clearLayers();
-  lassoResultToolbar.classList.remove('open');
+  window.ArcheoWindowManager?.setOpen('lasso',false);
   if(runApply&&SITES.length)applyFilters();
 }
 
@@ -6530,24 +6544,12 @@ function selectedRegionLabel(selected){
   return ordered.length===1?ordered[0][0]:`${ordered[0][0]} + ${ordered.length-1} more`;
 }
 
-function updateLassoToolbarPosition(){
-  if(!activeLassoPolygon||!lassoResultToolbar.classList.contains('open')||isMobileUi())return;
-  const bounds=L.latLngBounds(activeLassoPolygon),anchor=map.latLngToContainerPoint(bounds.getNorthEast());
-  const width=lassoResultToolbar.offsetWidth||300,height=lassoResultToolbar.offsetHeight||86;
-  let left=anchor.x+10,top=anchor.y-height-10;
-  if(left+width>map.getSize().x-6)left=anchor.x-width-10;
-  if(top<6)top=anchor.y+10;
-  lassoResultToolbar.style.left=Math.max(6,Math.min(left,map.getSize().x-width-6))+'px';
-  lassoResultToolbar.style.top=Math.max(6,Math.min(top,map.getSize().y-height-27))+'px';
-}
-
 function showLassoResult(polygon,selected){
   activeLassoPolygon=polygon.slice();
   lassoRegionName.textContent=selectedRegionLabel(selected);
   lassoSurfaceArea.textContent=formatArea(sphericalPolygonArea(polygon));
   lassoSiteCount.textContent=`${selected.length.toLocaleString()} inside region`;
-  lassoResultToolbar.classList.add('open');
-  requestAnimationFrame(updateLassoToolbarPosition);
+  window.ArcheoWindowManager?.setOpen('lasso',true);
 }
 
 function finishLasso(){
@@ -6562,7 +6564,7 @@ function finishLasso(){
   deactivateMapTool();
   showLassoResult(polygon,selected);
   applyFilters();
-  if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('sites',true);
+  if(window.ArcheoWindowManager&&!isMobileUi())window.ArcheoWindowManager.setOpen('sites',true);
   renderSiteList();
   setMapToolMessage(`${selected.length.toLocaleString()} sites selected in map region`);
 }
@@ -6575,7 +6577,7 @@ document.getElementById('clearSpatialSelectionItem').addEventListener('click',()
 document.getElementById('clearMeasurements').addEventListener('click',()=>{setEditMenuOpen(false);measurementLayer.clearLayers();setMapToolMessage('Measurements cleared');});
 document.getElementById('lassoRedrawBtn').addEventListener('click',()=>startMapTool('lasso'));
 document.getElementById('lassoRemoveBtn').addEventListener('click',()=>{clearSpatialSelection();setMapToolMessage('Region selection cleared');});
-map.on('move zoom resize',updateLassoToolbarPosition);
+document.getElementById('lassoResultClose').addEventListener('click',()=>window.ArcheoWindowManager?.setOpen('lasso',false));
 
 map.on('click',ev=>{
   if(activeMapTool==='lasso'&&isMobileUi()){
@@ -6870,6 +6872,7 @@ function syncApplicationMenuState(){
     const st=window.ArcheoWindowManager.getState(item.dataset.windowToggle);
     item.setAttribute('aria-checked',String(Boolean(st&&st.open)));
     if(item.dataset.windowToggle==='record')item.disabled=!state.selectedSiteName;
+    if(item.dataset.windowToggle==='lasso')item.disabled=!state.spatialSelectionIds;
   });
   const overviewViewItem=document.querySelector('[data-window-toggle="overview"]');
   if(overviewViewItem)overviewViewItem.setAttribute('aria-checked',String(overviewMode!=='hidden'));
