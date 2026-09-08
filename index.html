@@ -1982,7 +1982,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .application-menu-align-right{right:auto;}
   #map{bottom:19px;}#statusBar{height:19px;grid-template-columns:1fr 1fr;font-size:9px;}
   #statusHint{display:none;}
-  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window{
+  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window,#lassoResultToolbar.managed-window{
     left:6px!important;right:6px!important;top:6px!important;bottom:auto!important;width:auto!important;height:min(68vh,500px)!important;
   }
   #timelineBar.managed-window{top:auto!important;bottom:25px!important;height:auto!important;max-height:55vh;}
@@ -2046,7 +2046,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   #mobileCommandRail{position:fixed;display:flex;gap:2px;}
   #statusBar{padding-bottom:env(safe-area-inset-bottom);}
   #mobileSearchTray{left:6px;right:6px;bottom:calc(65px + env(safe-area-inset-bottom));max-height:52px;}
-  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window{
+  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window,#lassoResultToolbar.managed-window{
     top:auto!important;left:auto!important;right:6px!important;bottom:calc(65px + env(safe-area-inset-bottom))!important;
     width:min(430px,calc(100vw - 70px))!important;height:min(68dvh,580px)!important;max-height:calc(100dvh - 148px)!important;
     border-width:2px;box-shadow:3px 3px 0 rgba(0,0,0,.55);
@@ -2097,11 +2097,11 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   html[data-mobile-rail-side="left"] #mobileSearchTray{left:64px;bottom:24px;}
   html[data-mobile-rail-side="right"] .managed-window{right:64px!important;}
   html[data-mobile-rail-side="left"] .managed-window{left:64px!important;}
-  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window{
+  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#timelineBar.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window,#lassoResultToolbar.managed-window{
     top:6px!important;bottom:25px!important;height:auto!important;max-height:none!important;width:min(390px,calc(100vw - 82px))!important;
   }
-  html[data-mobile-rail-side="right"] #panel.managed-window,html[data-mobile-rail-side="right"] #sitesPanel.managed-window,html[data-mobile-rail-side="right"] #drawer.managed-window,html[data-mobile-rail-side="right"] #timelineBar.managed-window,html[data-mobile-rail-side="right"] #layersPanel.managed-window,html[data-mobile-rail-side="right"] #legendPanel.managed-window,html[data-mobile-rail-side="right"] #overviewPanel.managed-window{left:6px!important;right:auto!important;}
-  html[data-mobile-rail-side="left"] #panel.managed-window,html[data-mobile-rail-side="left"] #sitesPanel.managed-window,html[data-mobile-rail-side="left"] #drawer.managed-window,html[data-mobile-rail-side="left"] #timelineBar.managed-window,html[data-mobile-rail-side="left"] #layersPanel.managed-window,html[data-mobile-rail-side="left"] #legendPanel.managed-window,html[data-mobile-rail-side="left"] #overviewPanel.managed-window{left:auto!important;right:6px!important;}
+  html[data-mobile-rail-side="right"] #panel.managed-window,html[data-mobile-rail-side="right"] #sitesPanel.managed-window,html[data-mobile-rail-side="right"] #drawer.managed-window,html[data-mobile-rail-side="right"] #timelineBar.managed-window,html[data-mobile-rail-side="right"] #layersPanel.managed-window,html[data-mobile-rail-side="right"] #legendPanel.managed-window,html[data-mobile-rail-side="right"] #overviewPanel.managed-window,html[data-mobile-rail-side="right"] #lassoResultToolbar.managed-window{left:6px!important;right:auto!important;}
+  html[data-mobile-rail-side="left"] #panel.managed-window,html[data-mobile-rail-side="left"] #sitesPanel.managed-window,html[data-mobile-rail-side="left"] #drawer.managed-window,html[data-mobile-rail-side="left"] #timelineBar.managed-window,html[data-mobile-rail-side="left"] #layersPanel.managed-window,html[data-mobile-rail-side="left"] #legendPanel.managed-window,html[data-mobile-rail-side="left"] #overviewPanel.managed-window,html[data-mobile-rail-side="left"] #lassoResultToolbar.managed-window{left:auto!important;right:6px!important;}
 }
 
 @media(max-width:860px), (hover:none) and (pointer:coarse){
@@ -2205,7 +2205,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .leaflet-bottom.leaflet-right{bottom:calc(var(--mobile-rail-h) + 8px + env(safe-area-inset-bottom))!important;}
   .leaflet-control-scale{margin-bottom:calc(var(--mobile-rail-h) + 28px + env(safe-area-inset-bottom))!important;}
 
-  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window{
+  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window,#lassoResultToolbar.managed-window{
     right:6px!important;left:70px!important;width:auto!important;bottom:calc(var(--mobile-rail-h) + 8px + env(safe-area-inset-bottom))!important;max-height:calc(var(--mobile-viewport-height,100dvh) - var(--mobile-header-h) - var(--mobile-rail-h) - 18px)!important;
   }
   #timelineBar.managed-window{
@@ -2256,7 +2256,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   html[data-mobile-rail-side="left"] #map,html[data-mobile-rail-side="left"] #statusBar{left:104px!important;}
   #map{bottom:25px!important;}
   #statusBar{bottom:0!important;}
-  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window{top:6px!important;bottom:31px!important;max-height:none!important;width:min(520px,calc(100vw - 122px))!important;}
+  #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window,#lassoResultToolbar.managed-window{top:6px!important;bottom:31px!important;max-height:none!important;width:min(520px,calc(100vw - 122px))!important;}
   #timelineBar.managed-window{top:auto!important;bottom:31px!important;height:min(72dvh,390px)!important;max-height:calc(100dvh - 38px)!important;}
 }
 /* V6.3 workspace consoles: tabbed filters, Explorer-style list and timeline deck. */
@@ -2816,7 +2816,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
         <button type="button" role="menuitem" data-context-action="copy-link"><span id="mapContextLinkLabel">Copy map link</span></button>
         <button type="button" role="menuitem" data-context-action="nearby" disabled title="Planned for a future update"><span>What’s nearby?</span><span>Later</span></button>
       </div>
-      <div id="lassoResultToolbar" class="lasso-result-window managed-window window-pattern-plain" data-window-id="lasso" role="region" aria-label="Selected map region" aria-live="polite" aria-hidden="true">
+      <div id="lassoResultToolbar" class="lasso-result-window map-tool-window managed-window window-pattern-plain" data-window-id="lasso" role="region" aria-label="Selected map region" aria-live="polite" aria-hidden="true">
         <div class="window-titlebar">
           <button class="window-lock" type="button" data-window-action="lock" aria-pressed="false" title="Lock window position and size"><span class="lock-glyph" aria-hidden="true"></span></button>
           <span class="window-title">Region Selection</span>
