@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ArcheoMaps ’98 v6.3 — A Field Atlas of Ancient Places</title>
+<title>ArcheoMaps ’98 v6.3.1 — A Field Atlas of Ancient Places</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
@@ -2154,7 +2154,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 .topbar-placeholder-icon{display:block;font:700 20px/21px "MS Sans Serif",Tahoma,sans-serif;}
 .topbar-hidden-command{display:none!important;}
 @media(min-width:861px) and (hover:hover){
-  #topbar{min-height:126px;height:126px;padding:4px 6px;grid-template-columns:270px minmax(0,1fr);align-items:stretch;}
+  #topbar{min-height:134px;height:auto;padding:4px 6px;grid-template-columns:270px minmax(0,1fr);align-items:stretch;}
   .brand{width:270px;min-width:270px;height:116px;align-self:center;}
   .topbar-workspace{display:grid;grid-template-rows:24px 66px 28px;gap:2px;justify-content:stretch;}
   .application-menu-bar{grid-row:1;justify-self:start;min-height:24px;}
@@ -2169,11 +2169,11 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .topbar-icon-button:active,#panelToggle:active,#listToggle:active,#layersBtn:active,#timelineToggle:active,#fullscreenBtn:active,#mapHomeBtn:active,#resetLayoutBtn:active,#resetBtn:active,#randomBtn:active,#shareBtn:active{border-style:inset;padding:5px 6px 3px 8px!important;}
   #panelToggle[aria-expanded="true"],#listToggle[aria-expanded="true"],#layersBtn[aria-expanded="true"],#timelineToggle[aria-expanded="true"]{border-style:inset;background:#d0d0ca;}
   .topbar-actions>.inline-feedback-wrap{display:flex;align-items:stretch;}
-  .topbar-search-row{grid-row:3;}
+  .topbar-search-row{grid-row:3;width:100%;max-width:100%;overflow:hidden;}
   .topbar-search-row .search-control{display:flex;flex:1 1 auto;min-width:180px;height:27px;}
   .topbar-search-row #searchBox{flex:1 1 auto;width:auto;height:27px;min-width:0;}
   .topbar-search-row #searchClearBtn{height:27px;}
-  .topbar-search-row #themeSelect{order:2;flex:0 0 250px;width:250px;height:27px;}
+  .topbar-search-row #themeSelect{order:2;flex:0 1 250px;width:250px;max-width:40%;height:27px;}
 }
 @media(max-width:860px), (hover:none) and (pointer:coarse){
   .topbar-search-row{display:none!important;}
@@ -2185,11 +2185,11 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 @media(max-width:860px), (hover:none) and (pointer:coarse){
   :root{--mobile-header-h:96px;--mobile-rail-h:104px;--mobile-font:16px;}
   #app{height:var(--mobile-viewport-height,100dvh)!important;min-height:0!important;zoom:1!important;}
-  #topbar{height:var(--mobile-header-h)!important;min-height:var(--mobile-header-h)!important;max-height:var(--mobile-header-h)!important;flex:0 0 var(--mobile-header-h)!important;overflow:visible!important;padding:6px!important;grid-template-columns:62px 62px minmax(0,1fr)!important;position:relative;}
+  #topbar{height:var(--mobile-header-h)!important;min-height:var(--mobile-header-h)!important;max-height:var(--mobile-header-h)!important;flex:0 0 var(--mobile-header-h)!important;overflow:visible!important;padding:6px!important;grid-template-columns:62px minmax(0,1fr) 62px!important;position:relative;}
   .application-menu-bar{grid-column:1!important;}
   #applicationMenuToggle,.mobile-header-fullscreen{display:grid!important;place-items:center;width:58px!important;height:58px!important;min-height:58px!important;padding:0!important;background:var(--win-grey)!important;border:2px outset var(--win-grey)!important;color:#000!important;font-size:0!important;}
   #applicationMenuToggle::before{font-size:30px!important;}
-  .mobile-header-fullscreen{grid-column:2;grid-row:1;align-self:center;justify-self:start;}
+  .mobile-header-fullscreen{grid-column:3;grid-row:1;align-self:center;justify-self:end;}
   .mobile-header-fullscreen::before{content:"⛶";font:700 30px/1 var(--ms-sans);}
   .brand{position:absolute!important;left:50%!important;top:4px!important;transform:translateX(-50%)!important;width:min(520px,66vw)!important;height:88px!important;overflow:hidden!important;pointer-events:none!important;}
   .brand-logo-v51{transform:scale(1.65);transform-origin:center;object-position:center!important;}
@@ -2293,7 +2293,8 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 .filter-footer button{height:23px;padding:2px 6px;color:#000;background:var(--win-grey);border:2px outset var(--win-grey);font:10px var(--ms-sans);}
 .filter-footer button:active{border-style:inset;}
 
-#sitesPanel .sites-window-body{display:flex;flex-direction:column;min-height:0;padding:0;overflow:hidden;}
+#sitesPanel{background:var(--win-grey)!important;}
+#sitesPanel .sites-window-body{display:flex;flex:1 1 auto;flex-direction:column;min-height:0;padding:0;overflow:hidden;}
 .sites-list-count{flex:0 0 24px;padding:5px 7px 3px;border-bottom:1px solid #808080;font:700 10px var(--ms-sans);}
 .sites-list-toolbar{display:grid;grid-template-columns:minmax(92px,1fr) auto minmax(92px,1fr);gap:4px;align-items:end;padding:5px 5px 3px;}
 .sites-list-toolbar label{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:4px;font:9px var(--ms-sans);}
@@ -2379,6 +2380,10 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   .filter-tab-page{padding:8px 6px;}
   .filter-footer{flex-basis:42px;font-size:11px;}
   .filter-footer button{height:32px;font-size:11px;}
+  .section-toggle .chev{position:static!important;flex:0 0 24px!important;width:24px!important;min-width:24px!important;text-align:center;}
+  .type-group-head{gap:6px!important;}
+  .type-group-head .group-chev{position:static!important;display:grid!important;place-items:center!important;flex:0 0 44px!important;width:44px!important;min-width:44px!important;height:44px!important;padding:0!important;}
+  .type-group-head .group-name{min-width:0!important;}
   .sites-list-toolbar{grid-template-columns:minmax(84px,1fr) auto minmax(84px,1fr);}
   .sites-list-toolbar select,#sitesSortDirection{height:32px;font-size:11px;}
   .sites-follow-map{flex-basis:34px;font-size:11px;}
@@ -2885,7 +2890,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.3</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.3.1</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -3038,7 +3043,7 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.3';
+const ARCHEOMAPS_VERSION='6.3.1';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -4944,9 +4949,9 @@ function parseTimelineYear(value){
   if(era==='AD'||era==='CE')year=Math.abs(year);
   return Number.isFinite(year)?Math.round(year):null;
 }
-function syncTimelineDateInputs(){
-  if(timelineStartInput&&document.activeElement!==timelineStartInput)timelineStartInput.value=fmtYear(state.yMin);
-  if(timelineEndInput&&document.activeElement!==timelineEndInput)timelineEndInput.value=fmtYear(state.yMax);
+function syncTimelineDateInputs(forceInput=null){
+  if(timelineStartInput&&(forceInput===timelineStartInput||document.activeElement!==timelineStartInput))timelineStartInput.value=fmtYear(state.yMin);
+  if(timelineEndInput&&(forceInput===timelineEndInput||document.activeElement!==timelineEndInput))timelineEndInput.value=fmtYear(state.yMax);
 }
 function commitTimelineDate(which,input){
   const parsed=parseTimelineYear(input.value);
@@ -4963,6 +4968,7 @@ function nudgeTimelineDate(which,direction,amount=1){
   if(playing)stopPlaying();
   const current=which==='min'?state.yMin:state.yMax;
   setThumbYear(which,current+direction*amount);
+  syncTimelineDateInputs(which==='min'?timelineStartInput:timelineEndInput);
 }
 [
   [timelineStartInput,'min'],
