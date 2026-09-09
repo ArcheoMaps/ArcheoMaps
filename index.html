@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ArcheoMaps ’98 v6.4 — A Field Atlas of Ancient Places</title>
+<title>ArcheoMaps ’98 v6.4.1 — A Field Atlas of Ancient Places</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
@@ -716,6 +716,16 @@ body{
 .status-dot.provisional{ background: #B08D57; }
 .status-dot.duplicate{ background: var(--clay); }
 .status-dot.confirmed{ background: var(--moss); }
+/* v6.4.1: full workflow.type.state enum (MIGRATION_RULES.md §5.1) — these
+   three are the "resolved" counterparts of review/research, so they share
+   the same resolved-looking color family as confirmed. */
+.status-dot.reviewed{ background: var(--moss); }
+.status-dot.researched{ background: var(--moss); }
+.status-dot.approved{ background: var(--moss); }
+/* Fallback for any workflow/status value this build doesn't recognize yet
+   (statusMetaFor()'s generic fallback) — visible, but distinct from every
+   named state so it never gets confused with a real classification. */
+.status-dot.unknown{ background: var(--ink-soft); }
 
 /* ---- loading / error overlay over the whole app ---- */
 #loadOverlay{
@@ -2971,7 +2981,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4.1</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -3132,7 +3142,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.4';
+const ARCHEOMAPS_VERSION='6.4.1';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -3187,7 +3197,16 @@ const NAMESPACE_ORDER = [
   'infrastructure','industry','landscape','maritime','military',
   'monument','prehistoric','religion','settlement'
 ];
-function namespaceLabel(ns){ return ns.charAt(0).toUpperCase() + ns.slice(1); }
+// v6.4.1: synthetic namespace for tags that don't match "namespace:value"
+// (audit fix #5). These are never dropped — they surface in their own
+// "Unresolved tags" filter group so the record stays findable, and the
+// raw tag string itself (not "ns:value") is what's added to state.tagsOn,
+// since siteVisible() matches the literal strings stored in s.tags.
+const UNRESOLVED_TAG_NAMESPACE = '__unresolved_tag__';
+function namespaceLabel(ns){
+  if(ns === UNRESOLVED_TAG_NAMESPACE) return 'Unresolved tags';
+  return ns.charAt(0).toUpperCase() + ns.slice(1);
+}
 // Turns a canonical slug ("rock-cut-temple") into a readable label
 // ("Rock cut temple"). The canonical "namespace:value" string is always
 // what's actually used for filtering — this is display-only.
@@ -3198,6 +3217,13 @@ function humanizeTagValue(value){
 
 // Workflow/data-quality state -> filterable "status" bucket. A record can
 // carry at most one of these; anything without a flag is "confirmed".
+// v6.4.1: covers the FULL workflow.type.state enum documented in
+// MIGRATION_RULES.md §5.1 (review/research/reviewed/researched/approved),
+// not just the two open states — see RUNTIME GUARDS note (2) below for why
+// that mattered. `resolved:true` marks the three states a record reaches
+// only after a human has already acted on it, so the UI can still tell
+// "still open" apart from "already handled" even though both live in one
+// combined status bucket for this release (see deferred policy note (1)).
 const STATUS_META = {
   confirmed:   { label: 'Confirmed',                     dotClass: 'confirmed',
                  note: 'Individually classified with reasonable confidence.' },
@@ -3205,18 +3231,269 @@ const STATUS_META = {
                  note: 'Flagged during migration as a scope conflict — needs a human read against the source text before its Type is confirmed.' },
   research:    { label: 'Needs research',                dotClass: 'research',
                  note: 'No canonical Type could be assigned automatically — needs further research.' },
+  reviewed:    { label: 'Reviewed',                      dotClass: 'reviewed', resolved: true,
+                 note: 'A prior "needs review" flag has been resolved by a human.' },
+  researched:  { label: 'Researched',                    dotClass: 'researched', resolved: true,
+                 note: 'A prior "needs research" flag has been resolved by a human.' },
+  approved:    { label: 'Approved',                      dotClass: 'approved', resolved: true,
+                 note: 'Explicitly signed off per MIGRATION_RULES.md §5.3 rule 4.' },
   provisional: { label: 'Provisional (auto-classified)', dotClass: 'provisional',
                  note: 'Type/Tags were applied from a population-level default rule, not confirmed individually — spot-check before treating as fully authoritative.' },
   duplicate:   { label: 'Possible duplicate',            dotClass: 'duplicate',
                  note: 'Flagged as a confirmed duplicate of another record in this dataset. Both copies were kept and classified independently; de-duplication is a separate, not-yet-done task.' },
 };
+const KNOWN_WORKFLOW_STATES = new Set(['review','research','reviewed','researched','approved']);
 function statusKeyOf(s){
-  if(s.workflow && s.workflow.type && s.workflow.type.state) return s.workflow.type.state; // 'review' | 'research'
-  if(s.dataQuality){
+  if(s && s.workflow && s.workflow.type && s.workflow.type.state) return s.workflow.type.state;
+  if(s && s.dataQuality){
     if(s.dataQuality.duplicateStatus === 'confirmed-duplicate') return 'duplicate';
     if(s.dataQuality.migrationProvisional === true) return 'provisional';
   }
   return 'confirmed';
+}
+// v6.4.1: every previous direct `STATUS_META[key]` lookup could throw for a
+// key STATUS_META doesn't define (finding #2 in the runtime audit — a
+// resolved workflow state was the concrete case, but this is defensive
+// against ANY future/unknown value). Always go through this helper instead;
+// it never returns undefined, so `.label`/`.dotClass`/`.note` are always safe.
+function statusMetaFor(key){
+  return STATUS_META[key] || {
+    label: `Unrecognized status (${key})`,
+    dotClass: 'unknown',
+    note: 'This record carries a workflow/status value this build of ArcheoMaps does not yet recognize. The record itself is fine — only this label is generic until the app is updated to name the new state.'
+  };
+}
+
+/* ==================== v6.4.1 runtime hardening ====================
+   Added for the defensive-runtime pass described in
+   claude/INDEX_HTML_RUNTIME_AUDIT_2026-09-09.md. Nothing here changes the
+   taxonomy, the migration rules, or any curated field — it only decides
+   what happens when an individual imported record doesn't fully conform to
+   them, so that one bad record degrades gracefully instead of taking the
+   whole map down or making other records impossible to select/filter.
+
+   Validation boundary: raw JSON -> validateAndNormalizeSites() -> SITES.
+   Everything after that boundary (buildMarkers, siteVisible, the drawer,
+   search, etc.) already assumes id/coords/array-fields/etc. are the shapes
+   it expects; nothing downstream should need its own ad-hoc validation
+   again. Where a downstream function still guards a coordinate itself
+   (hasUsableCoords), that's defense-in-depth for records that passed
+   validation as "valid" but not "mappable" (see below), not a second
+   validation pass.
+
+   Stable identity: every record gets a non-enumerable-in-spirit runtime-only
+   `__key` (see siteKeyOf/indexSites below) — the record's own `id` when
+   present and unique, otherwise a synthetic fallback. `__key` is an in-memory
+   JS property only; this app has no export/serialize-SITES path, so it never
+   reaches any archaeological data file. Every place that used to look a site
+   up or track "the selected site" by display name (`s.n`) now uses
+   siteKeyOf()/SITE_INDEX instead — see the identity migration list in the
+   handoff notes for the full before/after.
+
+   Coordinate policy: a coordinate is accepted only if, after optionally
+   parsing a clean numeric string, it is a finite JS number strictly within
+   [-90,90] latitude / [-180,180] longitude. null/undefined/boolean/object
+   values are NEVER coerced (in particular `null`/`undefined` never becomes
+   0) — see normalizeCoordinate(). A record that fails this check keeps its
+   original lat/lon untouched (for inspection) and is excluded from marker
+   creation and every other coordinate-dependent code path
+   (hasUsableCoords()), but is NOT removed from SITES — it stays fully
+   filterable/searchable by every non-spatial facet (Type, Tags, Culture,
+   Function, Status).
+
+   Ambiguous legacy name references: `partOf` and the legacy `?site=<name>`
+   share-link param are the two places this app ever looked a record up by
+   its display name instead of an id. Both now resolve through
+   findSitesByName(): a unique match behaves exactly as before, zero matches
+   behaves exactly as before (not found), and 2+ matches is rendered/reported
+   as an explicit ambiguity rather than silently picking array[0]. New share
+   links prefer an id-based `sid` param when the site has one.
+
+   Two audit findings are deliberately NOT re-decided here (see the "deferred
+   schema decisions" note further down, next to STATUS_META's usage in
+   buildFilterLists): whether workflow-state and duplicate/data-quality
+   status should become separate filter axes, and whether
+   dataQuality.migrationProvisional should become canonical or be retired.
+   Both pieces of information are preserved and never crash; no new schema
+   decision is made for either. */
+
+// ---- coordinates -----------------------------------------------------
+// Accepts a real number OR a clean numeric string (trimmed, no thousands
+// separators); rejects everything else, INCLUDING null/undefined/booleans —
+// the exact case a naive `Number(value)` gets wrong (`Number(null) === 0`).
+function normalizeCoordinate(value){
+  if(typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if(typeof value === 'string'){
+    const trimmed = value.trim();
+    if(!trimmed) return null;
+    const num = Number(trimmed);
+    return Number.isFinite(num) ? num : null;
+  }
+  return null;
+}
+function validateCoordinate(lat, lon){
+  const nlat = normalizeCoordinate(lat), nlon = normalizeCoordinate(lon);
+  if(nlat === null || nlon === null) return null;
+  if(nlat < -90 || nlat > 90 || nlon < -180 || nlon > 180) return null;
+  return { lat: nlat, lon: nlon };
+}
+// The one check every coordinate-*consuming* code path (map navigation,
+// distance sorting, the drawer, lasso membership, nearby-site scoring, ...)
+// runs before touching site.lat/site.lon. True only for records that
+// already passed validateCoordinate() during load.
+function hasUsableCoords(site){
+  return Boolean(site) && Number.isFinite(site.lat) && Number.isFinite(site.lon)
+    && site.lat >= -90 && site.lat <= 90 && site.lon >= -180 && site.lon <= 180;
+}
+function formatSiteCoords(site){
+  return hasUsableCoords(site) ? `${site.lat.toFixed(4)}, ${site.lon.toFixed(4)}` : 'Coordinates unavailable';
+}
+
+// ---- source URLs -------------------------------------------------------
+// Only a real, absolute http(s) URL is ever treated as clickable/hrefable.
+// Anything else (relative path, bare domain, unsupported scheme, malformed
+// string, non-string value) returns null so the caller can fall back to
+// plain escaped text instead of throwing or injecting an unsafe href.
+function sanitizeSourceUrl(raw){
+  if(typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if(!trimmed) return null;
+  let url;
+  try{ url = new URL(trimmed); } catch(_err){ return null; }
+  if(url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  return url;
+}
+
+// A canonical tag has exactly one non-edge colon separating two non-empty
+// components. Structurally malformed strings stay intact but are routed to
+// the synthetic Unresolved tags group instead of masquerading as a namespace.
+function parseTagKey(raw){
+  if(typeof raw !== 'string') return null;
+  const tag = raw.trim(), first = tag.indexOf(':');
+  if(first <= 0 || first === tag.length-1 || first !== tag.lastIndexOf(':')) return null;
+  return { tag, namespace:tag.slice(0,first), value:tag.slice(first+1) };
+}
+
+// ---- stable runtime identity -------------------------------------------
+function siteKeyOf(site){ return site && site.__key; }
+let SITE_INDEX = new Map();  // runtime key -> site
+let NAME_INDEX = new Map();  // display name (s.n) -> [site, ...]
+function indexSites(sites){
+  SITE_INDEX = new Map();
+  NAME_INDEX = new Map();
+  sites.forEach(site=>{
+    SITE_INDEX.set(siteKeyOf(site), site);
+    if(typeof site.n === 'string' && site.n){
+      if(!NAME_INDEX.has(site.n)) NAME_INDEX.set(site.n, []);
+      NAME_INDEX.get(site.n).push(site);
+    }
+  });
+}
+function findSiteByKey(key){ return (key && SITE_INDEX.get(key)) || null; }
+// Returns EVERY record sharing that display name — callers decide what to
+// do with 0 / 1 / 2+ results; nothing in this app silently picks array[0]
+// any more (that was audit finding #3).
+function findSitesByName(name){ return NAME_INDEX.get(name) ? NAME_INDEX.get(name).slice() : []; }
+function findUniqueSiteByName(name){ const matches = findSitesByName(name); return matches.length === 1 ? matches[0] : null; }
+
+// ---- validation / normalization boundary --------------------------------
+// The ONLY place raw JSON becomes SITES. Never throws on a malformed record
+// — it counts the problem in `diagnostics` and either fixes the record's
+// *shape* defensively (e.g. a non-array `tags` becomes []) or, for
+// coordinates, leaves the value alone but flags the record as unmappable.
+// Nothing here ever invents or discards archaeological content (name, text,
+// culture, canonicalType, tags values, etc.) — only shape/type safety.
+function createRuntimeDiagnostics(){
+  return {
+    totalReceived: 0, valid: 0, mappable: 0, excludedFromMarkers: 0,
+    missingIds: 0, duplicateIds: 0, invalidCoordinates: 0,
+    invalidFieldShapes: 0, unexpectedWorkflowStates: 0,
+    malformedOrUnnamespacedTags: 0, invalidSourceUrls: 0,
+  };
+}
+function validateAndNormalizeSites(rawSites){
+  const diagnostics = createRuntimeDiagnostics();
+  const list = Array.isArray(rawSites) ? rawSites : [];
+  diagnostics.totalReceived = list.length;
+  const seenIds = new Set();
+  const sites = [];
+
+  list.forEach((raw, index)=>{
+    if(!raw || typeof raw !== 'object' || Array.isArray(raw)){
+      diagnostics.invalidFieldShapes++;
+      return;
+    }
+    const site = raw;
+
+    // id / runtime key — never mutates site.id itself (sprite manifest
+    // overrides and the "Record ID" drawer line key off the REAL id).
+    const rawId = (typeof site.id === 'string' || typeof site.id === 'number') ? String(site.id).trim() : '';
+    let key;
+    if(!rawId){
+      diagnostics.missingIds++;
+      key = `__noid_${index}`;
+    } else if(seenIds.has(rawId)){
+      diagnostics.duplicateIds++;
+      key = `__dup_${rawId}_${index}`;
+    } else {
+      seenIds.add(rawId);
+      key = rawId;
+    }
+    site.__key = key;
+
+    // coordinates — see coordinate policy note above.
+    const coords = validateCoordinate(site.lat, site.lon);
+    if(coords){
+      site.lat = coords.lat; site.lon = coords.lon;
+      diagnostics.mappable++;
+    } else {
+      diagnostics.invalidCoordinates++;
+      diagnostics.excludedFromMarkers++;
+    }
+
+    // array-shaped fields — absent is fine (downstream already treats
+    // missing tags/function/politicalEntities as []); present-but-wrong-shape
+    // is coerced to [] rather than left to crash `.forEach`/`.some`/`.map`.
+    ['tags','function','politicalEntities'].forEach(field=>{
+      const value = site[field];
+      if(value === undefined || value === null) return;
+      if(!Array.isArray(value)){ diagnostics.invalidFieldShapes++; site[field] = []; return; }
+      const cleaned = [];
+      value.forEach(entry=>{
+        if(typeof entry !== 'string' || !entry.trim()){ diagnostics.invalidFieldShapes++; return; }
+        cleaned.push(entry.trim());
+      });
+      site[field] = cleaned;
+    });
+    (Array.isArray(site.tags) ? site.tags : []).forEach(t=>{ if(!parseTagKey(t)) diagnostics.malformedOrUnnamespacedTags++; });
+
+    // canonicalType — an unrecognized-but-well-formed STRING value is kept
+    // exactly as-is (TAXONOMY.md controlled vocabulary is enforced by
+    // curation, not silently rewritten here); only a non-string value is a
+    // shape problem, and becomes the existing "unresolved" bucket.
+    if(site.canonicalType !== undefined && site.canonicalType !== null && typeof site.canonicalType !== 'string'){
+      diagnostics.invalidFieldShapes++;
+      site.canonicalType = null;
+    }
+
+    // workflow state — counted, never mutated; statusMetaFor() already
+    // renders any value (known or not) safely.
+    const wfState = site.workflow && site.workflow.type && site.workflow.type.state;
+    if(wfState && !KNOWN_WORKFLOW_STATES.has(wfState)) diagnostics.unexpectedWorkflowStates++;
+
+    // source URL — counted here so diagnostics reflect it at load time;
+    // rendering goes through sanitizeSourceUrl() again in the drawer.
+    if(site.source !== undefined && site.source !== null){
+      if(typeof site.source === 'string'){
+        if(site.source.trim() && !sanitizeSourceUrl(site.source)) diagnostics.invalidSourceUrls++;
+      } else diagnostics.invalidSourceUrls++;
+    }
+
+    diagnostics.valid++;
+    sites.push(site);
+  });
+
+  return { sites, diagnostics };
 }
 
 /* ---------- runtime state (populated once data loads) ---------- */
@@ -3810,6 +4087,11 @@ function setMarkerVisual(marker,state){
 function buildMarkers(){
   markers=[];
   SITES.forEach(s=>{
+    // v6.4.1: a record that failed coordinate validation in
+    // validateAndNormalizeSites() must never reach Leaflet. It stays in
+    // SITES (filterable/searchable/counted) but is skipped here rather than
+    // aborting the whole marker build. See runtimeDiagnostics.excludedFromMarkers.
+    if(!hasUsableCoords(s)) return;
     const color = typeColorOf(typeKeyOf(s));
     const assignment=spriteAssignmentFor(s);
     const spriteIcon=markerDisplayPreferences.style==='sprites'?spriteIconFor(s,assignment):null;
@@ -4432,7 +4714,7 @@ document.addEventListener('keydown', (ev)=>{
    hidden and REVIEW/RESEARCH/provisional/duplicate records stay visible
    until someone deliberately narrows that filter. */
 function siteVisible(s,{ignoreTimeline=false}={}){
-  if(state.spatialSelectionIds && !state.spatialSelectionIds.has(s.id || s.n)) return false;
+  if(state.spatialSelectionIds && !state.spatialSelectionIds.has(siteKeyOf(s))) return false;
   if(state.unescoOnly && !s.unesco) return false;
 
   if(state.filterTypesActive && !state.typesOn.has(typeKeyOf(s))) return false;
@@ -4570,13 +4852,19 @@ function buildTagsTree(container){
 
     const body = document.createElement('div');
     body.className = 'type-group-body';
-    const nsTagKeys = values.map(([v])=>`${ns}:${v}`);
+    const isUnresolved = ns === UNRESOLVED_TAG_NAMESPACE;
+    // v6.4.1: the "Unresolved tags" group's filter key IS the raw tag
+    // string (not "ns:value"), matching how ALL_TAG_VALUES/state.tagsOn
+    // were populated in buildFilterLists() and how siteVisible() matches
+    // literal entries in s.tags.
+    const nsTagKeys = values.map(([v])=> isUnresolved ? v : `${ns}:${v}`);
     values.forEach(([val, count])=>{
-      const tagKey = `${ns}:${val}`;
+      const tagKey = isUnresolved ? val : `${ns}:${val}`;
       const id = idFor('tag', tagKey);
-      const row = makeCheckRow(tagKey, humanizeTagValue(val), count, id, state.tagsOn,
+      const row = makeCheckRow(tagKey, isUnresolved ? val : humanizeTagValue(val), count, id, state.tagsOn,
         ()=>{ state.filterTagsActive = state.tagsOn.size < ALL_TAG_VALUES.length; }, container);
       row.classList.add('sub-row');
+      if(isUnresolved) row.classList.add('unresolved');
       body.appendChild(row);
     });
     group.appendChild(body);
@@ -4705,14 +4993,13 @@ const FILTER_BUCKETS = {
     activeFlag: ()=>state.filterStatusActive,
     setActiveFlag: (set)=>{ state.filterStatusActive = set.size < STATUS_LIST.length; },
     allValues: ()=>STATUS_LIST.map(([k])=>k),
-    labelFor: k => STATUS_META[k].label,
+    labelFor: k => statusMetaFor(k).label,
   },
 };
 
 function tagChipLabel(tagKey){
-  const parts = tagKey.includes(':') ? tagKey.split(/:(.+)/) : [null, tagKey];
-  const ns = parts[0], val = parts[1];
-  return ns ? `${namespaceLabel(ns)}: ${humanizeTagValue(val)}` : humanizeTagValue(tagKey);
+  const parsed = parseTagKey(tagKey);
+  return parsed ? `${namespaceLabel(parsed.namespace)}: ${humanizeTagValue(parsed.value)}` : humanizeTagValue(tagKey);
 }
 
 // Minimal escaping for the handful of new places that interpolate raw data
@@ -5536,8 +5823,17 @@ setThumbYear = function(which, year){
 const drawer = document.getElementById('drawer');
 const drawerContent = document.getElementById('drawerContent');
 
+// v6.4.1: legacy convenience wrapper, kept for any remaining internal
+// callers. Resolves ONLY when the name is unique across the loaded
+// dataset — see findUniqueSiteByName(). Two records that legitimately
+// share a display name (the confirmed Dun Carloway Broch / Etowah Indian
+// Mounds pattern — MIGRATION_RULES.md §6.1) must never have this silently
+// pick the first one, so ambiguous names resolve to null here. Callers
+// that need to distinguish "no match" from "ambiguous match" (partOf
+// rendering, legacy share-link restore) call findSitesByName() directly
+// instead of this wrapper.
 function findSiteByName(name){
-  return SITES.find(s => s.n === name);
+  return findUniqueSiteByName(name);
 }
 
 function distanceKm(a,b){
@@ -5546,7 +5842,8 @@ function distanceKm(a,b){
   return 6371*2*Math.atan2(Math.sqrt(p),Math.sqrt(1-p));
 }
 function relevantNearbySites(site){
-  const scored=SITES.filter(candidate=>candidate!==site&&Number.isFinite(candidate.lat)&&Number.isFinite(candidate.lon)).map(candidate=>{
+  if(!hasUsableCoords(site)) return [];
+  const scored=SITES.filter(candidate=>candidate!==site&&hasUsableCoords(candidate)).map(candidate=>{
     const distance=distanceKm(site,candidate);let bonus=0;
     if(typeKeyOf(site)===typeKeyOf(candidate))bonus+=18;
     if(site.culture&&candidate.culture===site.culture)bonus+=24;
@@ -5565,8 +5862,38 @@ function renderNearbySites(site){
   return `<section class="nearby-sites"><h3>Relevant Sites Nearby</h3>${nearby.map(item=>{
     const candidate=item.site;
     const bits=[typeKeyOf(candidate),Number.isFinite(candidate.year)?fmtYear(candidate.year):null].filter(Boolean).join(' · ');
-    return `<button type="button" class="nearby-site-btn" data-nearby-site="${escapeHtml(candidate.n)}"><span class="nearby-site-name">${escapeHtml(candidate.n)}</span><span>${Math.round(item.distance)} km</span><span class="nearby-site-meta">${escapeHtml(bits)}</span></button>`;
+    return `<button type="button" class="nearby-site-btn" data-nearby-site-key="${escapeHtml(siteKeyOf(candidate))}"><span class="nearby-site-name">${escapeHtml(candidate.n)}</span><span>${Math.round(item.distance)} km</span><span class="nearby-site-meta">${escapeHtml(bits)}</span></button>`;
   }).join('')}</section>`;
+}
+
+// v6.4.1 fix #6: never build a clickable link from an untrusted source
+// value. sanitizeSourceUrl() only accepts absolute http:/https: URLs;
+// anything else (relative path, bare domain, unsupported scheme,
+// malformed string, non-string value) degrades to escaped, non-clickable
+// text instead of throwing or being injected into href/HTML.
+function renderDrawerSource(site){
+  const raw = site.source;
+  if(raw === undefined || raw === null || raw === '') return '';
+  if(typeof raw !== 'string'){
+    return `<div class="drawer-source" style="margin-top:16px;">Source: <span style="color:var(--ink-soft);">Unavailable (unrecognized source format)</span></div>`;
+  }
+  const trimmed = raw.trim();
+  if(!trimmed) return '';
+  const url = sanitizeSourceUrl(trimmed);
+  if(url){
+    return `<div class="drawer-source" style="margin-top:16px;">Source: <a href="${escapeHtml(url.href)}" target="_blank" rel="noopener">${escapeHtml(url.hostname.replace('www.',''))}</a></div>`;
+  }
+  return `<div class="drawer-source" style="margin-top:16px;">Source: <span style="color:var(--ink-soft);">${escapeHtml(trimmed)}</span></div>`;
+}
+
+// v6.4.1 fix #2: never format/display raw NaN coordinates or build a
+// Google Maps link from them. formatSiteCoords()/hasUsableCoords() are
+// the same guards used everywhere else coordinates are consumed.
+function renderDrawerCoords(site){
+  if(!hasUsableCoords(site)){
+    return `<div class="drawer-coords">${formatSiteCoords(site)}</div>`;
+  }
+  return `<div class="drawer-coords">${formatSiteCoords(site)} · <a href="https://www.google.com/maps/@${site.lat},${site.lon},17z/data=!3m1!1e3" target="_blank" rel="noopener">Open satellite view in Google Maps ↗</a></div>`;
 }
 
 function openDrawer(s){
@@ -5587,7 +5914,11 @@ function openDrawer(s){
   if(s.year!==null && s.year!==undefined) chipRow.push({ label: fmtYear(s.year)+' (est.)' });
 
   const statusKey = statusKeyOf(s);
-  const statusMeta = STATUS_META[statusKey];
+  // v6.4.1 fix #3: statusMetaFor() never throws, even for a workflow
+  // state this build doesn't recognize yet — it returns a generic
+  // fallback label instead. Opening a drawer must never crash because
+  // status metadata is missing.
+  const statusMeta = statusMetaFor(statusKey);
 
   // Renders a list of clickable/plain taxonomy chips for a drawer section.
   function renderChipGroup(items){
@@ -5602,9 +5933,8 @@ function openDrawer(s){
   // Tags/Function/Political entities, each mapped to their filter bucket
   // so clicking one isolates that value — same reuse as chipRow above.
   const tagItems = (s.tags||[]).map(t=>{
-    const parts = t.includes(':') ? t.split(/:(.+)/) : [null, t];
-    const ns = parts[0], val = parts[1];
-    return { label: (ns ? namespaceLabel(ns)+': ' : '')+humanizeTagValue(val), bucket: 'tags', value: t };
+    const parsed = parseTagKey(t);
+    return { label: parsed ? `${namespaceLabel(parsed.namespace)}: ${humanizeTagValue(parsed.value)}` : humanizeTagValue(t), bucket: 'tags', value: t };
   });
   const functionItems = (s.function||[]).map(f=>({
     label: f.charAt(0).toUpperCase()+f.slice(1), bucket: 'function', value: f
@@ -5617,12 +5947,23 @@ function openDrawer(s){
   const functionChips = renderChipGroup(functionItems);
   const politicalChips = renderChipGroup(politicalItems);
 
+  // v6.4.1 fix #4: `partOf` only ever carries a parent *name* in the
+  // current schema, so an ambiguous name must not silently resolve to the
+  // first match. Zero matches keeps today's plain-text fallback; exactly
+  // one match renders a clickable link keyed by the parent's stable
+  // siteKey; two or more matches renders non-clickable "(ambiguous)" text
+  // rather than guessing.
   let parentHtml = '';
   if(s.partOf){
-    const parent = findSiteByName(s.partOf);
-    parentHtml = parent
-      ? `<div class="drawer-section-label">Part of</div><span class="drawer-parent-link" id="drawerParentLink">${s.partOf} →</span>`
-      : `<div class="drawer-section-label">Part of</div><span style="font-size:12.5px;color:var(--ink-soft);">${s.partOf}</span>`;
+    const parentMatches = findSitesByName(s.partOf);
+    if(parentMatches.length === 1){
+      const parent = parentMatches[0];
+      parentHtml = `<div class="drawer-section-label">Part of</div><span class="drawer-parent-link" id="drawerParentLink" data-parent-key="${escapeHtml(siteKeyOf(parent))}">${escapeHtml(s.partOf)} →</span>`;
+    } else if(parentMatches.length > 1){
+      parentHtml = `<div class="drawer-section-label">Part of</div><span style="font-size:12.5px;color:var(--ink-soft);" title="Multiple records share this name; the specific parent record can't be determined from the name alone.">${escapeHtml(s.partOf)} (ambiguous)</span>`;
+    } else {
+      parentHtml = `<div class="drawer-section-label">Part of</div><span style="font-size:12.5px;color:var(--ink-soft);">${escapeHtml(s.partOf)}</span>`;
+    }
   }
 
   const legacyBits = [];
@@ -5643,38 +5984,43 @@ function openDrawer(s){
 
   drawerContent.innerHTML = `
     <div class="drawer-era">${isUnresolved ? 'Unresolved' : s.canonicalType}</div>
-    <h2 class="drawer-title">${s.n}</h2>
+    <h2 class="drawer-title">${escapeHtml(s.n)}</h2>
     <div class="drawer-meta">${renderChipGroup(chipRow)}</div>
-    ${statusKey !== 'confirmed' ? `<div class="drawer-status-note"><span class="status-dot ${statusMeta.dotClass}"></span><span>${statusMeta.label} — ${statusMeta.note}</span></div>` : ''}
-    ${s.img ? `<img class="drawer-img" src="${s.img}" alt="${s.n}" loading="lazy" decoding="async">` : ''}
+    ${statusKey !== 'confirmed' ? `<div class="drawer-status-note"><span class="status-dot ${statusMeta.dotClass}"></span><span>${escapeHtml(statusMeta.label)} — ${escapeHtml(statusMeta.note)}</span></div>` : ''}
+    ${s.img ? `<img class="drawer-img" src="${escapeHtml(s.img)}" alt="${escapeHtml(s.n)}" loading="lazy" decoding="async">` : ''}
     <div class="drawer-text">${s.text ? s.text : 'No notes recorded for this site yet.'}</div>
     ${tagChips ? `<div class="drawer-section-label">Tags</div><div class="drawer-meta">${tagChips}</div>` : ''}
     ${functionChips ? `<div class="drawer-section-label">Function</div><div class="drawer-meta">${functionChips}</div>` : ''}
     ${politicalChips ? `<div class="drawer-section-label">Political entities</div><div class="drawer-meta">${politicalChips}</div>` : ''}
     ${parentHtml}
-    ${s.source ? `<div class="drawer-source" style="margin-top:16px;">Source: <a href="${s.source}" target="_blank" rel="noopener">${new URL(s.source).hostname.replace('www.','')}</a></div>` : ''}
-    <div class="drawer-coords">${s.lat.toFixed(4)}, ${s.lon.toFixed(4)} · <a href="https://www.google.com/maps/@${s.lat},${s.lon},17z/data=!3m1!1e3" target="_blank" rel="noopener">Open satellite view in Google Maps ↗</a></div>
+    ${renderDrawerSource(s)}
+    ${renderDrawerCoords(s)}
     ${legacyBits.length ? `<details class="drawer-details"><summary>Classification &amp; legacy details</summary>${legacyBits.join('')}</details>` : ''}
     ${renderNearbySites(s)}
   `;
   const parentLink = document.getElementById('drawerParentLink');
   if(parentLink){
     parentLink.addEventListener('click', ()=>{
-      const parent = findSiteByName(s.partOf);
+      const parent = findSiteByKey(parentLink.dataset.parentKey);
       if(parent) selectSite(parent);
     });
   }
   if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('record',true);
   else drawer.classList.add('open');
-  map.flyTo([s.lat, s.lon], Math.max(map.getZoom(), 6), {duration:0.6});
+  // v6.4.1 fix #2: a record without usable coordinates must never reach
+  // Leaflet's flyTo (which would otherwise produce an Invalid LatLng /
+  // NaN pan). The drawer itself still opens; only the map navigation is
+  // skipped, and renderDrawerCoords() above already told the user
+  // coordinates are unavailable.
+  if(hasUsableCoords(s)) map.flyTo([s.lat, s.lon], Math.max(map.getZoom(), 6), {duration:0.6});
 }
 // Delegated once (not re-bound per openDrawer call) so clicking any
 // clickable taxonomy chip isolates the matching panel filter — reuses
 // isolateBucketValue(), the exact same code path as clicking a checklist
 // label, so there is no separate filtering logic for the drawer.
 drawerContent.addEventListener('click', (ev)=>{
-  const nearby=ev.target.closest('[data-nearby-site]');
-  if(nearby){const site=findSiteByName(nearby.dataset.nearbySite);if(site)selectSite(site);return;}
+  const nearby=ev.target.closest('[data-nearby-site-key]');
+  if(nearby){const site=findSiteByKey(nearby.dataset.nearbySiteKey);if(site)selectSite(site);return;}
   const chip = ev.target.closest('[data-filter-bucket]');
   if(!chip) return;
   isolateBucketValue(chip.dataset.filterBucket, chip.dataset.filterValue);
@@ -5827,21 +6173,26 @@ function setListMarkerHover(site,on){
 }
 function highlightListHover(site,on){
   if(!sitesPanel||!sitesPanel.classList.contains('open'))return;
-  const row=[...sitesListEl.children].find(item=>item.dataset.name===site.n);
+  const row=[...sitesListEl.children].find(item=>item.dataset.siteKey===siteKeyOf(site));
   if(!row)return;
   row.classList.toggle('list-hover',on);
   if(on)row.scrollIntoView({block:'nearest'});
 }
 function createSiteListRow(site,{pinned=false}={}){
   const row=document.createElement('div');
-  row.className='site-list-item'+(state.selectedSiteName===site.n?' active':'')+(pinned?' pinned':'');
-  row.dataset.name=site.n;
+  // v6.4.1 fix #4: DOM identity and selection state are keyed off the
+  // stable runtime siteKey, not the display name, so two records sharing
+  // a name (e.g. the confirmed Dun Carloway Broch / Etowah Indian Mounds
+  // duplicate-name pattern) remain independently selectable/highlightable.
+  const key = siteKeyOf(site);
+  row.className='site-list-item'+(state.selectedSiteKey===key?' active':'')+(pinned?' pinned':'');
+  row.dataset.siteKey=key;
   row.setAttribute('role','option');
-  row.setAttribute('aria-selected',String(state.selectedSiteName===site.n));
+  row.setAttribute('aria-selected',String(state.selectedSiteKey===key));
   const meta=[typeLabelOf(typeKeyOf(site)),siteDateLabel(site),sitePlaceLabel(site)].filter(Boolean).join(' · ');
   row.innerHTML=`<div class="site-list-primary"><span class="site-list-name">${site.unesco?'★ ':''}${escapeHtml(site.n)}</span>${pinned?'<span class="site-list-badge">Selected · outside results</span>':''}</div><div class="site-list-meta">${escapeHtml(meta)}</div>`;
   row.addEventListener('click',()=>selectSite(site));
-  row.addEventListener('dblclick',()=>map.setView([site.lat,site.lon],Math.max(8,map.getZoom())));
+  row.addEventListener('dblclick',()=>{ if(hasUsableCoords(site)) map.setView([site.lat,site.lon],Math.max(8,map.getZoom())); });
   row.addEventListener('mouseenter',()=>{row.classList.add('list-hover');setListMarkerHover(site,true);});
   row.addEventListener('mouseleave',()=>{row.classList.remove('list-hover');setListMarkerHover(site,false);});
   return row;
@@ -5861,7 +6212,7 @@ function renderSiteList(){
   sitesListEl.innerHTML = '';
   sitesListEl.classList.toggle('compact',sitesView==='compact');
   const frag = document.createDocumentFragment();
-  const selected=state.selectedSiteName&&SITES.find(s=>s.n===state.selectedSiteName);
+  const selected=state.selectedSiteKey&&findSiteByKey(state.selectedSiteKey);
   if(selected&&!visible.includes(selected))frag.appendChild(createSiteListRow(selected,{pinned:true}));
   visible.forEach(site=>frag.appendChild(createSiteListRow(site)));
   sitesListEl.appendChild(frag);
@@ -5871,11 +6222,11 @@ function renderSiteList(){
 }
 
 function highlightListItem(s){
-  state.selectedSiteName = s.n;
+  state.selectedSiteKey = siteKeyOf(s);
   if(!sitesPanel.classList.contains('open')) return;
   [...sitesListEl.children].forEach(el=>{
-    el.classList.toggle('active', el.dataset.name === s.n);
-    el.setAttribute('aria-selected',String(el.dataset.name===s.n));
+    el.classList.toggle('active', el.dataset.siteKey === state.selectedSiteKey);
+    el.setAttribute('aria-selected',String(el.dataset.siteKey===state.selectedSiteKey));
   });
   sitesListSelection.textContent='Selection: 1';
   const active = sitesListEl.querySelector('.site-list-item.active');
@@ -6557,8 +6908,11 @@ function finishLasso(){
   const polygon=mapToolPoints.slice();
   // Evaluate against the non-spatial filters: startMapTool cleared any old
   // region first, so siteVisible is the canonical eligibility predicate here.
-  const selected=SITES.filter(s=>siteVisible(s)&&pointInsidePolygon(L.latLng(s.lat,s.lon),polygon));
-  state.spatialSelectionIds=new Set(selected.map(s=>s.id||s.n));
+  // v6.4.1 fix #2/#4: a record without usable coordinates can't be inside
+  // any polygon and must never reach L.latLng(); membership is now keyed
+  // by the stable siteKey rather than the display name.
+  const selected=SITES.filter(s=>hasUsableCoords(s)&&siteVisible(s)&&pointInsidePolygon(L.latLng(s.lat,s.lon),polygon));
+  state.spatialSelectionIds=new Set(selected.map(s=>siteKeyOf(s)));
   spatialSelectionLayer.clearLayers();
   L.polygon(polygon,{pane:'paneMapTools',interactive:false,color:'#008000',weight:3,fillColor:'#00ff00',fillOpacity:.08,dashArray:'6 4'}).addTo(spatialSelectionLayer);
   deactivateMapTool();
@@ -6653,7 +7007,7 @@ mapContextMenu.addEventListener('click',async ev=>{
   const action=button.dataset.contextAction,point=mapContextLatLng,site=mapContextSite;
   closeMapContextMenu();
   if(action==='open-site'&&site)selectSite(site);
-  if(action==='zoom-site'&&site){selectSite(site);map.setView([site.lat,site.lon],Math.max(8,map.getZoom()));}
+  if(action==='zoom-site'&&site){selectSite(site);if(hasUsableCoords(site))map.setView([site.lat,site.lon],Math.max(8,map.getZoom()));}
   if(action==='measure-distance')startMapTool('distance',point);
   if(action==='measure-area')startMapTool('area',point);
   if(action==='lasso')startMapTool('lasso');
@@ -6871,7 +7225,7 @@ function syncApplicationMenuState(){
   document.querySelectorAll('[data-window-toggle]').forEach(item=>{
     const st=window.ArcheoWindowManager.getState(item.dataset.windowToggle);
     item.setAttribute('aria-checked',String(Boolean(st&&st.open)));
-    if(item.dataset.windowToggle==='record')item.disabled=!state.selectedSiteName;
+    if(item.dataset.windowToggle==='record')item.disabled=!state.selectedSiteKey;
     if(item.dataset.windowToggle==='lasso')item.disabled=!state.spatialSelectionIds;
   });
   const overviewViewItem=document.querySelector('[data-window-toggle="overview"]');
@@ -7181,8 +7535,16 @@ function buildShareUrl(centerOverride=null,siteOverride=null){
 
   Object.keys(BUCKET_PARAM_KEYS).forEach(bucketKey=> encodeBucketParam(params, bucketKey, BUCKET_PARAM_KEYS[bucketKey]));
 
-  const shareSiteName=siteOverride&&siteOverride.n?siteOverride.n:state.selectedSiteName;
-  if(shareSiteName) params.set('site', shareSiteName);
+  // v6.4.1 fix #4: `sid` carries the canonical runtime key, which is the
+  // record id for normal records and a deterministic synthetic key for a
+  // missing/duplicated id. This keeps even degraded records distinct.
+  // Legacy `site=<name>` links remain supported on restore when unambiguous.
+  const shareSite = siteOverride || (state.selectedSiteKey ? findSiteByKey(state.selectedSiteKey) : null);
+  if(shareSite){
+    const shareKey=siteKeyOf(shareSite);
+    if(shareKey) params.set('sid', shareKey);
+    else if(shareSite.n) params.set('site', shareSite.n);
+  }
 
   // Historical layers (spec §10): only ids that are actually enabled, plus
   // opacity for any of those that isn't the 1.0 default. No geometry is
@@ -7285,10 +7647,24 @@ function applyStateFromUrl(){
 
   applyFilters();
 
-  const siteName = params.get('site');
-  if(siteName){
-    const site = findSiteByName(siteName);
+  // v6.4.1 fix #4: `sid` (stable id) is tried first — preferred for any
+  // link generated by this build. `site` (legacy display name) is kept
+  // for backward compatibility with links generated before this release,
+  // but only when the name resolves to exactly one record; an ambiguous
+  // legacy name is never silently resolved to the first match.
+  if(params.has('sid')){
+    const site = findSiteByKey(params.get('sid'));
     if(site) selectSite(site);
+  } else {
+    const siteName = params.get('site');
+    if(siteName){
+      const matches = findSitesByName(siteName);
+      if(matches.length === 1){
+        selectSite(matches[0]);
+      } else if(matches.length > 1){
+        inlineFeedback(shareFeedbackEl, 'Shared site name is ambiguous — multiple records share this name', 4000);
+      }
+    }
   }
   return true;
 }
@@ -7307,7 +7683,7 @@ shareBtn.addEventListener('click', async ()=>{
    every active filter and the timeline, with no separate eligibility logic. */
 const randomBtn = document.getElementById('randomBtn');
 const randomFeedbackEl = document.getElementById('randomFeedback');
-let lastRandomSiteName = null;
+let lastRandomSiteKey = null;
 randomBtn.addEventListener('click', ()=>{
   const pool = markers.filter(m => siteVisible(m._site)).map(m => m._site);
   if(pool.length === 0){
@@ -7315,12 +7691,12 @@ randomBtn.addEventListener('click', ()=>{
     return;
   }
   let candidates = pool;
-  if(pool.length > 1 && lastRandomSiteName){
-    const withoutLast = pool.filter(s => s.n !== lastRandomSiteName);
+  if(pool.length > 1 && lastRandomSiteKey){
+    const withoutLast = pool.filter(s => siteKeyOf(s) !== lastRandomSiteKey);
     if(withoutLast.length) candidates = withoutLast;
   }
   const site = candidates[Math.floor(Math.random() * candidates.length)];
-  lastRandomSiteName = site.n;
+  lastRandomSiteKey = siteKeyOf(site);
   selectSite(site);
 });
 
@@ -7354,10 +7730,18 @@ function buildFilterLists(){
   // actually present in the data get a section.
   const nsMap = new Map(); // ns -> Map(value -> count)
   SITES.forEach(s=>{
+    // s.tags was already reduced to string-only entries by
+    // validateAndNormalizeSites(), so .includes()/.split() here are safe.
     (s.tags||[]).forEach(t=>{
-      if(!t.includes(':')) return;
-      const parts = t.split(/:(.+)/);
-      const ns = parts[0], val = parts[1];
+      let ns, val;
+      const parsed = parseTagKey(t);
+      if(!parsed){
+        // v6.4.1 fix #5: unnamespaced/malformed tags go in a synthetic
+        // "Unresolved tags" group instead of being silently dropped. The
+        // raw string is kept as both the grouping value and the filter
+        // key so the record remains filterable.
+        ns = UNRESOLVED_TAG_NAMESPACE; val = t;
+      } else { ns = parsed.namespace; val = parsed.value; }
       if(!nsMap.has(ns)) nsMap.set(ns, new Map());
       const vm = nsMap.get(ns);
       vm.set(val, (vm.get(val)||0)+1);
@@ -7370,12 +7754,18 @@ function buildFilterLists(){
     TAG_NAMESPACES.push([ns, values]);
   });
   nsMap.forEach((vm, ns)=>{
-    if(!NAMESPACE_ORDER.includes(ns)){
+    if(!NAMESPACE_ORDER.includes(ns) && ns !== UNRESOLVED_TAG_NAMESPACE){
       TAG_NAMESPACES.push([ns, [...vm.entries()].sort((a,b)=>b[1]-a[1])]);
     }
   });
+  // Unresolved tags always render last, mirroring how the unresolved Type
+  // bucket is appended after every recognized type.
+  if(nsMap.has(UNRESOLVED_TAG_NAMESPACE)){
+    TAG_NAMESPACES.push([UNRESOLVED_TAG_NAMESPACE, [...nsMap.get(UNRESOLVED_TAG_NAMESPACE).entries()].sort((a,b)=>b[1]-a[1])]);
+  }
   ALL_TAG_VALUES = [];
-  TAG_NAMESPACES.forEach(([ns, values])=> values.forEach(([val])=> ALL_TAG_VALUES.push(`${ns}:${val}`)));
+  TAG_NAMESPACES.forEach(([ns, values])=> values.forEach(([val])=>
+    ALL_TAG_VALUES.push(ns === UNRESOLVED_TAG_NAMESPACE ? val : `${ns}:${val}`)));
   ALL_TAG_VALUES.forEach(t=>state.tagsOn.add(t));
 
   // Culture — migrated `culture` field, most-common first (matches prior UX)
@@ -7399,10 +7789,20 @@ function buildFilterLists(){
   }
   FUNCTION_LIST.forEach(([f])=>state.functionsOn.add(f));
 
-  // Status — fixed set, ordered so the "everything is fine" case reads first
-  const STATUS_ORDER = ['confirmed','review','research','provisional','duplicate'];
+  // Status — known set (v6.4.1: extended to the full documented workflow
+  // enum, review/research/reviewed/researched/approved, plus the legacy
+  // provisional/duplicate data-quality flags), ordered so the
+  // "everything is fine" case reads first. Any further status value
+  // actually present in the data that isn't in this list (a genuinely
+  // unexpected future state) is appended at the end rather than being
+  // silently excluded from the filter — see audit fix #3: a record must
+  // never become permanently invisible because no checkbox exists for it.
+  const STATUS_ORDER = ['confirmed','review','research','reviewed','researched','approved','provisional','duplicate'];
   const statusCounts = new Map(freqBy(SITES, s=>statusKeyOf(s)));
   STATUS_LIST = STATUS_ORDER.filter(k=>statusCounts.has(k)).map(k=>[k, statusCounts.get(k)]);
+  statusCounts.forEach((count, key)=>{
+    if(!STATUS_ORDER.includes(key)) STATUS_LIST.push([key, count]);
+  });
   STATUS_LIST.forEach(([st])=>state.statusOn.add(st));
 }
 
@@ -7431,7 +7831,7 @@ function renderFilterPanel(){
 
   buildFlatList(document.getElementById('statusList'), STATUS_LIST, state.statusOn, 'status',
     (set)=>{ state.filterStatusActive = set.size < STATUS_LIST.length; },
-    { labelFor: k => STATUS_META[k].label, dotClassFor: k => STATUS_META[k].dotClass });
+    { labelFor: k => statusMetaFor(k).label, dotClassFor: k => statusMetaFor(k).dotClass });
 }
 
 function precomputeSearchBlobs(){
@@ -7440,8 +7840,8 @@ function precomputeSearchBlobs(){
       s.n || '',
       s.canonicalType || '',
       (s.tags||[]).map(t=>{
-        const bits = t.includes(':') ? t.split(/:(.+)/) : [null, t];
-        return humanizeTagValue(bits[1]);
+        const parsed = parseTagKey(t);
+        return humanizeTagValue(parsed ? parsed.value : t);
       }).join(' '),
       s.culture || '',
       (s.politicalEntities||[]).join(' '),
@@ -7451,8 +7851,65 @@ function precomputeSearchBlobs(){
   });
 }
 
-function startApp(sites){
+// v6.4.1 fix #1: concise, non-blocking, dismissible banner — shown only
+// when at least one record needed defensive handling. Never replaces the
+// interface; valid records keep working exactly as before underneath it.
+function showRuntimeDiagnosticsBanner(diagnostics){
+  const existing = document.getElementById('runtimeDiagnosticsBanner');
+  if(existing) existing.remove();
+  const banner = document.createElement('div');
+  banner.id = 'runtimeDiagnosticsBanner';
+  banner.setAttribute('role','status');
+  banner.style.cssText = 'position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:99999;'
+    +'max-width:min(560px,92vw);background:#3E2A16;color:#F4E9D8;border:2px solid #B9902E;'
+    +'border-radius:3px;padding:9px 12px;font:11px/1.4 Tahoma,Geneva,sans-serif;'
+    +'box-shadow:0 4px 14px rgba(0,0,0,.35);display:flex;gap:10px;align-items:flex-start;';
+  const text = document.createElement('div');
+  text.style.flex = '1';
+  text.textContent = `Some imported records needed defensive handling on load — `
+    +`${diagnostics.excludedFromMarkers.toLocaleString()} excluded from map markers `
+    +`(${diagnostics.valid.toLocaleString()} of ${diagnostics.totalReceived.toLocaleString()} records loaded). `
+    +`Nothing crashed; see the browser console for full diagnostics.`;
+  const closeBtn = document.createElement('button');
+  closeBtn.type = 'button';
+  closeBtn.textContent = '×';
+  closeBtn.setAttribute('aria-label','Dismiss');
+  closeBtn.style.cssText = 'background:transparent;border:none;color:inherit;font-size:16px;line-height:1;cursor:pointer;padding:0 2px;flex-shrink:0;';
+  closeBtn.addEventListener('click', ()=> banner.remove());
+  banner.appendChild(text);
+  banner.appendChild(closeBtn);
+  document.body.appendChild(banner);
+}
+function reportRuntimeDiagnostics(diagnostics){
+  console.info('ArcheoMaps v6.4.1 runtime diagnostics', diagnostics);
+  const degraded = diagnostics.missingIds + diagnostics.duplicateIds + diagnostics.invalidCoordinates
+    + diagnostics.invalidFieldShapes + diagnostics.unexpectedWorkflowStates
+    + diagnostics.malformedOrUnnamespacedTags + diagnostics.invalidSourceUrls;
+  if(degraded > 0){
+    console.warn(
+      `ArcheoMaps: ${degraded} field-level issue(s) across the imported dataset needed defensive handling. `
+      +`missingIds=${diagnostics.missingIds} duplicateIds=${diagnostics.duplicateIds} `
+      +`invalidCoordinates=${diagnostics.invalidCoordinates} invalidFieldShapes=${diagnostics.invalidFieldShapes} `
+      +`unexpectedWorkflowStates=${diagnostics.unexpectedWorkflowStates} `
+      +`malformedOrUnnamespacedTags=${diagnostics.malformedOrUnnamespacedTags} `
+      +`invalidSourceUrls=${diagnostics.invalidSourceUrls}. `
+      +`${diagnostics.excludedFromMarkers} record(s) excluded from map markers; no record was dropped from filtering. `
+      +`Full detail: window.ArcheoRuntimeDiagnostics`
+    );
+    showRuntimeDiagnosticsBanner(diagnostics);
+  }
+}
+
+function startApp(rawSites){
+  // v6.4.1 fix #1: the ONLY place raw JSON becomes SITES. One malformed
+  // record can never abort startup — validateAndNormalizeSites() always
+  // returns a usable list (SITES) plus an aggregate diagnostics object;
+  // nothing downstream ever sees the unvalidated JSON.
+  const { sites, diagnostics } = validateAndNormalizeSites(rawSites);
   SITES = sites;
+  indexSites(SITES);
+  window.ArcheoRuntimeDiagnostics = diagnostics;
+  reportRuntimeDiagnostics(diagnostics);
   precomputeSearchBlobs();
   buildFilterLists();
   renderFilterPanel();
@@ -7476,6 +7933,21 @@ function startApp(sites){
   const restoredFromUrl = applyStateFromUrl();
   if(!restoredFromUrl) applyFilters();
   loadOverlay.classList.add('hidden');
+
+  // v6.4.1: introspection hooks for the regression/smoke test suite,
+  // following the existing window.ArcheoMarkerDisplayManager /
+  // window.ArcheoMapsSpriteAudit precedent. Not used by the app itself.
+  window.ArcheoTestHooks = {
+    getSites: ()=>SITES,
+    getMarkers: ()=>markers,
+    getDiagnostics: ()=>window.ArcheoRuntimeDiagnostics,
+    siteKeyOf, findSiteByKey, findSitesByName, findUniqueSiteByName,
+    hasUsableCoords, formatSiteCoords, normalizeCoordinate, validateCoordinate,
+    sanitizeSourceUrl, statusMetaFor, statusKeyOf,
+    validateAndNormalizeSites,
+    getState: ()=>state,
+    selectSite, openDrawer, buildShareUrl, applyStateFromUrl,
+  };
 }
 
 function loadData(){
