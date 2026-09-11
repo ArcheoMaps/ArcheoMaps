@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ArcheoMaps ’98 v6.4.1 — A Field Atlas of Ancient Places</title>
+<title>ArcheoMaps ’98 v6.4.2 — A Field Atlas of Ancient Places</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
@@ -1803,6 +1803,8 @@ body,#topbar button,#topbar select,#topbar input,.module-head,.section-toggle,.p
 .pattern-picker button.selected{border-style:inset;background:#dfdfdf;}
 .pattern-swatch{display:block;width:30px;height:22px;flex:0 0 30px;border:1px solid #000;}
 .settings-actions{display:grid;grid-template-columns:auto 1fr auto auto auto;gap:6px;padding:0 7px 7px;}
+.mobile-slider-tray{display:none;}
+.mobile-slider-tray[hidden]{display:none!important;}
 .filter-section-note{margin:5px 2px 1px;color:#404040;font:9px/1.35 var(--ms-sans);}
 .unesco-filter-item{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:5px;}
 
@@ -2268,6 +2270,63 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   #statusBar{bottom:0!important;}
   #panel.managed-window,#sitesPanel.managed-window,#drawer.managed-window,#layersPanel.managed-window,#legendPanel.managed-window,#overviewPanel.managed-window,#lassoResultToolbar.managed-window{top:6px!important;bottom:31px!important;max-height:none!important;width:min(520px,calc(100vw - 122px))!important;}
   #timelineBar.managed-window{top:auto!important;bottom:31px!important;height:min(72dvh,390px)!important;max-height:calc(100dvh - 38px)!important;}
+}
+/* V6.4.2 mobile utility windows: Region Selection stays a compact command
+   window, while Settings becomes a touch-first property sheet. */
+@media(max-width:860px), (hover:none) and (pointer:coarse){
+  #lassoResultToolbar.managed-window{
+    top:auto!important;left:70px!important;right:6px!important;
+    bottom:calc(var(--mobile-rail-h) + 8px + env(safe-area-inset-bottom))!important;
+    width:auto!important;height:auto!important;min-height:0!important;max-height:none!important;
+  }
+  #lassoResultToolbar .window-body{height:auto!important;min-height:0!important;overflow:visible!important;padding:5px!important;}
+  #lassoResultToolbar .lasso-result-summary{grid-template-columns:64px minmax(0,1fr);gap:2px 7px;padding:5px 7px;}
+  #lassoResultToolbar .lasso-result-summary,#lassoResultToolbar .lasso-result-summary *{font-size:14px!important;line-height:1.2!important;}
+  #lassoResultToolbar .lasso-result-actions{padding-top:5px;}
+  #lassoResultToolbar .lasso-result-actions button{flex:1 1 0;min-height:44px!important;font-size:16px!important;}
+  #lassoResultToolbar .resize-handle{display:none!important;}
+
+  #settingsBackdrop{align-items:stretch!important;place-items:stretch!important;}
+  #settingsDialog{width:100%!important;height:100%!important;max-height:100%!important;min-height:0!important;}
+  #settingsDialog .settings-titlebar{min-height:48px!important;padding:4px 5px 4px 10px!important;font-size:17px!important;flex:0 0 48px!important;}
+  #settingsDialog .settings-titlebar button{width:42px!important;height:38px!important;font-size:22px!important;}
+  .settings-tabs{flex:0 0 auto;overflow-x:auto!important;overflow-y:hidden!important;padding:6px 7px 0!important;gap:3px!important;scrollbar-width:auto;overscroll-behavior-x:contain;}
+  .settings-tabs button{flex:0 0 auto!important;min-height:48px!important;padding:9px 15px!important;font-size:16px!important;touch-action:manipulation;}
+  .settings-tabs:not(.tabs-at-end){box-shadow:inset -14px 0 10px -10px #000080;}
+  .settings-content{flex:1 1 auto!important;min-height:0!important;margin:0 7px 7px!important;padding:10px!important;overflow-y:auto!important;overflow-x:hidden!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;font-size:16px!important;}
+  .settings-page,.settings-page legend,.settings-live-note,.settings-preview-status{font-size:16px!important;line-height:1.35!important;}
+  .settings-page fieldset{margin-bottom:16px!important;padding:12px!important;}
+  .settings-live-note,.settings-preview-status{padding:9px!important;}
+  .settings-window-grid{grid-template-columns:minmax(110px,1fr) 64px 64px 78px;min-height:52px!important;font-size:16px!important;}
+  .settings-window-grid input[type="checkbox"],.settings-check input[type="checkbox"]{width:26px!important;height:26px!important;min-height:26px!important;}
+  .settings-field{align-items:stretch!important;flex-wrap:wrap!important;gap:8px!important;margin-bottom:14px!important;font-size:16px!important;}
+  .settings-field>input[type="range"]{flex:1 1 100%!important;min-width:100%!important;min-height:48px!important;cursor:pointer;}
+  .settings-field output{min-width:68px!important;padding:6px 8px!important;font-size:16px!important;}
+  .settings-field select{flex:1 1 180px;min-height:48px!important;font-size:16px!important;}
+  .settings-check{gap:10px!important;margin:12px 0!important;font-size:16px!important;min-height:44px!important;}
+  .settings-page button,.pattern-picker button{min-height:48px!important;padding:8px 11px!important;font-size:16px!important;}
+  .pattern-picker,.settings-button-grid{grid-template-columns:1fr!important;}
+  .settings-actions{position:relative;z-index:2;flex:0 0 auto!important;grid-template-columns:1fr 1fr 1fr 1fr!important;gap:5px!important;padding:7px max(7px,env(safe-area-inset-right)) max(7px,env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left))!important;background:var(--win-grey)!important;border-top:2px groove var(--win-grey)!important;}
+  .settings-actions>span{display:none!important;}
+  .settings-actions button{min-width:0!important;min-height:50px!important;padding:6px!important;font-size:16px!important;}
+
+  .mobile-slider-tray{
+    position:fixed;z-index:5100;left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));
+    bottom:calc(72px + env(safe-area-inset-bottom));display:grid;grid-template-columns:52px minmax(90px,1fr) 52px auto;gap:7px;align-items:center;
+    padding:8px;color:#000;background:var(--win-grey);border:2px outset var(--win-grey);box-shadow:3px 3px 0 rgba(0,0,0,.6);
+  }
+  .mobile-slider-tray-title{grid-column:1/-1;font:700 17px/1.2 var(--ms-sans);}
+  .mobile-slider-tray button{min-width:52px;min-height:50px;padding:4px;background:var(--win-grey);border:2px outset var(--win-grey);font:700 20px/1 var(--ms-sans);}
+  .mobile-slider-tray button:active{border-style:inset;}
+  #mobileSliderInput{width:100%;min-width:0;min-height:50px;touch-action:pan-x;}
+  #mobileSliderValue{min-width:72px;padding:7px 5px;text-align:center;background:#fff;border:2px inset var(--win-grey);font:16px "Courier New",monospace;}
+  #mobileSliderDone{grid-column:1/-1;font-size:16px!important;}
+}
+@media(max-width:860px) and (orientation:landscape), (hover:none) and (pointer:coarse) and (orientation:landscape){
+  #lassoResultToolbar.managed-window{top:auto!important;bottom:31px!important;left:auto!important;width:min(390px,calc(100vw - 122px))!important;}
+  html[data-mobile-rail-side="right"] #lassoResultToolbar.managed-window{right:110px!important;}
+  html[data-mobile-rail-side="left"] #lassoResultToolbar.managed-window{left:110px!important;right:auto!important;}
+  .mobile-slider-tray{bottom:10px;}
 }
 /* V6.3 workspace consoles: tabbed filters, Explorer-style list and timeline deck. */
 .timeline-visually-hidden{
@@ -2821,6 +2880,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
         <button type="button" role="menuitem" data-context-action="measure-distance"><span>Measure distance from here</span></button>
         <button type="button" role="menuitem" data-context-action="measure-area"><span>Measure area</span></button>
         <button type="button" role="menuitem" data-context-action="lasso"><span>Select area (lasso)</span></button>
+        <button type="button" role="menuitem" data-context-action="open-region" data-context-region-only hidden><span>Open Region Selection window</span></button>
         <div class="application-menu-separator" role="separator"></div>
         <button type="button" role="menuitem" data-context-action="copy-coordinates"><span>Copy coordinates</span></button>
         <button type="button" role="menuitem" data-context-action="copy-link"><span id="mapContextLinkLabel">Copy map link</span></button>
@@ -2981,7 +3041,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4.1</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4.2</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -3115,6 +3175,14 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
     </div>
     <div class="settings-actions"><button id="settingsDefaults" type="button">Defaults</button><span></span><button id="settingsOk" type="button">OK</button><button id="settingsCancel" type="button">Cancel</button><button id="settingsApply" type="button">Apply</button></div>
   </section>
+  <div id="mobileSliderTray" class="mobile-slider-tray" role="dialog" aria-labelledby="mobileSliderTrayTitle" hidden>
+    <div id="mobileSliderTrayTitle" class="mobile-slider-tray-title">Adjust setting</div>
+    <button id="mobileSliderMinus" type="button" aria-label="Decrease">−</button>
+    <input id="mobileSliderInput" type="range" aria-label="Setting value">
+    <button id="mobileSliderPlus" type="button" aria-label="Increase">+</button>
+    <output id="mobileSliderValue">—</output>
+    <button id="mobileSliderDone" type="button">Done</button>
+  </div>
 </div>
 <div id="appInfoBackdrop" hidden>
   <section id="appInfoDialog" role="dialog" aria-modal="true" aria-labelledby="appInfoTitle" tabindex="-1">
@@ -3142,7 +3210,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.4.1';
+const ARCHEOMAPS_VERSION='6.4.2';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -6899,7 +6967,7 @@ function showLassoResult(polygon,selected){
   activeLassoPolygon=polygon.slice();
   lassoRegionName.textContent=selectedRegionLabel(selected);
   lassoSurfaceArea.textContent=formatArea(sphericalPolygonArea(polygon));
-  lassoSiteCount.textContent=`${selected.length.toLocaleString()} inside region`;
+  lassoSiteCount.textContent=selected.length.toLocaleString();
   window.ArcheoWindowManager?.setOpen('lasso',true);
 }
 
@@ -6984,6 +7052,7 @@ function showMapContextMenu(latlng,originalEvent,site=null){
   setApplicationMenuOpen(null);hideWinTooltip?.();
   mapContextCoordinates.textContent=site?`${site.n} · ${mapContextLatLng.lat.toFixed(6)}, ${mapContextLatLng.lng.toFixed(6)}`:`${mapContextLatLng.lat.toFixed(6)}, ${mapContextLatLng.lng.toFixed(6)}`;
   mapContextMenu.querySelectorAll('[data-context-site-only]').forEach(item=>item.hidden=!site);
+  mapContextMenu.querySelectorAll('[data-context-region-only]').forEach(item=>item.hidden=!state.spatialSelectionIds);
   document.getElementById('mapContextLinkLabel').textContent=site?'Copy site link':'Copy map link';
   mapContextMenu.classList.add('open');
   const wrap=document.getElementById('mapWrap').getBoundingClientRect();
@@ -7011,6 +7080,7 @@ mapContextMenu.addEventListener('click',async ev=>{
   if(action==='measure-distance')startMapTool('distance',point);
   if(action==='measure-area')startMapTool('area',point);
   if(action==='lasso')startMapTool('lasso');
+  if(action==='open-region'&&state.spatialSelectionIds)window.ArcheoWindowManager?.setOpen('lasso',true);
   if(action==='copy-coordinates'){
     const value=`${point.lat.toFixed(6)}, ${point.lng.toFixed(6)}`,copied=await copyTextToClipboard(value);
     setMapToolMessage(copied?`Copied coordinates: ${value}`:`Clipboard unavailable — coordinates: ${value}`);
@@ -7124,8 +7194,49 @@ syncMobileRail();
    from when the dialog (or last Apply) was opened. */
 const settingsBackdrop=document.getElementById('settingsBackdrop');
 const settingsButton=document.getElementById('settingsBtn');
+const settingsTabs=document.querySelector('.settings-tabs');
+const mobileSliderTray=document.getElementById('mobileSliderTray');
+const mobileSliderInput=document.getElementById('mobileSliderInput');
+const mobileSliderValue=document.getElementById('mobileSliderValue');
+let mobileSliderTarget=null;
 let settingsSnapshot=null;
 let settingsReturnFocus=null;
+function syncSettingsTabsOverflow(){
+  settingsTabs.classList.toggle('tabs-at-end',settingsTabs.scrollLeft+settingsTabs.clientWidth>=settingsTabs.scrollWidth-2);
+}
+function settingLabelFor(input){
+  const label=input.closest('label');
+  const text=[...(label?.childNodes||[])].find(node=>node.nodeType===Node.TEXT_NODE&&node.textContent.trim());
+  return text?.textContent.trim()||input.getAttribute('aria-label')||'Adjust setting';
+}
+function syncMobileSliderTrayValue(){
+  if(!mobileSliderTarget)return;
+  mobileSliderInput.value=mobileSliderTarget.value;
+  const output=document.querySelector(`output[for="${mobileSliderTarget.id}"]`);
+  mobileSliderValue.textContent=output?.textContent||mobileSliderTarget.value;
+}
+function closeMobileSliderTray(){
+  if(mobileSliderTray.hidden)return;
+  mobileSliderTray.hidden=true;
+  const target=mobileSliderTarget;mobileSliderTarget=null;
+  requestAnimationFrame(()=>target?.focus?.());
+}
+function openMobileSliderTray(target){
+  if(!isMobileUi()||target.id==='interfaceScale')return;
+  mobileSliderTarget=target;
+  ['min','max','step'].forEach(name=>mobileSliderInput.setAttribute(name,target.getAttribute(name)||''));
+  document.getElementById('mobileSliderTrayTitle').textContent=settingLabelFor(target);
+  mobileSliderTray.hidden=false;syncMobileSliderTrayValue();
+  requestAnimationFrame(()=>mobileSliderInput.focus());
+}
+function setMobileSliderValue(value){
+  if(!mobileSliderTarget)return;
+  const min=Number(mobileSliderTarget.min),max=Number(mobileSliderTarget.max);
+  mobileSliderTarget.value=String(Math.max(min,Math.min(max,value)));
+  mobileSliderTarget.dispatchEvent(new Event('input',{bubbles:true}));
+  mobileSliderTarget.dispatchEvent(new Event('change',{bubbles:true}));
+  syncMobileSliderTrayValue();
+}
 function clearSettingsPreviewIndicators(){
   document.querySelectorAll('[data-layout-preset],[data-arrange]').forEach(btn=>btn.classList.remove('preview-active'));
   const status=document.getElementById('settingsPreviewStatus');if(status)status.textContent='No layout preview selected.';
@@ -7145,9 +7256,10 @@ function openSettings(){
   window.ArcheoMobileUiManager.beginPreview();
   settingsBackdrop.hidden=false;settingsButton.setAttribute('aria-expanded','true');
   window.ArcheoWindowManager.syncSettings();window.ArcheoMarkerDisplayManager.syncSettings();window.ArcheoMobileUiManager.syncSettings();syncPatternPicker();clearSettingsPreviewIndicators();
-  requestAnimationFrame(()=>document.querySelector('[data-settings-tab][aria-selected="true"]')?.focus());
+  requestAnimationFrame(()=>{syncSettingsTabsOverflow();document.querySelector('[data-settings-tab][aria-selected="true"]')?.focus();});
 }
 function closeSettings(){
+  closeMobileSliderTray();
   settingsBackdrop.hidden=true;settingsButton.setAttribute('aria-expanded','false');
   const target=settingsReturnFocus&&settingsReturnFocus.isConnected?settingsReturnFocus:settingsButton;
   settingsReturnFocus=null;requestAnimationFrame(()=>target.focus?.());
@@ -7172,9 +7284,20 @@ document.getElementById('settingsApply').addEventListener('click',()=>{
 document.getElementById('settingsOk').addEventListener('click',()=>{window.ArcheoWindowManager.commitPreview();window.ArcheoMarkerDisplayManager.commitPreview();window.ArcheoMobileUiManager.commitPreview();settingsSnapshot=null;closeSettings();});
 document.getElementById('settingsDefaults').addEventListener('click',()=>{window.ArcheoWindowManager.reset();window.ArcheoMarkerDisplayManager.reset();window.ArcheoMobileUiManager.reset();});
 document.querySelectorAll('[data-settings-tab]').forEach(tab=>tab.addEventListener('click',()=>{
+  closeMobileSliderTray();
   document.querySelectorAll('[data-settings-tab]').forEach(t=>t.setAttribute('aria-selected',String(t===tab)));
   document.querySelectorAll('.settings-page').forEach(p=>{const active=p.id===tab.getAttribute('aria-controls');p.hidden=!active;p.classList.toggle('active',active);});
 }));
+settingsTabs.addEventListener('scroll',syncSettingsTabsOverflow,{passive:true});
+window.addEventListener('resize',syncSettingsTabsOverflow);
+document.querySelectorAll('#settingsDialog input[type="range"]').forEach(input=>{
+  input.addEventListener('pointerdown',ev=>{if(isMobileUi()&&input.id!=='interfaceScale'){ev.preventDefault();openMobileSliderTray(input);}});
+  input.addEventListener('keydown',ev=>{if(isMobileUi()&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();openMobileSliderTray(input);}});
+});
+mobileSliderInput.addEventListener('input',()=>setMobileSliderValue(Number(mobileSliderInput.value)));
+document.getElementById('mobileSliderMinus').addEventListener('click',()=>setMobileSliderValue(Number(mobileSliderTarget?.value||0)-Number(mobileSliderTarget?.step||1)));
+document.getElementById('mobileSliderPlus').addEventListener('click',()=>setMobileSliderValue(Number(mobileSliderTarget?.value||0)+Number(mobileSliderTarget?.step||1)));
+document.getElementById('mobileSliderDone').addEventListener('click',closeMobileSliderTray);
 document.querySelectorAll('[data-setting-visible]').forEach(cb=>cb.addEventListener('change',()=>{
   if(cb.dataset.settingVisible==='overview')setOverviewOpen(cb.checked);
   else window.ArcheoWindowManager.setOpen(cb.dataset.settingVisible,cb.checked);
@@ -7481,7 +7604,7 @@ document.addEventListener('pointerover',ev=>{const t=ev.target.closest('[title],
 document.addEventListener('pointerout',ev=>{if(tooltipTarget&&(!ev.relatedTarget||!tooltipTarget.contains(ev.relatedTarget)))hideWinTooltip();});
 document.addEventListener('focusin',ev=>{const t=ev.target.closest('[title],[data-tooltip]');if(t)queueWinTooltip(t);});
 document.addEventListener('focusout',hideWinTooltip);
-document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){hideWinTooltip();if(!settingsBackdrop.hidden)cancelSettings();}});
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'){hideWinTooltip();if(!mobileSliderTray.hidden){ev.preventDefault();closeMobileSliderTray();}else if(!settingsBackdrop.hidden)cancelSettings();}});
 
 /* ==================== shareable map state (new) ====================
    Encodes the parts of `state` (plus the live map view) that are worth
@@ -7881,7 +8004,7 @@ function showRuntimeDiagnosticsBanner(diagnostics){
   document.body.appendChild(banner);
 }
 function reportRuntimeDiagnostics(diagnostics){
-  console.info('ArcheoMaps v6.4.1 runtime diagnostics', diagnostics);
+  console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION} runtime diagnostics`, diagnostics);
   const degraded = diagnostics.missingIds + diagnostics.duplicateIds + diagnostics.invalidCoordinates
     + diagnostics.invalidFieldShapes + diagnostics.unexpectedWorkflowStates
     + diagnostics.malformedOrUnnamespacedTags + diagnostics.invalidSourceUrls;
