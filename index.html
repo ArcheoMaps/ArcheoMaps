@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>ArcheoMaps ’98 v6.4.2 — A Field Atlas of Ancient Places</title>
+<title>ArcheoMaps ’98 v6.4.3 — A Field Atlas of Ancient Places</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css" />
 <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css" />
@@ -3041,7 +3041,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
         </div>
         <div class="resize-handle resize-e" data-resize="e"></div><div class="resize-handle resize-s" data-resize="s"></div><div class="resize-handle resize-se" data-resize="se"></div>
       </div>
-      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4.2</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
+      <div id="statusBar" role="status"><span id="statusCoords">Ready</span><span id="statusHint">Move across the map to inspect coordinates</span><span id="statusStats"><span id="buildVersion">v6.4.3</span> · <span id="statusZoom">Zoom —</span> · <span id="visibleCount">0</span> / <span id="totalCount">0</span> sites</span></div>
     </main>
 
     <aside id="sitesPanel" class="managed-window window-pattern-plain" data-window-id="sites" aria-hidden="true">
@@ -3210,7 +3210,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.4.2';
+const ARCHEOMAPS_VERSION='6.4.3';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -3233,7 +3233,7 @@ const ICELAND_PATCH = {"type":"FeatureCollection","features":[{"type":"Feature",
 const TYPE_ORDER = [
   'Settlement', 'Religious Site', 'Monument', 'Tomb', 'Fortification',
   'Palace', 'Infrastructure', 'Cave', 'Archaeological Site', 'Battlefield',
-  'Industrial Site', 'Observatory', 'Landscape', 'Other'
+  'Industrial Site', 'Observatory', 'Natural Site', 'Landscape', 'Other'
 ];
 const UNRESOLVED_TYPE = '__unresolved__';
 const TYPE_META = {
@@ -3249,6 +3249,7 @@ const TYPE_META = {
   'Battlefield':          { color: '#7A2E2E' },
   'Industrial Site':      { color: '#5A6474' },
   'Observatory':          { color: '#3E7A8C' },
+  'Natural Site':         { color: '#3F7F5F' },
   'Landscape':            { color: '#7A5FA0' },
   'Other':                { color: '#ABA48C' },
 };
@@ -3261,9 +3262,10 @@ function typeColorOf(key){ return (TYPE_META[key] || TYPE_META[UNRESOLVED_TYPE])
 // Tag namespaces, in the order defined by TAXONOMY.md §6. Only namespaces
 // actually present in the loaded dataset get rendered as a group.
 const NAMESPACE_ORDER = [
-  'architecture','archaeology','art','cave','construction','funerary',
-  'infrastructure','industry','landscape','maritime','military',
-  'monument','prehistoric','religion','settlement'
+  'architecture','archaeology','art','biome','cave','construction','ecology',
+  'funerary','geology','hydrology','infrastructure','industry','landform',
+  'landscape','marine','maritime','military','monument','prehistoric',
+  'religion','settlement'
 ];
 // v6.4.1: synthetic namespace for tags that don't match "namespace:value"
 // (audit fix #5). These are never dropped — they surface in their own
@@ -4018,7 +4020,7 @@ const TAG_SPRITE_RULES=Object.freeze([
 ]);
 const SAFE_TYPE_SPRITES=Object.freeze({
   'Settlement':'S003','Religious Site':'S012','Fortification':'S038','Cave':'S067',
-  'Archaeological Site':'S000','Landscape':'S000','Observatory':'S000','Other':'S000',
+  'Archaeological Site':'S000','Natural Site':'S000','Landscape':'S000','Observatory':'S000','Other':'S000',
   'Monument':'S000','Infrastructure':'S000','Battlefield':'S000','Industrial Site':'S000'
 });
 
