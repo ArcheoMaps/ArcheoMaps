@@ -1376,6 +1376,370 @@
       "priority": "normal",
       "locked": false,
       "index": 95
+    },
+    {
+      "address": "S096",
+      "name": "Generic natural or protected landscape",
+      "id": "sprite:generic-natural-or-protected-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 96
+    },
+    {
+      "address": "S097",
+      "name": "Temperate forest",
+      "id": "sprite:temperate-forest",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 97
+    },
+    {
+      "address": "S098",
+      "name": "Tropical rainforest",
+      "id": "sprite:tropical-rainforest",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 98
+    },
+    {
+      "address": "S099",
+      "name": "Mountain or highland",
+      "id": "sprite:mountain-or-highland",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 99
+    },
+    {
+      "address": "S100",
+      "name": "Cliff or escarpment",
+      "id": "sprite:cliff-or-escarpment",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 100
+    },
+    {
+      "address": "S101",
+      "name": "Canyon or gorge",
+      "id": "sprite:canyon-or-gorge",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 101
+    },
+    {
+      "address": "S102",
+      "name": "Desert or dune landscape",
+      "id": "sprite:desert-or-dune-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 102
+    },
+    {
+      "address": "S103",
+      "name": "Grassland, steppe or savanna",
+      "id": "sprite:grassland-steppe-or-savanna",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 103
+    },
+    {
+      "address": "S104",
+      "name": "Tundra or polar landscape",
+      "id": "sprite:tundra-or-polar-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 104
+    },
+    {
+      "address": "S105",
+      "name": "Volcano",
+      "id": "sprite:volcano",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 105
+    },
+    {
+      "address": "S106",
+      "name": "Geothermal site",
+      "id": "sprite:geothermal-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 106
+    },
+    {
+      "address": "S107",
+      "name": "Glacier or icefield",
+      "id": "sprite:glacier-or-icefield",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 107
+    },
+    {
+      "address": "S108",
+      "name": "Geological formation",
+      "id": "sprite:geological-formation",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 108
+    },
+    {
+      "address": "S109",
+      "name": "Fossil or palaeontological site",
+      "id": "sprite:fossil-or-palaeontological-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 109
+    },
+    {
+      "address": "S110",
+      "name": "River landscape",
+      "id": "sprite:river-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 110
+    },
+    {
+      "address": "S111",
+      "name": "Lake landscape",
+      "id": "sprite:lake-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 111
+    },
+    {
+      "address": "S112",
+      "name": "Wetland or marsh",
+      "id": "sprite:wetland-or-marsh",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 112
+    },
+    {
+      "address": "S113",
+      "name": "Waterfall",
+      "id": "sprite:waterfall",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 113
+    },
+    {
+      "address": "S114",
+      "name": "Mangrove landscape",
+      "id": "sprite:mangrove-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 114
+    },
+    {
+      "address": "S115",
+      "name": "Coastal or marine landscape",
+      "id": "sprite:coastal-or-marine-landscape",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 115
+    },
+    {
+      "address": "S116",
+      "name": "Island or archipelago",
+      "id": "sprite:island-or-archipelago",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 116
+    },
+    {
+      "address": "S117",
+      "name": "Coral reef or atoll",
+      "id": "sprite:coral-reef-or-atoll",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 117
+    },
+    {
+      "address": "S118",
+      "name": "Marine reserve",
+      "id": "sprite:marine-reserve",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 118
+    },
+    {
+      "address": "S119",
+      "name": "Wildlife reserve or habitat",
+      "id": "sprite:wildlife-reserve-or-habitat",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 119
+    },
+    {
+      "address": "S120",
+      "name": "Bird sanctuary or migratory habitat",
+      "id": "sprite:bird-sanctuary-or-migratory-habitat",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 120
+    },
+    {
+      "address": "S121",
+      "name": "Biodiversity or ecosystem site",
+      "id": "sprite:biodiversity-or-ecosystem-site",
+      "matches": [],
+      "fallback": false,
+      "anchor": [
+        24,
+        48
+      ],
+      "priority": "normal",
+      "locked": false,
+      "index": 121
     }
   ],
   "heroes": [
