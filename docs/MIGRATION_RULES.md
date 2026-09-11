@@ -1,8 +1,11 @@
+Warning: truncated output (original token count: 61989)
+Total output lines: 2770
+
 # ArcheoMaps — Migration Rules
 
-Status: **STABLE — specification only.** No code has been written. `SITES`, `archeomaps_1.html`, and `TAXONOMY.md` have not been touched to produce this document.
+Status: **STABLE — specification only.** No catalogue or runtime code is changed by this document.
 
-This is **v2.5** of this document. v2 was produced by an independent audit of v1 (the first policy draft) against `TAXONOMY.md`, `MIGRATION_DRY_RUN.md`, `claude/ARCHEOMAPS_AUDIT.md`, `claude/ARCHEOMAPS_MIGRATION_PLAN.md`, and the live `archeomaps_1.html` data; that history is preserved below and in §20. v2.1 was a targeted, specification-only correction pass over v2 addressing two structural inconsistencies a follow-up audit found — nothing else was redesigned:
+This is **v2.7** of this document. **v2.7 aligns the active natural-feature outcomes with Taxonomy v1.7:** sufficiently evidenced natural records now classify as `Natural Site`, while culturally significant natural landscapes remain `Landscape`. The historical inspections, counts, decision states, and truncation safeguards are unchanged; only the former taxonomy-gap outcome (`Other`) and deprecated natural `landscape:*` Tags are superseded. v2 was produced by an independent audit of v1 (the first policy draft) against `TAXONOMY.md`, `MIGRATION_DRY_RUN.md`, `claude/ARCHEOMAPS_AUDIT.md`, `claude/ARCHEOMAPS_MIGRATION_PLAN.md`, and the live `archeomaps_1.html` data; that history is preserved below and in §20. v2.1 was a targeted, specification-only correction pass over v2 addressing two structural inconsistencies a follow-up audit found — nothing else was redesigned:
 
 1. §7 (Rule Precedence & Fallback Standard) previously modeled a chain's terminal point as always a single rule, but the Mound and Wall chains both actually use two mutually exclusive terminal rules (a `*_NO_SIGNAL_01 → RESEARCH` / `*_FALLBACK_01 → REVIEW` pair). §7.3 now formally defines this as a third, explicit fallback form — a **branching terminal fallback** — used only where the branch conditions are mutually exclusive and, together, exhaust every record reaching that point. See §7.3 form 3 and §7.5.
 2. §5.3 rule 1 previously contradicted itself about whether a successful `AUTO`/`CONDITIONAL` classification gets a `workflow.type` entry. It now unambiguously does not: `workflow.type` exists only for a record that actually enters a human workflow step (REVIEW, RESEARCH, or their resolutions). Provenance (§4) alone is the complete audit trail for a clean automatic classification. The now-unreachable `"unresolved"` state was dropped from the `workflow.type.state` enum as a direct consequence.
@@ -1020,12 +1023,12 @@ input_condition: text explicitly names a specific culture/people AND documents a
                  (Record-scope principle, §8).
 output:
   canonicalType: "Landscape"
-  tags: ["landscape:sacred", "landscape:forest"]   # archaeology:ruins MAY be added
+  tags: ["landscape:sacred", "biome:forest"]       # archaeology:ruins MAY be added
                                                      # if built remains are explicitly
                                                      # documented within the landscape
                                                      # — TAXONOMY.md §8, §43 restraint
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13 — a natural landmark with documented cultural,
+rationale: TAXONOMY.md §4.14 — a natural landmark with documented cultural,
   mythological, or religious significance is Landscape even where constructed
   remains are also present within it ("even if it has no constructed archaeological
   remains" — presence of remains strengthens, not weakens, the case). This condition
@@ -1049,16 +1052,11 @@ input_condition: text is NOT visibly truncated before completion (i.e. the recor
                  scope is the natural feature itself, not a built or archaeological
                  structure it happens to mention (§8).
 output:
-  canonicalType: "Other"
-  tags: []   # landscape:forest MAY be added descriptively per curator judgement;
-             # not required — Type = Other already signals the record falls outside
-             # this taxonomy's historical/cultural scope (§43 restraint on
-             # redundant tagging)
+  canonicalType: "Natural Site"
+  tags: ["biome:forest"]
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13-§4.14 — a natural feature with no documented cultural or
-  historical content beyond its physical existence does not belong in this taxonomy
-  as a historical/archaeological site; §44 prescribes Other (or leave unclassified)
-  rather than guessing. THE COMPLETENESS REQUIREMENT IS LOAD-BEARING (truncated-text
+rationale: TAXONOMY.md §4.13 and Migration Rule 15 — a sufficiently evidenced natural
+  feature now belongs under Natural Site. THE COMPLETENESS REQUIREMENT IS LOAD-BEARING (truncated-text
   evidence rule, above): this rule's condition depends on the ABSENCE of cultural
   content across the whole record. That absence is only verifiable from a complete
   text. A visibly truncated record can never satisfy this rule, regardless of how
@@ -1409,156 +1407,7 @@ rationale: TAXONOMY.md §4.2 — an explicit religious institution identity, whe
   established by text or by an unambiguous name, is a Religious Site. A distant or
   differently-named place mentioned only as a distance/location bearing (e.g. "a short
   distance west of [City]") does not compete with this and does not block the rule.
-fallback: condition not met → proceed to RUINS_PALACE_01.
-found_in_current_dataset: 4 of 346, including one record where the correct Religious
-  Site identity was stated plainly in the record's own name but had been missed
-  entirely at first pass because an unrelated city name elsewhere in the text matched
-  a keyword scan first — the exact failure this rule's ordering (checked before
-  RUINS_SETTLEMENT_01) exists to prevent.
-```
-
-### RUINS_PALACE_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text identifies the record's own scope — not a component of a larger
-                 settlement record (§8; see TAXONOMY.md §4.6's own settlement/palace
-                 split) — as a monumental elite or royal residence.
-output:
-  canonicalType: "Palace"
-  tags: ["architecture:palace", "archaeology:ruins" per the tag rule below]
-confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.6. A nearby settlement named only as a distance/location
-  bearing does not compete with an explicit elite-residence statement about the
-  record's own structure.
-fallback: condition not met → proceed to RUINS_MONUMENT_01.
-found_in_current_dataset: 1 of 346.
-```
-
-### RUINS_MONUMENT_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text positively describes the record's own scope as a megalithic or
-                 monumental stone structure (stone circle, alignment, standing-stone
-                 field, or comparable arrangement) per TAXONOMY.md §4.3, and the record
-                 is not itself a settlement, tomb, or fortification that happens to
-                 include such a feature.
-output:
-  canonicalType: "Monument"
-  tags: [<monument:* value the text actually supports>, "archaeology:ruins" per the
-         tag rule below]
-confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.3.
-fallback: condition not met → proceed to RUINS_INFRASTRUCTURE_01.
-found_in_current_dataset: 1 of 346.
-```
-
-### RUINS_INFRASTRUCTURE_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text identifies the record's own scope as a standalone transport,
-                 hydraulic, or communication work (road, bridge, aqueduct, canal, dam,
-                 harbour, port) per TAXONOMY.md §4.7 — not a settlement that happens to
-                 have functioned as, or contained, such a work (§8; a city described as
-                 "a trading port" remains Settlement per RUINS_SETTLEMENT_01, with
-                 settlement:port/settlement:trade-centre as the appropriate tag,
-                 unless the record's own scope is explicitly and solely the
-                 infrastructure work itself).
-output:
-  canonicalType: "Infrastructure"
-  tags: [<infrastructure:* value the text actually supports>, "archaeology:ruins" only
-         where positively supported — see the tag rule below; a functioning
-         infrastructure work is not automatically "ruined"]
-confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.7.
-fallback: condition not met → proceed to RUINS_CIVIC_ARCHSITE_01.
-found_in_current_dataset: 2 of 346 (an explicitly-named ancient port; an explicitly-named
-  road network). Neither record's text uses ruin/remains/abandoned language, so
-  archaeology:ruins is withheld from one and retained on the other only where the text
-  independently supports it — see each record's own entry in the Decision Matrix; this
-  is not a blanket rule for the bucket.
-```
-
-### RUINS_CIVIC_ARCHSITE_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text identifies the record's own scope as isolated civic or public
-                 architecture — a forum, theatre, amphitheatre, stadium, or bath
-                 complex — explicitly matching TAXONOMY.md §4.9's second named fallback
-                 case ("isolated civic or public architecture... not documented as part
-                 of a larger settlement"), even where a containing city is named as
-                 location context (§8: the containing city is not this record's scope).
-output:
-  canonicalType: "Archaeological Site"
-  tags: [<architecture:* value the text actually supports — e.g. architecture:forum>,
-         "archaeology:ruins" per the tag rule below]
-confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.9, second bullet. This rule exists specifically to prevent
-  the record-scope error of promoting the containing city (mentioned only as location)
-  to Settlement merely because it is named — see RUINS_SETTLEMENT_01's mechanical test.
-fallback: condition not met → proceed to RUINS_MULTICOMPONENT_ARCHSITE_01.
-found_in_current_dataset: 1 of 346 (a forum/plaza explicitly described as surrounded by
-  the ruins of government buildings "at the center of the city of Rome" — the city is
-  the container, not this record's own scope).
-```
-
-### RUINS_MULTICOMPONENT_ARCHSITE_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text explicitly establishes the record's own scope as a multi-site,
-                 multi-component, or multi-period grouping or complex — e.g. "a group of
-                 archaeological sites," "the collective name for N related sites," "an
-                 archaeological complex including [N] towns/villages," "a trail of...
-                 sites," or a record explicitly combining two or more otherwise-distinct
-                 named places under one heading — where no single structural Type
-                 adequately captures the whole, per TAXONOMY.md §4.9. This condition
-                 must be satisfied by the record's own framing of its scope, not by the
-                 mere fact that its text mentions more than one place.
-output:
-  canonicalType: "Archaeological Site"
-  tags: ["archaeology:ruins" only where positively supported by the text — see the tag
-         rule below; several records in this bucket describe a still-functioning modern
-         city, town, or surviving heritage trail, not ruined material]
-confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.9 — "multi-period archaeological site where no single
-  structural Type adequately describes the site" is this Type's own explicit example
-  case, extended here to explicit multi-site groupings/collections of the same
-  evidentiary shape.
-fallback: condition not met → proceed to RUINS_LANDSCAPE_01.
-found_in_current_dataset: 11 of 346.
-```
-
-### RUINS_LANDSCAPE_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text explicitly establishes the record's own scope as a landscape-,
-                 valley-, or region-scale cultural or archaeological feature that
-                 contains settlements, structures, or sites as components — or a park/
-                 reserve whose own framing spans cultural and natural content together
-                 — per TAXONOMY.md §4.13. The settlements/structures named within it are
-                 components of the landscape, not the record's own singular identity
-                 (§8) — this is the Ruins-specific instance of the same principle
-                 `RUINS_MULTICOMPONENT_ARCHSITE_01` applies at complex scale and
-                 `RUINS_CIVIC_ARCHSITE_01` applies at single-structure scale.
-output:
-  canonicalType: "Landscape"
-  tags: ["landscape:archaeological" or "landscape:cultural" as the text supports,
-         "archaeology:ruins" only where positively supported — see the tag rule below;
-         a landscape explicitly documented as "still inhabited... today" does not
-         receive this tag]
-confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13.
-fallback: condition not met → proceed to RUINS_SETTLEMENT_01.
-found_in_current_dataset: 5 of 346.
-```
-
-### RUINS_SETTLEMENT_01
-```text
-scope: legacy type = "Ruins"
-input_condition: text contains an explicit, positive statement that THE RECORD ITSELF —
-                 not a nearby place, not a modern place containing or named after the
-                 record, not an administrative location, not a component inside a wider
-                 site or landscape (see RUINS_MULTICOMPONENT_ARCHSITE_01/
-                 RUINS_LANDSCAPE_01 above, both of which take precedence when their own
+fallback: condition not met → proceed to …1989 tokens truncated…                RUINS_LANDSCAPE_01 above, both of which take precedence when their own
                  conditions are met), not an etymological gloss of the record's name,
                  not a place introduced only for comparison, and not a settlement merely
                  associated with or geographically separate from the mapped record — is
@@ -1980,10 +1829,10 @@ output:
   canonicalType: "Other"
   tags: [<architecture:* value the name actually supports — e.g. architecture:house>]
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.14. A single named dwelling is existing record data
+rationale: TAXONOMY.md §4.15. A single named dwelling is existing record data
   (Migration Principle 1.2) but does not clear TAXONOMY.md §4.1's settlement-scope
   bar — no canonical Type fits a standalone named dwelling without distortion, so
-  Other is correct per §4.14/Migration Rule 13, not a forced Settlement reading.
+  Other is correct per §4.15/Migration Rule 13, not a forced Settlement reading.
 correction_note: this bucket's sole current member (*Viking Longhouse*, site-0209) was
   originally assigned to a since-retired `NULLTYPE_SETTLEMENT_NAMED_01` bucket that
   would have generalized "the record's own name contains an unambiguous structural/
@@ -2011,9 +1860,9 @@ input_condition: record's own text or title explicitly self-identifies (as "a cu
 output:
   canonicalType: "Landscape"
   tags: [<landscape:* value the text actually supports, e.g. landscape:cultural,
-         landscape:archaeological, landscape:island — omit if unsupported>]
+         landscape:archaeological, landform:island — omit if unsupported>]
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13 — a landscape-scale cultural or archaeological feature
+rationale: TAXONOMY.md §4.14 — a landscape-scale cultural or archaeological feature
   containing settlements/structures/sites as components remains Landscape, not
   Settlement or Archaeological Site, when the record's own framing is the unified
   landscape (§8; the record-scope principle applied at landscape scale, the same way
@@ -2312,9 +2161,9 @@ input_condition: record's own text explicitly names a specific culture/people AN
 output:
   canonicalType: "Landscape"
   tags: ["landscape:sacred", <a secondary landscape:* value the text supports, e.g.
-         landscape:mountain — omit if unsupported>]
+         landform:mountain — omit if unsupported>]
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13 — a natural landmark with documented cultural,
+rationale: TAXONOMY.md §4.14 — a natural landmark with documented cultural,
   mythological, or religious significance is Landscape even without constructed
   remains. This condition rests on POSITIVE evidence, so it fires identically on
   complete or truncated text provided the required positive evidence appears before
@@ -2330,15 +2179,15 @@ input_condition: record's own text documents specific, positive cultural, artist
                  historical significance attached to the natural landmark/landscape
                  itself (e.g. a recurring subject of named major artworks or
                  literature, a documented historical episode) — not merely a physical
-                 description — satisfying TAXONOMY.md §4.13's documented-significance
+                 description — satisfying TAXONOMY.md §4.14's documented-significance
                  test without necessarily rising to the religious/mythological bar of
                  NULLTYPE_LANDSCAPE_SACRED_01 above.
 output:
   canonicalType: "Landscape"
   tags: ["landscape:cultural", <a secondary landscape:* value the text supports, e.g.
-         landscape:mountain — omit if unsupported>]
+         landform:mountain — omit if unsupported>]
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13. Like NULLTYPE_LANDSCAPE_SACRED_01, this rests on
+rationale: TAXONOMY.md §4.14. Like NULLTYPE_LANDSCAPE_SACRED_01, this rests on
   positive evidence and is truncation-safe on that basis.
 fallback: condition not met → proceed to NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01.
 found_in_current_dataset: 20 of 537.
@@ -2351,20 +2200,19 @@ input_condition: record's own text is NOT visibly truncated before completion (i
                  the record's text reaches its own end) AND documents purely
                  natural/ecological/biological/geological significance with no
                  cultural, mythological, religious, or archaeological content anywhere
-                 in the (complete) record, per TAXONOMY.md §4.13/§4.14/Migration Rule
+                 in the (complete) record, per TAXONOMY.md §4.13/Migration Rule
                  15. Mirrors FOREST_NATURAL_COMPLETE_01 (§13).
 output:
-  canonicalType: "Other"
-  tags: []
+  canonicalType: "Natural Site"
+  tags: [<one or more source-supported biome:/landform:/geology:/hydrology:/marine:/ecology: values>]
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.13-§4.14, Migration Rule 15. THE COMPLETENESS REQUIREMENT IS
+rationale: TAXONOMY.md §4.13, Migration Rule 15. THE COMPLETENESS REQUIREMENT IS
   LOAD-BEARING (truncated-text evidence rule): this rule's condition depends on the
   ABSENCE of cultural/historical content across the whole record, which is only
   verifiable from a complete text. A visibly truncated record can never satisfy this
   rule and must fall through to NULLTYPE_OTHER_MODERN_POSITIVE_01 or
-  NULLTYPE_INSUFFICIENT_EVIDENCE_01 instead. A descriptive landscape:* tag MAY be
-  added per curator judgement; not required — Type = Other already signals the record
-  falls outside this taxonomy's historical/cultural scope (§43 restraint).
+  NULLTYPE_INSUFFICIENT_EVIDENCE_01 instead. Add only natural-science Tags explicitly
+  supported by the record; the broad Type never licenses guessed biome or landform detail.
 fallback: condition not met → proceed to NULLTYPE_OTHER_MODERN_POSITIVE_01.
 found_in_current_dataset: 70 of 537.
 ```
@@ -2383,7 +2231,7 @@ output:
   canonicalType: "Other"
   tags: []
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.14. Distinguished from NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01
+rationale: TAXONOMY.md §4.15. Distinguished from NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01
   (reserved for complete text, where an absence-of-cultural-content conclusion is safe
   because there is no missing continuation to worry about) precisely because this
   rule's classifying fact is POSITIVE and established before any cutoff — the
@@ -2418,7 +2266,7 @@ output:
   canonicalType: "Other"
   tags: []
 confidence: CONDITIONAL
-rationale: TAXONOMY.md §4.14/Migration Rule 13 — genuine significance with no
+rationale: TAXONOMY.md §4.15/Migration Rule 13 — genuine significance with no
   non-distorting canonical Type is the textbook Other case, not a reason to force a
   broader Type. Includes the corrected outcome for *Land of Frankincense* (site-1586,
   correction pass v3): its ruin/archaeological language describes only the Shisr
@@ -2472,29 +2320,20 @@ confidence: REVIEW
 rationale: §2 — positive evidence for two candidates is real evidence, just not
   self-resolving evidence.
 fallback: if this rule's own condition is not met, proceed to
-  NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01 (§7.3).
+  NULLTYPE_OBSERVATORY_BOUNDARY_01 (§7.3).
 found_in_current_dataset: 2 of 537 (e.g. *Herxheim* — ritual centre vs. mass grave;
   *Struve Geodetic Arc* — Infrastructure vs. Monument vs. Other, all defensible).
 ```
 
-### NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01 → REVIEW
+### NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01 — RETIRED in v2.7
 ```text
-scope: type === null
-input_condition: record documents substantive, specific, globally significant history
-                 attached to a natural landmark, but whether that history clears
-                 TAXONOMY.md §4.13's "cultural, mythological, or religious" bar for
-                 Landscape (as opposed to defaulting to Other per §4.14) is a genuine
-                 taxonomy-boundary policy question, not a record-evidence gap.
-output: none assigned automatically.
-confidence: REVIEW
-rationale: §2 — this is a cross-Type/taxonomy-boundary judgement call for a human
-  policy decision, not missing information (the historical significance itself is not
-  in doubt).
-fallback: if this rule's own condition is not met, proceed to
-  NULLTYPE_OBSERVATORY_BOUNDARY_01 (§7.3).
-found_in_current_dataset: 1 of 537 (*Galápagos Islands* — Darwin/evolution history is
-  substantive and undisputed, but whether scientific-historical significance clears
-  §4.13's cultural/mythological/religious bar is the open question).
+scope: none — retained for audit history only; it must not fire.
+rationale: Taxonomy v1.7 resolves the former Landscape-vs-Other gap by adding
+  Natural Site. Its previous member, Galápagos Islands, now reaches
+  NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01 and receives Natural Site plus supported
+  natural-science Tags. Scientific-historical association may coexist without
+  forcing the record into cultural Landscape.
+found_in_current_dataset: 0 active; 1 former REVIEW reclassified CONDITIONAL.
 ```
 
 ### NULLTYPE_OBSERVATORY_BOUNDARY_01 → REVIEW
@@ -2597,28 +2436,28 @@ found_in_current_dataset: 2 of 537 (*The Money Pit* — substantive excavated ev
 
 **Retired candidate bucket (do not resurrect as an active rule):** `NULLTYPE_SETTLEMENT_NAMED_01` — an early candidate rule that would have generalized "the record's own name contains an unambiguous structural/functional term" directly to `Settlement` on empty text. Independent review found its sole member, *Viking Longhouse* (site-0209), does not meet TAXONOMY.md §4.1's settlement-scope requirement (a single named dwelling is not a settlement), and corrected it to `Other` + `architecture:house` under `NULLTYPE_OTHER_NAMED_01` above instead. `NULLTYPE_SETTLEMENT_NAMED_01` therefore has 0 members in the approved Decision Matrix and does not appear in the rule chain below — it is documented here, in this section's inspection history, purely so a future implementation does not reintroduce it by mistaking its absence for an oversight.
 
-**Chain:** `NULLTYPE_ARCHSITE_EXPLICIT_01` → `NULLTYPE_BATTLEFIELD_NAMED_01` → `NULLTYPE_MONUMENT_NAMED_01` → `NULLTYPE_INDUSTRIAL_NAMED_01` → `NULLTYPE_OTHER_NAMED_01` → `NULLTYPE_LANDSCAPE_MULTICOMPONENT_01` → `NULLTYPE_MULTICOMPONENT_ARCHSITE_01` → `NULLTYPE_MULTISETTLEMENT_SCOPE_01` → `NULLTYPE_TOMB_01` → `NULLTYPE_RELIGIOUS_01` → `NULLTYPE_PALACE_01` → `NULLTYPE_MONUMENT_01` → `NULLTYPE_INFRASTRUCTURE_01` → `NULLTYPE_INDUSTRIAL_01` → `NULLTYPE_CIVIC_ARCHSITE_01` → `NULLTYPE_SETTLEMENT_01` → `NULLTYPE_LANDSCAPE_SACRED_01` → `NULLTYPE_LANDSCAPE_CULTURAL_01` → `NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01` → `NULLTYPE_OTHER_MODERN_POSITIVE_01` → `NULLTYPE_OTHER_NO_FITTING_TYPE_01` → `NULLTYPE_CONTESTED_ORIGIN_01` → `NULLTYPE_AMBIGUOUS_01` → `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01` → `NULLTYPE_OBSERVATORY_BOUNDARY_01` → `NULLTYPE_INSUFFICIENT_EVIDENCE_01` → `NULLTYPE_FALLBACK_01` (terminal). Twenty-seven active rules — the longest chain in this document — because this legacy value produced eleven distinct outcomes (nine canonical Types plus REVIEW and RESEARCH), more than any prior group, without a single taxonomy-authorized default to lean on (unlike Ruins' Migration Rule 14 baseline).
+**Chain:** `NULLTYPE_ARCHSITE_EXPLICIT_01` → `NULLTYPE_BATTLEFIELD_NAMED_01` → `NULLTYPE_MONUMENT_NAMED_01` → `NULLTYPE_INDUSTRIAL_NAMED_01` → `NULLTYPE_OTHER_NAMED_01` → `NULLTYPE_LANDSCAPE_MULTICOMPONENT_01` → `NULLTYPE_MULTICOMPONENT_ARCHSITE_01` → `NULLTYPE_MULTISETTLEMENT_SCOPE_01` → `NULLTYPE_TOMB_01` → `NULLTYPE_RELIGIOUS_01` → `NULLTYPE_PALACE_01` → `NULLTYPE_MONUMENT_01` → `NULLTYPE_INFRASTRUCTURE_01` → `NULLTYPE_INDUSTRIAL_01` → `NULLTYPE_CIVIC_ARCHSITE_01` → `NULLTYPE_SETTLEMENT_01` → `NULLTYPE_LANDSCAPE_SACRED_01` → `NULLTYPE_LANDSCAPE_CULTURAL_01` → `NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01` → `NULLTYPE_OTHER_MODERN_POSITIVE_01` → `NULLTYPE_OTHER_NO_FITTING_TYPE_01` → `NULLTYPE_CONTESTED_ORIGIN_01` → `NULLTYPE_AMBIGUOUS_01` → `NULLTYPE_OBSERVATORY_BOUNDARY_01` → `NULLTYPE_INSUFFICIENT_EVIDENCE_01` → `NULLTYPE_FALLBACK_01` (terminal). Twenty-six active rules plus one retired audit-only rule.
 
 **Tag note (applies across all null/missing-Type outcomes):**
 - No legacy `type` string exists for this group, so there is no Ruins-style "legacy value implies a Tag" pattern to guard against in the first place — every Tag above is earned strictly from the record's own text or (on empty text) its name, per Migration Principle 1.2, exactly like every other rule in this document.
 - Do not reflexively add `archaeology:archaeological-site` to any `Archaeological Site` output (`NULLTYPE_ARCHSITE_EXPLICIT_01`, `NULLTYPE_MULTICOMPONENT_ARCHSITE_01`, `NULLTYPE_CIVIC_ARCHSITE_01`) merely because `canonicalType = "Archaeological Site"` — TAXONOMY.md §8/§43, the same restraint already applied to every prior group's Archaeological Site outputs.
 - Do not default a specific `settlement:*` subtype (e.g. `settlement:urban`) on `NULLTYPE_SETTLEMENT_01` outputs, or a specific `architecture:*`/`monument:*` subtype on any other rule's output, merely because it is a plausible-looking value — TAXONOMY.md §20/§43. Use the most specific value the record's own text actually supports; omit the subtype tag entirely otherwise.
-- `NULLTYPE_MULTISETTLEMENT_SCOPE_01`, `NULLTYPE_CONTESTED_ORIGIN_01`, `NULLTYPE_AMBIGUOUS_01`, `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01`, `NULLTYPE_OBSERVATORY_BOUNDARY_01`, `NULLTYPE_INSUFFICIENT_EVIDENCE_01`, and `NULLTYPE_FALLBACK_01` (REVIEW/RESEARCH) assign no Tags automatically, matching the "output: none assigned automatically" convention used identically by every REVIEW/RESEARCH rule in this document since Forest (§13).
+- `NULLTYPE_MULTISETTLEMENT_SCOPE_01`, `NULLTYPE_CONTESTED_ORIGIN_01`, `NULLTYPE_AMBIGUOUS_01`, `NULLTYPE_OBSERVATORY_BOUNDARY_01`, `NULLTYPE_INSUFFICIENT_EVIDENCE_01`, and `NULLTYPE_FALLBACK_01` (REVIEW/RESEARCH) assign no Tags automatically.
 
 **Provenance/workflow compatibility (§4–§5, reused as-is, no redesign):**
 - Every CONDITIONAL hit above (`NULLTYPE_ARCHSITE_EXPLICIT_01` through `NULLTYPE_OTHER_NO_FITTING_TYPE_01`) populates `provenance.type` with `method: "conditional"`, `ruleId` set accordingly, `sourceFields: ["text"]` or `["n"]` for the four name-based rules — and creates no `workflow.type` object (§5.3 rule 1).
-- `NULLTYPE_MULTISETTLEMENT_SCOPE_01`, `NULLTYPE_CONTESTED_ORIGIN_01`, `NULLTYPE_AMBIGUOUS_01`, `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01`, `NULLTYPE_OBSERVATORY_BOUNDARY_01`, and `NULLTYPE_FALLBACK_01` populate `provenance.type` with `value: null`, `method: null`, `ruleId` set accordingly, and create `workflow.type` with `state: "review"`.
+- `NULLTYPE_MULTISETTLEMENT_SCOPE_01`, `NULLTYPE_CONTESTED_ORIGIN_01`, `NULLTYPE_AMBIGUOUS_01`, `NULLTYPE_OBSERVATORY_BOUNDARY_01`, and `NULLTYPE_FALLBACK_01` populate `provenance.type` with `value: null`, `method: null`, `ruleId` set accordingly, and create `workflow.type` with `state: "review"`.
 - `NULLTYPE_INSUFFICIENT_EVIDENCE_01` populates `provenance.type` with `value: null`, `method: null`, `ruleId: "NULLTYPE_INSUFFICIENT_EVIDENCE_01"`, and creates `workflow.type` with `state: "research"` — matching the `PYRAMID_PHARAONIC_EMPTY_TEXT_01`/`OBSERVATORY_INSUFFICIENT_EVIDENCE_01`/`RUINS_INSUFFICIENT_EVIDENCE_01` worked pattern (§4.3, §14, §15).
-- All provenance and workflow entries produced by this section use `policyVersion: "migration-rules-v2.5"`.
+- All provenance and workflow entries produced by this section use `policyVersion: "migration-rules-v2.7"`.
 
 **Null/missing-Type chain consistency check (v2.5), mirroring the §7.5 method used for Pyramid/Cairn/Mound/Wall and the Forest/Observatory/Ruins checks in §13/§14/§15:**
-- **Rule order:** as listed in "Chain" above. Every non-terminal rule's fallback names exactly the next rule in the list; `NULLTYPE_FALLBACK_01` is terminal with `fallback: n/a`, paired with `confidence: REVIEW` — correct use of §7.3 form 2. No branching terminal (form 3) is used: REVIEW and RESEARCH are resolved by several ordered, separately-scoped rules (`NULLTYPE_MULTISETTLEMENT_SCOPE_01` mid-chain; `NULLTYPE_CONTESTED_ORIGIN_01`/`NULLTYPE_AMBIGUOUS_01`/`NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01`/`NULLTYPE_OBSERVATORY_BOUNDARY_01` mid-chain; `NULLTYPE_INSUFFICIENT_EVIDENCE_01` then `NULLTYPE_FALLBACK_01` at the terminal end) rather than a single mutually-exclusive pair — the same architecture Observatory and Ruins use (§14, §15), extended here to five mid-chain REVIEW rules rather than one or two, because this group's REVIEW outcomes span five evidentially distinct shapes (multi-settlement scope, contested origin, dual identity, landscape-boundary, and observatory-boundary) rather than one.
+- **Rule order:** as listed in "Chain" above. Every active non-terminal rule's fallback names exactly the next active rule; `NULLTYPE_FALLBACK_01` remains the REVIEW terminal. Taxonomy v1.7 retires the former Landscape-vs-Other boundary rule, leaving four active mid-chain REVIEW shapes: multi-settlement scope, contested origin, dual identity, and observatory boundary.
 - **Reachability:** every rule other than the chain's first rule (`NULLTYPE_ARCHSITE_EXPLICIT_01`, entry point per §7.2 point 1) is named as a fallback target by exactly one other rule. No orphaned rule. `NULLTYPE_SETTLEMENT_NAMED_01` is deliberately NOT part of this chain — it is retired (0 members; see the retired-bucket note above) and is not named as any rule's fallback target, so it cannot fire even accidentally.
-- **No silent default:** `NULLTYPE_MULTISETTLEMENT_SCOPE_01`, `NULLTYPE_CONTESTED_ORIGIN_01`, `NULLTYPE_AMBIGUOUS_01`, `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01`, `NULLTYPE_OBSERVATORY_BOUNDARY_01`, `NULLTYPE_INSUFFICIENT_EVIDENCE_01`, and `NULLTYPE_FALLBACK_01` each produce an explicit REVIEW or RESEARCH label with no `canonicalType` assigned; every CONDITIONAL rule assigns a Type that exists in TAXONOMY.md v1.3's controlled vocabulary (§4) and Tags that exist in its namespaced Tag vocabulary (§6–§21) — no new Type, Tag, Function, or namespace was proposed anywhere in this section.
+- **No silent default:** every active REVIEW or RESEARCH rule produces an explicit workflow state with no `canonicalType`; every CONDITIONAL rule assigns a Type and Tags registered by Taxonomy v1.7.
 - **Specific-before-general (§7.1) and record-scope (§8):** the chain checks, in order: (1) a complete-text explicit self-identification of a Type that is itself an evidentiary fallback (`NULLTYPE_ARCHSITE_EXPLICIT_01`, positioned first because its own condition already requires ruling out a more-specific Type from the same complete text); (2) narrow name-only rules restricted to empty text (the four `*_NAMED_01` rules); (3) explicit unified-landscape framing; (4) multi-component groupings with collective archaeological/ruin identity; (5) multi-settlement scope (REVIEW); (6) single-record positive identification of every remaining structural/institutional Type, most-specific first (Tomb, Religious Site, Palace, Monument, Infrastructure, Industrial Site, isolated civic architecture, then Settlement last, since Settlement is this group's largest and most scope-error-prone Type); (7)-(8) natural-landmark significance, positive before absence-dependent (`NULLTYPE_LANDSCAPE_SACRED_01`/`NULLTYPE_LANDSCAPE_CULTURAL_01` before `NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01`, mirroring `FOREST_SACRED_01` before `FOREST_NATURAL_COMPLETE_01`, §13); (9) truncated-but-positive modern identity, still positive-evidence-first; (10) genuine significance with no fitting Type; (11) explicit REVIEW-shaped contested/ambiguous/boundary cases; (12) scoped RESEARCH; (13) general REVIEW terminal. This ordering is what keeps a multi-component or multi-settlement record from being swallowed by a single-Type rule reached later in the chain, and keeps RESEARCH from becoming a universal fallback for every unmatched record.
 - **Truncation safety:** every rule that depends on the ABSENCE of competing evidence (`NULLTYPE_ARCHSITE_EXPLICIT_01`'s "no more-specific Type" clause, `NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01`) explicitly requires complete text; every rule reached on truncated text (`NULLTYPE_LANDSCAPE_SACRED_01`, `NULLTYPE_LANDSCAPE_CULTURAL_01`, `NULLTYPE_OTHER_MODERN_POSITIVE_01`, and the record-scope-positive half of `NULLTYPE_SETTLEMENT_01`/`NULLTYPE_MULTICOMPONENT_ARCHSITE_01`) rests only on POSITIVE evidence established before the cutoff. No rule in this chain relies on the absence of evidence in a truncated record.
 - **No rule relies on component identity instead of record identity:** `NULLTYPE_MULTICOMPONENT_ARCHSITE_01`'s collective-identity requirement and `NULLTYPE_RELIGIOUS_01`'s ensemble-identity generalization are both explicit, independent guards against exactly this failure mode, in opposite directions (one requires archaeological evidence to span the whole grouping; the other confirms that component heterogeneity does not itself defeat an otherwise positively-established whole-record identity).
-- **REVIEW/RESEARCH semantics:** all 18 REVIEW rows reconfirmed to involve either an explicit two-sided textual debate/dual identity, a genuine cross-Type/scope-modeling judgement call, or a genuine taxonomy-boundary policy question — never a data gap; all 173 RESEARCH rows reconfirmed to involve genuinely missing/insufficient information, never mere difficulty (§2's test applied literally, per the approved Decision Matrix's own mechanical reconciliation).
+- **REVIEW/RESEARCH semantics:** the 17 active REVIEW rows involve explicit competing evidence or a genuine remaining cross-Type/scope decision; all 173 RESEARCH rows involve missing or insufficient information. The one former natural-feature boundary REVIEW is resolved by `Natural Site`.
 - **Full-batch verification against the approved Decision Matrix, by rule:**
 
   | Rule | Approved count | Decision State | Canonical Type |
@@ -2641,18 +2480,18 @@ found_in_current_dataset: 2 of 537 (*The Money Pit* — substantive excavated ev
   | `NULLTYPE_SETTLEMENT_01` | 100 | CONDITIONAL | Settlement |
   | `NULLTYPE_LANDSCAPE_SACRED_01` | 22 | CONDITIONAL | Landscape |
   | `NULLTYPE_LANDSCAPE_CULTURAL_01` | 20 | CONDITIONAL | Landscape |
-  | `NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01` | 70 | CONDITIONAL | Other |
+  | `NULLTYPE_NO_HISTORICAL_SIGNIFICANCE_01` | 71 | CONDITIONAL | Natural Site |
   | `NULLTYPE_OTHER_MODERN_POSITIVE_01` | 8 | CONDITIONAL | Other |
   | `NULLTYPE_OTHER_NO_FITTING_TYPE_01` | 26 | CONDITIONAL | Other |
   | `NULLTYPE_CONTESTED_ORIGIN_01` | 5 | REVIEW | — |
   | `NULLTYPE_AMBIGUOUS_01` | 2 | REVIEW | — |
-  | `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01` | 1 | REVIEW | — |
+  | `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01` (retired v2.7) | 0 | — | — |
   | `NULLTYPE_OBSERVATORY_BOUNDARY_01` | 1 | REVIEW | — |
   | `NULLTYPE_INSUFFICIENT_EVIDENCE_01` | 173 | RESEARCH | — |
   | `NULLTYPE_FALLBACK_01` | 2 | REVIEW | — |
   | `NULLTYPE_SETTLEMENT_NAMED_01` (retired) | 0 | — | — |
 
-  **Total: 537.** State totals: CONDITIONAL 346 (= 6+1+1+1+1+60+2+3+2+1+8+8+5+1+100+22+20+70+8+26), REVIEW 18 (= 7+5+2+1+1+2), RESEARCH 173. **346 + 18 + 173 = 537.** Canonical-Type totals within CONDITIONAL: Other 105 (= 1+70+8+26), Landscape 102 (= 60+22+20), Settlement 100, Archaeological Site 9 (= 6+2+1), Monument 9 (= 1+8), Infrastructure 8, Industrial Site 6 (= 1+5), Tomb 3, Religious Site 2, Battlefield 1, Palace 1 — **sum 346**, exactly matching the approved Decision Matrix's own totals and the totals specified for this formalization pass. **No defect found; no count adjusted to force a match.**
+  **v2.7 total: 537.** State totals: CONDITIONAL 347, REVIEW 17, RESEARCH 173. **347 + 17 + 173 = 537.** Compared with the approved v2.5 matrix, the one former Galápagos REVIEW becomes a supported `Natural Site` CONDITIONAL; the other historical counts are unchanged. Canonical-Type totals within CONDITIONAL are: Natural Site 71, Other 34, Landscape 102, Settlement 100, Archaeological Site 9, Monument 9, Infrastructure 8, Industrial Site 6, Tomb 3, Religious Site 2, Battlefield 1, Palace 1 — **sum 347**.
 
 ---
 
@@ -2762,7 +2601,7 @@ Pyramid, Cairn, Mound, Wall, Forest, Observatory, Ruins, and — as of v2.5 — 
 1. **Inspect every record of the legacy value directly against the live `SITES` array.** No sampling — the 75/2/15/18-record inspections that produced §9–§12 were exhaustive, and that standard carries forward; the 9-record Forest inspection (§13), the 8-record Observatory inspection (§14), the 346-record Ruins inspection (§15), and the 537-record null/missing-Type inspection (§16) were all held to the same standard. Forest's inspection was refined mid-pass by the truncated-text evidence rule; Observatory's inspection then reused that same rule, refined it further (a rule may leave a Function unpopulated for lack of positive evidence without that silence asserting the Function's historical absence — §14), and separately corrected a chain-design risk (a naive terminal RESEARCH rule swallowing future REVIEW-shaped records) before its rules were finalized. Ruins' inspection — by far the largest group processed so far by record count — needed three separate correction passes after its first: a record-scope keyword-matching defect in its Settlement bucket, a mechanically-over-applied `archaeology:ruins` Tag, and, on independent adversarial re-audit of the very same corrected bucket, 13 further record-scope errors the second pass had itself missed (§15's introduction). Null/missing Type's inspection needed two independently-reviewed narrow correction passes of its own (§16's introduction: correction pass v2 corrected four systematic defects across 51 of 537 rows; correction pass v3 corrected two further individually-identified records before the matrix was approved as PASS) — a second confirmation, after Ruins, that "no sampling" is necessary but not sufficient: evidence sufficiency for a *specific* proposed bucket condition, and the chain's own safety for records the current batch doesn't happen to contain, must be checked as rigorously as coverage is, and a single correction pass should not be assumed to have caught everything a keyword-shaped or scope-shaped defect can produce.
 2. **Group by explicit textual pattern establishing the record's own scope, not by assumption or by a component mentioned in passing (§8).** Only create a bucket when records share an *explicit* statement in their own text about their own fundamental identity — the same bar `PYRAMID_TEMPLE_01`, `MOUND_ARCHSITE_01`, `FOREST_SACRED_01`, `OBSERVATORY_PURPOSEBUILT_01`, `RUINS_TOMB_01`/`RUINS_RELIGIOUS_01`/etc., and `NULLTYPE_TOMB_01`/`NULLTYPE_RELIGIOUS_01`/etc. use. Where a bucket is defined by a keyword or word-family (as `RUINS_SETTLEMENT_01` unavoidably is, since "city/town/village/settlement" is the evidentiary vocabulary itself), the rule's condition must additionally require that the keyword's own grammatical subject be the record, not a nearby, containing, comparison, or etymologically-related place — see `RUINS_SETTLEMENT_01`'s mechanical test (§15) for the worked template, and `NULLTYPE_SETTLEMENT_01`'s adoption of that same test (§16) for its direct reuse.
 3. **Order candidate rules from specific to general** (§7), each with the required fields (Rule ID, Input condition, Output, Confidence class, Rationale, Fallback, Scope), using the standardized fallback wording in §7.3.
-4. **Every chain terminates in a named REVIEW or RESEARCH fallback**, chosen by the §2 test (present-but-ambiguous → REVIEW; missing/insufficient → RESEARCH). No chain may terminate in a silent default Type, and no non-terminal rule's fallback may route directly to REVIEW/RESEARCH instead of the next rule (§7.4). Forest produced zero REVIEW records, so its chain correctly uses a single terminal rule (§7.3 form 2). Observatory, Ruins, and null/missing Type all produced REVIEW and RESEARCH outcomes but are *not* branching-terminal cases in the Mound/Wall sense (§7.3 form 3, a single pair of mutually exclusive terminal conditions) — instead each chain keeps one or more specific mid-chain REVIEW rules (`OBSERVATORY_COMPETING_LABELS_01`; `RUINS_AMBIGUOUS_01`; null/missing Type's `NULLTYPE_MULTISETTLEMENT_SCOPE_01`, `NULLTYPE_CONTESTED_ORIGIN_01`, `NULLTYPE_AMBIGUOUS_01`, `NULLTYPE_LANDSCAPE_VS_OTHER_BOUNDARY_01`, and `NULLTYPE_OBSERVATORY_BOUNDARY_01`), a specific RESEARCH rule scoped to named information-gap sub-conditions (`OBSERVATORY_INSUFFICIENT_EVIDENCE_01`; `RUINS_INSUFFICIENT_EVIDENCE_01`; `NULLTYPE_INSUFFICIENT_EVIDENCE_01`), and a general REVIEW rule as the true terminal (`OBSERVATORY_FALLBACK_01`; `RUINS_FALLBACK_01`; `NULLTYPE_FALLBACK_01`) — four different shapes of "didn't resolve" now exist across this document's chains (Forest's single terminal; Mound/Wall's branching terminal; Observatory's/Ruins'/null's scoped-RESEARCH-then-general-REVIEW-terminal, the last of these also using several named mid-chain REVIEW rules rather than only one), and none is presumed to be *the* template for whatever comes next. Choose the shape the evidence actually produces. Ruins additionally shows that a rule reached only by confirmed-empty records (`RUINS_ARCHSITE_DEFAULT_01`) can sit ahead of the RESEARCH/REVIEW terminal pair when a taxonomy-level document (here, `TAXONOMY.md` Migration Rule 14) explicitly authorizes a narrow conditional default for that exact legacy value — this is not a general license to add other defaults, only a reproduction of a pre-existing, explicitly-scoped taxonomy rule. Null/missing Type had no such taxonomy-authorized default to reproduce (§16's own introduction) and none was invented for it.
+4. **Every unresolved chain terminates in a named REVIEW or RESEARCH fallback**, chosen by the §2 test (present-but-ambiguous → REVIEW; missing/insufficient → RESEARCH). No chain may terminate in a silent default Type. Taxonomy v1.7 removes the former natural-feature taxonomy boundary: sufficiently evidenced natural records now resolve positively as `Natural Site`, while genuine gaps continue through the existing REVIEW/RESEARCH terminals.
 5. **If a genuine taxonomy gap is found** — no existing Type/Tag/Function combination represents the concept without meaningful loss (the bar set by `TAXONOMY.md` Golden Rule 7) — do not resolve it inside migration. Flag it and escalate to the taxonomy owners, the same way the caravanserai gap was flagged and then resolved as an explicit taxonomy update rather than patched ad hoc inside a migration rule (§14 of `TAXONOMY.md` v1.3, §9 of this document's discussion in the final report). Forest's, Observatory's, Ruins', and null/missing Type's inspections all found none — Observatory was the group where a gap seemed most plausible going in (legacy value = canonical Type name); Ruins was the group where a gap seemed most plausible given sheer heterogeneity (nine reachable canonical Types); null/missing Type was inspected against the same bar with no baseline to lean on at all (unlike Ruins' Migration Rule 14) and still resolved entirely within existing vocabulary, using REVIEW and `Other` — not new Types or Tags — to hold every case existing vocabulary could not represent with a specific Type.
 6. **Do not let a new group's rules leak into another group's precedence chain.** Null/missing Type has its own independently-ordered rule set under this same architecture (§16); it is not a sub-case of Pyramid/Cairn/Mound/Wall/Forest/Observatory/Ruins, and none of those seven groups' chains were reopened to accommodate it.
 
