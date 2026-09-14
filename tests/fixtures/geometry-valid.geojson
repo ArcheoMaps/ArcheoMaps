@@ -1,0 +1,61 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[-2.60, 54.99], [-2.58, 55.00], [-2.56, 55.01]] },
+      "properties": {
+        "id": "geometry-hadrians-wall-fixture-segment",
+        "entityId": "entity-hadrians-wall",
+        "geometryRole": "linear-feature",
+        "featureClass": "defensive-wall",
+        "geometryType": "LineString",
+        "validFrom": 122,
+        "validTo": null,
+        "temporalMode": "validity",
+        "reconstructionStatus": "synthetic-fixture",
+        "spatialConfidence": "high",
+        "uncertaintyMetres": 25,
+        "datasetId": "dataset-hadrians-wall-fixture",
+        "sourceFeatureId": "fixture-segment-1",
+        "sourceIds": ["source-synthetic-fixture"],
+        "licence": "CC0-1.0",
+        "status": "proposed"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Polygon", "coordinates": [[[-2.55, 54.98], [-2.54, 54.98], [-2.54, 54.99], [-2.55, 54.98]]] },
+      "properties": {
+        "id": "geometry-hadrians-wall-fixture-polygon",
+        "geometryRole": "approximate-extent",
+        "featureClass": "political-boundary",
+        "geometryType": "Polygon",
+        "validFrom": 122,
+        "validTo": 200,
+        "temporalMode": "validity",
+        "datasetId": "dataset-hadrians-wall-fixture",
+        "sourceIds": ["source-synthetic-fixture"],
+        "licence": "CC0-1.0",
+        "status": "proposed"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "MultiPolygon", "coordinates": [[[[-2.53, 54.98], [-2.52, 54.98], [-2.52, 54.99], [-2.53, 54.98]]]] },
+      "properties": {
+        "id": "geometry-hadrians-wall-fixture-multipolygon",
+        "geometryRole": "natural-feature",
+        "featureClass": "landscape-extent",
+        "geometryType": "MultiPolygon",
+        "validFrom": null,
+        "validTo": null,
+        "temporalMode": "static",
+        "datasetId": "dataset-hadrians-wall-fixture",
+        "sourceIds": ["source-synthetic-fixture"],
+        "licence": "CC0-1.0",
+        "status": "proposed"
+      }
+    }
+  ]
+}
