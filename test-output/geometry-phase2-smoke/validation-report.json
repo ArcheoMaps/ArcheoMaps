@@ -1,0 +1,14 @@
+{
+  "counts": {
+    "accepted": 1,
+    "fatal": 0,
+    "input": 1,
+    "quarantined": 0
+  },
+  "datasetId": "dataset-hadrians-wall-fixture",
+  "fatal": [],
+  "outputSha256": "3bfc431d483262b77a6258a61d8ce7f9b467fbdfea42e67e51355ee7dc6f462b",
+  "quarantined": [],
+  "schemaVersion": "geometry-import/0.1",
+  "status": "passed"
+}

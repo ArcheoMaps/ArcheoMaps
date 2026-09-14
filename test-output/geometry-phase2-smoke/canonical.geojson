@@ -1,0 +1,45 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            -2.6,
+            54.99
+          ],
+          [
+            -2.58,
+            55
+          ],
+          [
+            -2.56,
+            55.01
+          ]
+        ],
+        "type": "LineString"
+      },
+      "properties": {
+        "datasetId": "dataset-hadrians-wall-fixture",
+        "entityId": "entity-hadrians-wall",
+        "featureClass": "defensive-wall",
+        "geometryRole": "linear-feature",
+        "geometryType": "LineString",
+        "id": "geometry-hadrians-wall-fixture-segment",
+        "licence": "CC0-1.0",
+        "reconstructionStatus": "synthetic-fixture",
+        "sourceFeatureId": "fixture-segment-1",
+        "sourceIds": [
+          "source-synthetic-fixture"
+        ],
+        "spatialConfidence": "high",
+        "status": "proposed",
+        "temporalMode": "validity",
+        "uncertaintyMetres": 25,
+        "validFrom": 122,
+        "validTo": null
+      },
+      "type": "Feature"
+    }
+  ],
+  "type": "FeatureCollection"
+}
