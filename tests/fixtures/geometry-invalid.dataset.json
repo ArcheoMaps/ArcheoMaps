@@ -1,0 +1,17 @@
+{
+  "id": "dataset-invalid-fixture",
+  "name": "Invalid validation fixture",
+  "version": "0.1",
+  "sourceUrl": "https://example.invalid/invalid-fixture",
+  "licence": "CC0-1.0",
+  "attribution": "Synthetic ArcheoMaps test fixture",
+  "geometryTypes": ["LineString"],
+  "geographicCoverage": "Synthetic",
+  "chronologicalCoverage": { "start": 100, "end": 200 },
+  "accuracyResolution": { "description": "Synthetic", "nominalResolutionMetres": 10 },
+  "importedAt": "2026-09-14",
+  "transformations": [],
+  "featureCount": 2,
+  "status": "proposed"
+}
+

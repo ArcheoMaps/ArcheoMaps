@@ -1,0 +1,42 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[181, 55], [-2, 95]] },
+      "properties": {
+        "id": "geometry:bad-id",
+        "geometryRole": "linear-feature",
+        "featureClass": "defensive_wall",
+        "geometryType": "MultiLineString",
+        "validFrom": 200,
+        "validTo": 100,
+        "temporalMode": "validity",
+        "spatialConfidence": "certain",
+        "uncertaintyMetres": -1,
+        "datasetId": "dataset-invalid-fixture",
+        "sourceIds": [],
+        "licence": "",
+        "status": "pending"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "LineString", "coordinates": [[-2, 55]] },
+      "properties": {
+        "id": "geometry-duplicate-fixture",
+        "geometryRole": "linear-feature",
+        "featureClass": "road",
+        "geometryType": "LineString",
+        "validFrom": null,
+        "validTo": null,
+        "temporalMode": "validity",
+        "datasetId": "dataset-wrong-fixture",
+        "sourceIds": [],
+        "licence": "CC0-1.0",
+        "status": "active"
+      }
+    }
+  ]
+}
+
