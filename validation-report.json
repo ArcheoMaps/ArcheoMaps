@@ -1,0 +1,16 @@
+{
+  "counts": {
+    "accepted": 1,
+    "fatal": 0,
+    "input": 1,
+    "notices": 0,
+    "quarantined": 0
+  },
+  "datasetId": "dataset-openhistoricalmap-hadrians-wall",
+  "fatal": [],
+  "notices": [],
+  "outputSha256": "e160dd8e2791e441416756081d5ab7b1f45dec1fd19a626146a2dcc7448fbe90",
+  "quarantined": [],
+  "schemaVersion": "geometry-import/0.1",
+  "status": "passed"
+}
