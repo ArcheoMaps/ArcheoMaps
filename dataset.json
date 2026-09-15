@@ -1,0 +1,26 @@
+{
+  "id": "dataset-openhistoricalmap-hadrians-wall",
+  "name": "Hadrian's Wall — OpenHistoricalMap pilot",
+  "version": "OHM relation 2692717; retrieved 2026-09-14",
+  "sourceUrl": "https://www.openhistoricalmap.org/relation/2692717",
+  "licence": "CC0-1.0",
+  "attribution": "OpenHistoricalMap contributors",
+  "geometryTypes": [
+    "MultiLineString"
+  ],
+  "geographicCoverage": "Hadrian's Wall, northern England",
+  "chronologicalCoverage": {
+    "start": 122,
+    "end": 400
+  },
+  "accuracyResolution": {
+    "description": "Community-mapped alignment; no uniform surveyed accuracy stated",
+    "nominalResolutionMetres": null
+  },
+  "importedAt": "2026-09-14",
+  "transformations": [
+    "OHM Nominatim relation geometry mapped to ArcheoMaps Geometry Schema v0.1; coordinates retained unchanged"
+  ],
+  "featureCount": 1,
+  "status": "proposed"
+}
