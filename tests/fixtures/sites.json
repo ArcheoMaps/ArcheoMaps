@@ -1,0 +1,210 @@
+[
+  {
+    "id": "site-fixture-phase5-accepted",
+    "n": "Fixture — accepted Hadrian's Wall relationship",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-accepted-geometry-hadrians-wall",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "high",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "accepted", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-proposed",
+    "n": "Fixture — proposed Hadrian's Wall relationship",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-proposed-geometry-hadrians-wall",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "high",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "proposed", "method": "source-import", "reviewedBy": null, "reviewedAt": null },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-rejected",
+    "n": "Fixture — rejected relationship",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-rejected-geometry-hadrians-wall",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "low",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "rejected", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": "Kept only as a synthetic fixture for automatic-reveal-must-not-fire testing."
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-disputed",
+    "n": "Fixture — disputed relationship",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-disputed-geometry-hadrians-wall",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "medium",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "disputed", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-needs-research",
+    "n": "Fixture — needs-research relationship",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-needs-research-geometry-hadrians-wall",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "medium",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "needs-research", "method": "manual-curation", "reviewedBy": null, "reviewedAt": null },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-malformed",
+    "n": "Fixture — malformed relationship (missing review state)",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-malformed",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": {},
+        "confidence": "high",
+        "sourceIds": [],
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-unresolved",
+    "n": "Fixture — unresolved Geometry target",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-unresolved",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-does-not-exist-in-catalogue",
+        "chronology": {},
+        "confidence": "medium",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "accepted", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-unlinked",
+    "n": "Fixture — no relationships at all",
+    "relationships": []
+  },
+  {
+    "id": "site-fixture-phase5-multi",
+    "n": "Fixture — multiple Geometry relationships",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-multi-01",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "high",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "accepted", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": null
+      },
+      {
+        "id": "relationship-site-fixture-phase5-multi-02",
+        "relationshipType": "associated-with",
+        "targetKind": "geometry",
+        "targetId": "geometry-test-second-line-alpha",
+        "chronology": { "start": 100, "end": 150 },
+        "confidence": "medium",
+        "sourceIds": ["source-test-fixture"],
+        "review": { "state": "proposed", "method": "source-import", "reviewedBy": null, "reviewedAt": null },
+        "reciprocal": false,
+        "notes": null
+      },
+      {
+        "id": "relationship-site-fixture-phase5-multi-03",
+        "relationshipType": "associated-with",
+        "targetKind": "geometry",
+        "targetId": "geometry-test-second-line-beta",
+        "chronology": { "start": 160, "end": 200 },
+        "confidence": "low",
+        "sourceIds": ["source-test-fixture"],
+        "review": { "state": "rejected", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": "Rejected sibling relationship; must never auto-reveal alongside the other two."
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-second-layer-only",
+    "n": "Fixture — linked only to the synthetic second layer",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-second-layer-only-01",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-test-second-line-alpha",
+        "chronology": { "start": 100, "end": 150 },
+        "confidence": "high",
+        "sourceIds": ["source-test-fixture"],
+        "review": { "state": "accepted", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "site-fixture-phase5-non-geometry",
+    "n": "Fixture — non-geometry relationship only",
+    "relationships": [
+      {
+        "id": "relationship-site-fixture-phase5-non-geometry-01",
+        "relationshipType": "associated-with",
+        "targetKind": "site",
+        "targetId": "site-0042",
+        "chronology": [],
+        "confidence": "high",
+        "sourceIds": ["source-example"],
+        "review": { "state": "accepted", "method": "manual-curation", "reviewedBy": "test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": true,
+        "notes": null
+      }
+    ]
+  }
+]

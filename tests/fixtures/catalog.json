@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "geometry-layer-catalog/0.1",
+  "entries": [
+    {
+      "id": "hadrians-wall",
+      "label": "Hadrian's Wall",
+      "category": "networks",
+      "pane": "paneNetworks",
+      "mode": "validity",
+      "status": "proposed",
+      "datasetId": "dataset-openhistoricalmap-hadrians-wall",
+      "dataPath": "layers/networks/hadrians-wall/canonical.geojson",
+      "outputSha256": "e160dd8e2791e441416756081d5ab7b1f45dec1fd19a626146a2dcc7448fbe90",
+      "featureIds": ["geometry-hadrians-wall-openhistoricalmap-main-line"],
+      "minYear": 122,
+      "maxYear": 400,
+      "attribution": "OpenHistoricalMap contributors · CC0 · proposed pilot import",
+      "style": { "color": "#9D2F24", "weight": 4, "opacity": 0.95, "dashArray": "2 3" }
+    },
+    {
+      "id": "test-second-layer",
+      "label": "Synthetic second wall (test fixture)",
+      "category": "networks",
+      "pane": "paneNetworks",
+      "mode": "validity",
+      "status": "proposed",
+      "datasetId": "dataset-test-second-layer",
+      "dataPath": "tests/fixtures/geometry-phase5/second-line.geojson",
+      "outputSha256": "27e28b026c1297a4c4bfaec3a1960d81238f55257e7ccec825f592043c619ffd",
+      "featureIds": ["geometry-test-second-line-alpha", "geometry-test-second-line-beta"],
+      "minYear": 100,
+      "maxYear": 200,
+      "attribution": "Synthetic test fixture — not a real dataset",
+      "style": { "color": "#336699", "weight": 3, "opacity": 0.9 }
+    }
+  ]
+}

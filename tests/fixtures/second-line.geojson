@@ -1,0 +1,31 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "geometry-test-second-line-alpha",
+        "datasetId": "dataset-test-second-layer",
+        "name": "Synthetic line alpha",
+        "geometryType": "LineString",
+        "temporalMode": "validity",
+        "validFrom": 100,
+        "validTo": 150
+      },
+      "geometry": { "type": "LineString", "coordinates": [[0, 0], [1, 1]] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "geometry-test-second-line-beta",
+        "datasetId": "dataset-test-second-layer",
+        "name": "Synthetic line beta",
+        "geometryType": "LineString",
+        "temporalMode": "validity",
+        "validFrom": 160,
+        "validTo": 200
+      },
+      "geometry": { "type": "LineString", "coordinates": [[2, 2], [3, 3]] }
+    }
+  ]
+}
