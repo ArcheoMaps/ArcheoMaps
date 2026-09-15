@@ -1,0 +1,72 @@
+[
+  {
+    "id": "test-site-accepted",
+    "n": "Test Site — accepted Hadrian's Wall relationship",
+    "lat": 54.98,
+    "lon": -1.9,
+    "canonicalType": "Fortification",
+    "relationships": [
+      {
+        "id": "relationship-test-site-accepted-01",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "high",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "accepted", "method": "manual-curation", "reviewedBy": "browser-test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "test-site-proposed",
+    "n": "Test Site — proposed Hadrian's Wall relationship",
+    "lat": 54.95,
+    "lon": -2.4,
+    "canonicalType": "Fortification",
+    "relationships": [
+      {
+        "id": "relationship-test-site-proposed-01",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "medium",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "proposed", "method": "source-import", "reviewedBy": null, "reviewedAt": null },
+        "reciprocal": false,
+        "notes": null
+      }
+    ]
+  },
+  {
+    "id": "test-site-rejected",
+    "n": "Test Site — rejected relationship",
+    "lat": 54.9,
+    "lon": -2.9,
+    "canonicalType": "Fortification",
+    "relationships": [
+      {
+        "id": "relationship-test-site-rejected-01",
+        "relationshipType": "located-on",
+        "targetKind": "geometry",
+        "targetId": "geometry-hadrians-wall-openhistoricalmap-main-line",
+        "chronology": { "start": 122, "end": 400 },
+        "confidence": "low",
+        "sourceIds": ["source-openhistoricalmap-relation-2692717"],
+        "review": { "state": "rejected", "method": "manual-curation", "reviewedBy": "browser-test-fixture", "reviewedAt": "2026-09-14" },
+        "reciprocal": false,
+        "notes": "Synthetic fixture only — kept out of the accepted set deliberately."
+      }
+    ]
+  },
+  {
+    "id": "test-site-unlinked",
+    "n": "Test Site — unlinked",
+    "lat": 51.5,
+    "lon": -0.1,
+    "canonicalType": "Settlement"
+  }
+]
