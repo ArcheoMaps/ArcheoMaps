@@ -881,6 +881,7 @@ body{
 }
 .layer-badge.demo{ background: var(--gold); color: var(--ink); }
 .layer-badge.soon{ background: var(--parchment-deep); color: var(--ink-soft); border: 1px solid var(--line); }
+.layer-badge.pilot{ background:#d9e4f2; color:#183b63; border:1px solid #6f8daa; }
 .layer-opacity{
   width: 100%; margin: 5px 0 0; accent-color: var(--clay);
 }
@@ -2520,8 +2521,8 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
     <div id="loadError">
       <h3>Couldn't load the site data</h3>
       <p id="loadErrorText">archeomaps.html could not fetch <code style="display:inline;padding:1px 5px;">archeomaps_data.json</code>. If you opened this file directly from disk (a <code style="display:inline;padding:1px 5px;">file://</code> URL), browsers block that kind of request for security reasons.</p>
-      <p>Serve this folder with a small local web server instead, then open the page through it, e.g.:</p>
-      <code>python3 -m http.server 8000
+      <p id="loadErrorHelp">Serve this folder with a small local web server instead, then open the page through it, e.g.:</p>
+      <code id="loadErrorCommand">python3 -m http.server 8000
 # then visit: http://localhost:8000/archeomaps.html</code>
       <button id="loadRetryBtn" type="button">Retry</button>
     </div>
@@ -3209,6 +3210,9 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
 <script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet/leaflet-maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<script src="scripts/layer-catalog-core.js"></script>
+<script src="scripts/geometry-relationship-core.js"></script>
+<script src="scripts/geometry-selection-controller.js"></script>
 <script>
 const ARCHEOMAPS_VERSION='6.4.3';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
@@ -4262,6 +4266,11 @@ function selectSite(s){
   refreshClusterIcons();
   highlightListItem(s);
   openDrawer(s);
+  // Phase 5 §4: selectSite() is the one central function every selection
+  // path (marker click, Site List, Nearby Sites, Random, search, shared
+  // URL) already funnels through, so this is the single hook Geometry
+  // relationship resolution needs — no per-click-handler duplication.
+  if(typeof geometrySelectionController !== 'undefined') geometrySelectionController.selectSite(s);
 }
 
 if(HAS_MARKER_CLUSTER){
@@ -4343,7 +4352,13 @@ const TEMPORAL_LAYERS = new Map();
 */
 function registerLayer(def){
   const layer = Object.assign({
-    enabled: false,
+    // Phase 5 (GEOMETRY_PHASE5_SITE_LINKING.md §2): visibility is split into
+    // independent manual (Layers panel / share URL / Reset) and
+    // selection-driven (Site->Geometry relationship reveal) intent.
+    // `enabled` no longer exists as a stored flag — every read site uses
+    // manualEnabled, selectionEnabled, or the effectiveEnabled() helper.
+    manualEnabled: false,
+    selectionEnabled: false,
     loaded: true,
     opacity: 1,
     currentReconstructionYear: null,
@@ -4368,6 +4383,163 @@ function registerLayer(def){
   TEMPORAL_LAYERS.set(layer.id, layer);
   return layer;
 }
+
+// Single shared definition of "on screen right now" (manual OR
+// selection-driven) — every consumer (map add/remove, Layers panel,
+// Legend, reconstruction readout, share URL) reads through this instead of
+// re-deriving it, so the two concerns can never silently drift apart.
+function isLayerEffectivelyEnabled(layer){
+  return window.ArcheoGeometryRelationships
+    ? window.ArcheoGeometryRelationships.effectiveEnabled(layer)
+    : Boolean(layer && (layer.manualEnabled || layer.selectionEnabled));
+}
+
+function sha256Hex(buffer){
+  if(!window.crypto?.subtle) return Promise.reject(new Error('Browser SHA-256 support is unavailable'));
+  return window.crypto.subtle.digest('SHA-256', buffer)
+    .then(hash=>[...new Uint8Array(hash)].map(byte=>byte.toString(16).padStart(2,'0')).join(''));
+}
+
+function registerCatalogLayer(entry){
+  return registerLayer({
+    id: entry.id,
+    label: entry.label,
+    category: entry.category,
+    pane: entry.pane,
+    mode: entry.mode,
+    pilot: entry.status === 'proposed',
+    status: entry.status,
+    loaded: false,
+    minYear: entry.minYear,
+    maxYear: entry.maxYear,
+    attribution: entry.attribution,
+    features: [],
+    style: entry.style,
+    load(){
+      return fetch(entry.dataPath, { cache:'no-store' })
+        .then(response=>{
+          if(!response.ok) throw new Error(`${entry.label} returned HTTP ${response.status}`);
+          return response.arrayBuffer();
+        })
+        .then(buffer=>sha256Hex(buffer).then(actualHash=>{
+          if(actualHash !== entry.outputSha256) throw new Error(`${entry.label} failed its SHA-256 integrity check`);
+          return JSON.parse(new TextDecoder().decode(buffer));
+        }))
+        .then(collection=>{
+          // Phase 5 §1: after SHA-256 verification, every declared
+          // featureId must exist in the file, every canonical feature must
+          // be declared, and every feature must match the entry's
+          // datasetId — a single fail-closed gate (throws on any
+          // mismatch), replacing the old dataset-only inline check.
+          this._featureIndex = window.ArcheoGeometryRelationships.buildLoadedFeatureIndex(entry, collection);
+          this.features = collection.features.map(feature=>({
+            validFrom: Number.isFinite(feature?.properties?.validFrom) ? feature.properties.validFrom : -Infinity,
+            validTo: Number.isFinite(feature?.properties?.validTo) ? feature.properties.validTo : Infinity,
+            feature,
+          }));
+        });
+    },
+  });
+}
+
+let layerCatalogPromise = null;
+// Geometry-ID -> catalogue-entry index (Phase 5 §1), built once the
+// catalogue itself has validated. Empty (not null) when the catalogue
+// failed to load, so relationship resolution fails closed (every target
+// reports 'unresolved') instead of throwing.
+let catalogFeatureIndex = new Map();
+function loadLayerCatalog(){
+  if(layerCatalogPromise) return layerCatalogPromise;
+  layerCatalogPromise = fetch('layers/layer-catalog.json', { cache:'no-store' })
+    .then(response=>{
+      if(!response.ok) throw new Error(`Layer catalogue returned HTTP ${response.status}`);
+      return response.json();
+    })
+    .then(catalog=>{
+      if(!window.ArcheoLayerCatalog) throw new Error('Layer catalogue validator did not load');
+      window.ArcheoLayerCatalog.validateCatalog(catalog);
+      catalog.entries.forEach(registerCatalogLayer);
+      catalogFeatureIndex = window.ArcheoGeometryRelationships.buildFeatureIndex(catalog);
+      renderLayersPanel();
+      return catalog;
+    });
+  return layerCatalogPromise;
+}
+
+/* ==================== Phase 5: Site -> Geometry selection wiring ====================
+   Everything above (registerLayer/registerCatalogLayer/loadLayerCatalog,
+   TEMPORAL_LAYERS, manualEnabled/selectionEnabled, applyLayerEffectiveVisibility,
+   ensureLayerLoadedPromise) is the map-runtime surface Phase 5 drives. This
+   block is the thin DOM/Leaflet adapter around the pure, independently
+   unit-tested decision logic in scripts/geometry-relationship-core.js and
+   scripts/geometry-selection-controller.js — it owns no eligibility rules
+   of its own, only the effects (load a layer, flip selectionEnabled,
+   restyle a feature, read the current year). */
+
+window.ArcheoGeometryDiagnostics = [];
+function reportGeometryDiagnostic(diagnostic){
+  window.ArcheoGeometryDiagnostics.push(diagnostic);
+  console.warn('[Geometry Phase 5]', diagnostic);
+  // Only genuine data/runtime failures reuse the shared visible
+  // load-error surface (Phase 3/4 mechanism, per spec §8/§9); a merely
+  // ineligible/malformed/unresolved relationship is expected, benign, and
+  // surfaces instead in the Site drawer's Linked geometry section.
+  if((diagnostic.code === 'load-failed' || diagnostic.code === 'feature-index-mismatch') && diagnostic.layerId){
+    const layer = TEMPORAL_LAYERS.get(diagnostic.layerId);
+    if(layer) showLayerLoadError(layer, new Error(diagnostic.message || diagnostic.reason || 'Geometry layer failed to load'));
+  }
+}
+
+function getLoadedGeometryFeature(layerId, featureId){
+  const layer = TEMPORAL_LAYERS.get(layerId);
+  return (layer && layer._featureIndex && layer._featureIndex.get(featureId)) || null;
+}
+function highlightGeometryFeature(layerId, featureId){
+  const layer = TEMPORAL_LAYERS.get(layerId);
+  if(!layer) return;
+  layer._highlightedFeatureIds = layer._highlightedFeatureIds || new Set();
+  layer._highlightedFeatureIds.add(featureId);
+  if(layer.temporal) layer.update(currentMapYear());
+}
+function clearGeometryFeatureHighlight(layerId, featureId){
+  const layer = TEMPORAL_LAYERS.get(layerId);
+  if(!layer || !layer._highlightedFeatureIds) return;
+  layer._highlightedFeatureIds.delete(featureId);
+  if(layer.temporal) layer.update(currentMapYear());
+}
+// Selection-driven equivalent of setLayerEnabled — deliberately has NO
+// load/error handling of its own (the controller only calls this AFTER
+// ensureLayerLoaded already resolved), and never touches manualEnabled.
+function setLayerSelectionState(layerId, on){
+  const layer = TEMPORAL_LAYERS.get(layerId);
+  if(!layer || layer.selectionEnabled === on) return;
+  layer.selectionEnabled = on;
+  if(layer.temporal) layer.update(currentMapYear());
+  applyLayerEffectiveVisibility(layer);
+  renderLayersPanel();
+  renderLegend();
+}
+
+const geometrySelectionController = window.ArcheoGeometrySelectionController.createSelectionController({
+  getFeatureIndex: ()=> catalogFeatureIndex,
+  ensureLayerLoaded: (layerId)=>{
+    const layer = TEMPORAL_LAYERS.get(layerId);
+    if(!layer) return Promise.reject(new Error(`Unknown layer ${layerId}`));
+    return ensureLayerLoadedPromise(layer);
+  },
+  getLoadedFeature: getLoadedGeometryFeature,
+  setLayerSelectionState,
+  highlightFeature: highlightGeometryFeature,
+  clearHighlight: clearGeometryFeatureHighlight,
+  getCurrentYear: currentMapYear,
+  onDiagnostic: reportGeometryDiagnostic,
+  onStateChange: (site, states)=>{
+    // Only touches the DOM when the Site drawer is currently showing the
+    // site these states belong to — a stale/earlier selection's late
+    // state change must never repaint a drawer that has moved on.
+    if(typeof refreshLinkedGeometrySection === 'function') refreshLinkedGeometrySection(site, states);
+  },
+});
 
 // Version 1 reconstruction-date rule, documented per spec: nearest
 // available snapshot year wins; exact ties resolve to the earlier (more
@@ -4409,12 +4581,26 @@ function updateSnapshotLayer(layer, year){
 // The ONE generic validity-range updater — shared by every validity-mode
 // layer. Unlike snapshots, a validity feature that's visible is showing
 // the EXACT current map year (its own valid range), not an approximation.
+//
+// Phase 5 §5: a feature currently held in layer._highlightedFeatureIds
+// (Site-selection-driven) renders with a distinct temporary style, layered
+// on top of the layer's normal style rather than replacing the underlying
+// canonical GeoJSON — nothing here mutates feature.properties or the
+// loaded file, and re-styling never re-fetches: it just rebuilds this
+// Leaflet layer from the already-loaded `layer.features`.
+const GEOMETRY_HIGHLIGHT_STYLE = { color: '#FFD54A', weight: 6, opacity: 1, dashArray: null };
 function updateValidityLayer(layer, year){
   layer.group.clearLayers();
   const active = (layer.features || []).filter(f => year >= f.validFrom && year <= f.validTo);
   if(active.length){
     L.geoJSON({ type:'FeatureCollection', features: active.map(f=>f.feature) },
-      { pane: layer.pane, interactive: false, style: ()=> styleWithOpacity(layer) }).addTo(layer.group);
+      { pane: layer.pane, interactive: false,
+        style: feature=>{
+          const base = styleWithOpacity(layer);
+          const id = feature?.properties?.id;
+          const highlighted = id && layer._highlightedFeatureIds && layer._highlightedFeatureIds.has(id);
+          return highlighted ? Object.assign({}, base, GEOMETRY_HIGHLIGHT_STYLE) : base;
+        } }).addTo(layer.group);
     layer.currentReconstructionYear = year;
   } else {
     layer.currentReconstructionYear = null;
@@ -4431,27 +4617,65 @@ function currentMapYear(){ return state.yMax; }
 let _lastTemporalLayerYear = null;
 function updateTemporalLayers(year){
   TEMPORAL_LAYERS.forEach(layer=>{
-    if(layer.enabled && layer.temporal) layer.update(year);
+    if(isLayerEffectivelyEnabled(layer) && layer.temporal) layer.update(year);
   });
   _lastTemporalLayerYear = year;
   updateReconstructionReadout();
 }
 
+// Adds/removes a layer's Leaflet group to match its CURRENT effective
+// visibility. Every path that can change manualEnabled or
+// selectionEnabled calls this instead of touching map.addLayer/removeLayer
+// directly, so a layer required by one concern is never hidden by the
+// other (Phase 5 §2's "manually disabled during selection" row).
+function applyLayerEffectiveVisibility(layer){
+  const shouldBeOnMap = isLayerEffectivelyEnabled(layer);
+  const isOnMap = map.hasLayer(layer.group);
+  if(shouldBeOnMap && !isOnMap) map.addLayer(layer.group);
+  else if(!shouldBeOnMap && isOnMap) map.removeLayer(layer.group);
+}
+
+// Shared lazy-load: both the manual Layers-panel toggle and Phase 5's
+// selection-driven reveal load a layer through this one path, so a layer
+// already loading/loaded for one concern is never double-fetched for the
+// other.
+function ensureLayerLoadedPromise(layer){
+  if(layer.loaded) return Promise.resolve();
+  if(!layer._loadPromise){
+    layer._loadPromise = layer.load()
+      .then(()=>{ layer.loaded = true; })
+      .catch(error=>{ layer._loadPromise = null; throw error; });
+  }
+  return layer._loadPromise;
+}
+
+// MANUAL layer toggle only (Layers-panel checkbox, share-URL restoration,
+// Reset). Never called by Phase 5 selection reveal — see
+// setLayerSelectionState below, which is the selection-driven equivalent
+// and deliberately does not duplicate the load/error handling here.
 function setLayerEnabled(id, on){
   const layer = TEMPORAL_LAYERS.get(id);
-  if(!layer || layer.unavailable || layer.enabled === on) return;
-  layer.enabled = on;
+  if(!layer || layer.unavailable || layer.manualEnabled === on) return;
+  layer.manualEnabled = on;
   if(on){
-    const afterLoad = ()=>{ if(layer.temporal) layer.update(currentMapYear()); };
-    if(!layer.loaded){
-      layer.load().then(()=>{ layer.loaded = true; afterLoad(); });
-    } else {
-      afterLoad();
-    }
-    map.addLayer(layer.group);
-  } else {
-    map.removeLayer(layer.group);
+    ensureLayerLoadedPromise(layer)
+      .then(()=>{
+        if(layer.temporal) layer.update(currentMapYear());
+        applyLayerEffectiveVisibility(layer);
+        updateReconstructionReadout();
+        renderLayersPanel();
+        renderLegend();
+      })
+      .catch(error=>{
+        layer.manualEnabled = false;
+        applyLayerEffectiveVisibility(layer);
+        showLayerLoadError(layer, error);
+        updateReconstructionReadout();
+        renderLayersPanel();
+        renderLegend();
+      });
   }
+  applyLayerEffectiveVisibility(layer);
   updateReconstructionReadout();
   renderLayersPanel();
   renderLegend();
@@ -4461,7 +4685,7 @@ function setLayerOpacity(id, opacity){
   const layer = TEMPORAL_LAYERS.get(id);
   if(!layer) return;
   layer.opacity = Math.max(0, Math.min(1, opacity));
-  if(layer.enabled){
+  if(isLayerEffectivelyEnabled(layer)){
     if(layer.temporal) layer.update(currentMapYear());
     else layer.group.eachLayer(l=> l.setStyle && l.setStyle(styleWithOpacity(layer)));
   }
@@ -4474,7 +4698,7 @@ function setLayerOpacity(id, opacity){
 function updateReconstructionReadout(){
   const el = document.getElementById('mapYearReadout');
   if(!el) return;
-  const enabledTemporal = [...TEMPORAL_LAYERS.values()].filter(l=>l.enabled && l.temporal);
+  const enabledTemporal = [...TEMPORAL_LAYERS.values()].filter(l=>isLayerEffectivelyEnabled(l) && l.temporal);
   if(enabledTemporal.length === 0){
     el.textContent = '';
     el.classList.remove('visible');
@@ -4508,15 +4732,27 @@ function renderLayersPanel(){
     inCat.forEach(layer=>{
       const row = document.createElement('div');
       row.className = 'layer-row' + (layer.unavailable ? ' unavailable' : '');
+      // Phase 5 §2: the checkbox reflects MANUAL state only — never the
+      // temporary reveal a Site selection may be driving. A layer that's
+      // only on screen because of the current selection gets its own
+      // badge instead, so "temporarily displayed, checkbox unchecked" is
+      // visibly distinct from a manual toggle.
+      const temporarilyShown = !layer.manualEnabled && layer.selectionEnabled;
       const badge = layer.demo ? '<span class="layer-badge demo">Demo</span>'
-        : (layer.unavailable ? '<span class="layer-badge soon">Not yet available</span>' : '');
+        : (layer.unavailable ? '<span class="layer-badge soon">Not yet available</span>'
+          : (temporarilyShown ? '<span class="layer-badge pilot" data-role="temporarily-shown">Temporarily shown</span>'
+            : (layer.pilot ? '<span class="layer-badge pilot">Proposed</span>' : '')));
+      const rowTitle = layer.unavailable
+        ? 'Dataset not yet available — architecture only, per this task'
+        : [layer.label, layer.attribution].filter(Boolean).join(' — ');
+      const effectivelyEnabled = isLayerEffectivelyEnabled(layer);
       row.innerHTML = `
-        <label class="layer-row-main" title="${layer.unavailable ? 'Dataset not yet available — architecture only, per this task' : escapeHtml(layer.label)}">
-          <input type="checkbox" data-layer-id="${layer.id}" ${layer.enabled ? 'checked' : ''} ${layer.unavailable ? 'disabled' : ''}>
+        <label class="layer-row-main" title="${escapeHtml(rowTitle)}">
+          <input type="checkbox" data-layer-id="${layer.id}" ${layer.manualEnabled ? 'checked' : ''} ${layer.unavailable ? 'disabled' : ''}>
           <span class="layer-name">${escapeHtml(layer.label)}</span>
           ${badge}
         </label>
-        ${(layer.enabled && !layer.unavailable) ? `<input type="range" class="layer-opacity" min="0" max="1" step="0.05" value="${layer.opacity}" data-layer-opacity="${layer.id}" title="${escapeHtml(layer.label)} opacity">` : ''}
+        ${(effectivelyEnabled && !layer.unavailable) ? `<input type="range" class="layer-opacity" min="0" max="1" step="0.05" value="${layer.opacity}" data-layer-opacity="${layer.id}" title="${escapeHtml(layer.label)} opacity">` : ''}
       `;
       catEl.appendChild(row);
     });
@@ -4590,7 +4826,7 @@ function renderLegend(){
   (TYPE_LIST || []).forEach(([type,count])=>addLegendRow(typeLabelOf(type),typeColorOf(type),count));
   addLegendRow('Selected site',null,null,'halo');
   addLegendTitle('Active overlays');
-  const enabledLayers = [...TEMPORAL_LAYERS.values()].filter(layer=>layer.enabled && !layer.unavailable);
+  const enabledLayers = [...TEMPORAL_LAYERS.values()].filter(layer=>isLayerEffectivelyEnabled(layer) && !layer.unavailable);
   if(enabledLayers.length){
     enabledLayers.forEach(layer=>{
       const style = typeof layer.style === 'function' ? layer.style() : (layer.style || {});
@@ -4624,8 +4860,8 @@ document.getElementById('legendBtn').addEventListener('click',()=>setLegendOpen(
 document.getElementById('legendPanelClose').addEventListener('click',()=>setLegendOpen(false));
 
 /* ---- Registrations ----
-   Per the task, NO real PaleoMIST/ice-sheet/empire-border/trade-route data
-   is imported here. "Ancient coastline" and "Empires & states" carry a
+   Hadrian's Wall is the first real, externally stored pilot layer. The
+   remaining coastline, empire, and trade-route examples carry
    small embedded DEMO geometry (obviously synthetic squares/triangles, not
    traced from any real coastline or border) purely to prove the framework
    end-to-end: toggle -> pane -> reacts to state.yMax -> Share persists it.
@@ -4859,7 +5095,13 @@ function applyFilters(){
   // updateTemporalLayers() calls into each of those handlers, this single
   // hook (cheap to skip when the year hasn't actually moved) is the one
   // place that keeps historical layers in sync with "current map year".
-  if(state.yMax !== _lastTemporalLayerYear) updateTemporalLayers(state.yMax);
+  if(state.yMax !== _lastTemporalLayerYear){
+    updateTemporalLayers(state.yMax);
+    // Phase 5 §6: re-evaluate the CURRENT selection's linked Geometry
+    // against the new map year — reveals/hides its highlight without
+    // requiring the Site to be re-selected.
+    if(typeof geometrySelectionController !== 'undefined') geometrySelectionController.refreshTemporal();
+  }
 }
 
 /* ---------- generic checklist builder (Type / Culture / Political / Function / Status) ----------
@@ -5966,6 +6208,63 @@ function renderDrawerCoords(site){
   return `<div class="drawer-coords">${formatSiteCoords(site)} · <a href="https://www.google.com/maps/@${site.lat},${site.lon},17z/data=!3m1!1e3" target="_blank" rel="noopener">Open satellite view in Google Maps ↗</a></div>`;
 }
 
+/* ==================== Phase 5 §7: Site-record "Linked geometry" ====================
+   Reads every relationships[] entry through the SAME classifier the map
+   runtime uses (collectSiteGeometryRelationships), so the drawer can never
+   show a relationship as eligible that the map wouldn't also reveal, or
+   vice versa. Ineligible/malformed/unresolved relationships are shown
+   too, per spec §7/§9 — nothing is silently hidden from the curator. */
+function geometryRuntimeStateLabel(classification, liveState){
+  const RS = window.ArcheoGeometryRelationships.RUNTIME_STATE;
+  if(classification.status === 'eligible') return (liveState && liveState.runtimeState) || RS.LOADING;
+  if(classification.status === 'malformed') return RS.MALFORMED;
+  if(classification.status === 'invalid-target-id' || classification.status === 'unresolved') return RS.UNAVAILABLE;
+  if(classification.status === 'ineligible'){
+    const reviewState = classification.relationship && classification.relationship.review && classification.relationship.review.state;
+    return reviewState === 'rejected' ? RS.REJECTED : RS.REVIEW_REQUIRED;
+  }
+  return RS.UNAVAILABLE;
+}
+function renderLinkedGeometryContent(site){
+  if(!window.ArcheoGeometryRelationships) return '';
+  const { all } = window.ArcheoGeometryRelationships.collectSiteGeometryRelationships(site, catalogFeatureIndex);
+  if(!all.length) return '';
+  const liveStates = (typeof geometrySelectionController !== 'undefined' && geometrySelectionController.getActiveSite() === site)
+    ? geometrySelectionController.getRelationshipStates() : [];
+  const rows = all.map(c=>{
+    const rel = c.relationship || {};
+    const live = liveStates.find(st => st.relationshipId === rel.id);
+    const runtimeLabel = geometryRuntimeStateLabel(c, live);
+    const feature = c.status === 'eligible' ? getLoadedGeometryFeature(c.layerId, c.featureId) : null;
+    const displayName = window.ArcheoGeometryRelationships.resolveGeometryDisplayName({
+      feature, entityRegistry: null, layerEntry: c.layerEntry || null, featureId: c.featureId || rel.targetId,
+    });
+    const relType = rel.relationshipType || '—';
+    const confidence = rel.confidence || '—';
+    const reviewState = (rel.review && rel.review.state) || '—';
+    const sourceIds = Array.isArray(rel.sourceIds) && rel.sourceIds.length ? rel.sourceIds.join(', ') : null;
+    return `<div class="detail-row"><strong>${escapeHtml(displayName)}</strong> — ${escapeHtml(runtimeLabel)}</div>`
+      + `<div class="detail-note">${escapeHtml(relType)} · confidence: ${escapeHtml(String(confidence))} · review: ${escapeHtml(reviewState)}`
+      + `${sourceIds ? ` · source: ${escapeHtml(sourceIds)}` : ''}</div>`;
+  }).join('');
+  return `<div class="drawer-section-label">Linked geometry</div>${rows}`;
+}
+function renderLinkedGeometryInto(container, site){
+  if(!container) return;
+  container.innerHTML = renderLinkedGeometryContent(site);
+}
+// Selection-controller onStateChange hook: repaints the section ONLY when
+// the drawer is currently showing the site these states belong to, so a
+// stale/earlier selection's late state change can never repaint a drawer
+// that has already moved on to a different Site.
+function refreshLinkedGeometrySection(site){
+  const container = document.getElementById('drawerLinkedGeometry');
+  if(!container) return;
+  const currentSite = state.selectedSiteKey ? findSiteByKey(state.selectedSiteKey) : null;
+  if(!currentSite || !site || siteKeyOf(currentSite) !== siteKeyOf(site)) return;
+  renderLinkedGeometryInto(container, site);
+}
+
 function openDrawer(s){
   const typeKey = typeKeyOf(s);
   const isUnresolved = typeKey === UNRESOLVED_TYPE;
@@ -6066,8 +6365,14 @@ function openDrawer(s){
     ${renderDrawerSource(s)}
     ${renderDrawerCoords(s)}
     ${legacyBits.length ? `<details class="drawer-details"><summary>Classification &amp; legacy details</summary>${legacyBits.join('')}</details>` : ''}
+    <div id="drawerLinkedGeometry"></div>
     ${renderNearbySites(s)}
   `;
+  // Phase 5 §7: rendered into its own container (rather than baked into
+  // the innerHTML string above) so later load/highlight state changes can
+  // repaint just this section without re-rendering — and losing scroll
+  // position/listeners on — the rest of an already-open drawer.
+  renderLinkedGeometryInto(document.getElementById('drawerLinkedGeometry'), s);
   const parentLink = document.getElementById('drawerParentLink');
   if(parentLink){
     parentLink.addEventListener('click', ()=>{
@@ -6107,6 +6412,9 @@ document.getElementById('drawerClose').addEventListener('click', (ev)=>{
   ev.stopPropagation();
   if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('record',false);
   else drawer.classList.remove('open');
+  // Phase 5 §4: closing the Site record clears its selection-driven
+  // Geometry reveal/highlight (manual layer state is untouched).
+  if(typeof geometrySelectionController !== 'undefined') geometrySelectionController.clearSelection();
 });
 
 /* ---------- search ----------
@@ -6153,8 +6461,13 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   clearSpatialSelection(false);
   // Historical layers: safest default is everything off (spec §11) — the
   // basemap/theme selector is untouched, since that's a separate concern.
+  // Phase 5 §2: Reset clears BOTH manual state and any selection-driven
+  // reveal/highlight — geometrySelectionController.clearSelection() first,
+  // so a temporarily-shown layer doesn't outlive the Site selection it
+  // stayed alive for while its manual flag is being cleared below.
+  if(typeof geometrySelectionController !== 'undefined') geometrySelectionController.clearSelection();
   TEMPORAL_LAYERS.forEach(layer=>{
-    if(layer.enabled) setLayerEnabled(layer.id, false);
+    if(layer.manualEnabled) setLayerEnabled(layer.id, false);
     layer.opacity = 1;
   });
   renderLayersPanel();
@@ -7675,10 +7988,13 @@ function buildShareUrl(centerOverride=null,siteOverride=null){
   // opacity for any of those that isn't the 1.0 default. No geometry is
   // ever stored here — just short ids the registry already knows about,
   // so a link with no layers enabled stays exactly as compact as before.
-  const enabledLayerIds = [...TEMPORAL_LAYERS.values()].filter(l=>l.enabled).map(l=>l.id);
+  // Phase 5 §2: this MUST read manualEnabled, never effective visibility —
+  // a layer only on screen because of the current Site selection is
+  // deliberately never persisted as manual state in a shared link.
+  const enabledLayerIds = [...TEMPORAL_LAYERS.values()].filter(l=>l.manualEnabled).map(l=>l.id);
   if(enabledLayerIds.length) params.set('lyr', enabledLayerIds.join(','));
   const nonDefaultOpacity = [...TEMPORAL_LAYERS.values()]
-    .filter(l=>l.enabled && l.opacity !== 1)
+    .filter(l=>l.manualEnabled && l.opacity !== 1)
     .map(l=>`${l.id}:${l.opacity}`);
   if(nonDefaultOpacity.length) params.set('lyrOp', nonDefaultOpacity.join(','));
 
@@ -7831,11 +8147,32 @@ const loadOverlay = document.getElementById('loadOverlay');
 const loadSpinner = document.getElementById('loadSpinner');
 const loadMsg = document.getElementById('loadMsg');
 const loadError = document.getElementById('loadError');
+let loadErrorMode = 'site-data';
 
 function showLoadError(err){
   console.error('Failed to load site data:', err);
+  loadErrorMode = 'site-data';
   loadSpinner.style.display = 'none';
   loadMsg.style.display = 'none';
+  loadError.querySelector('h3').textContent = "Couldn't load the site data";
+  document.getElementById('loadErrorText').innerHTML = 'ArcheoMaps could not fetch <code style="display:inline;padding:1px 5px;">archeomaps_data.json</code>. If you opened this file directly from disk (a <code style="display:inline;padding:1px 5px;">file://</code> URL), browsers block that kind of request for security reasons.';
+  document.getElementById('loadErrorHelp').style.display = '';
+  document.getElementById('loadErrorCommand').style.display = '';
+  document.getElementById('loadRetryBtn').textContent = 'Retry';
+  loadError.classList.add('show');
+}
+
+function showLayerLoadError(layer, err){
+  console.error(`Failed to load map layer ${layer.id}:`, err);
+  loadErrorMode = 'map-layer';
+  loadOverlay.classList.remove('hidden');
+  loadSpinner.style.display = 'none';
+  loadMsg.style.display = 'none';
+  loadError.querySelector('h3').textContent = "Couldn't load the map layer";
+  document.getElementById('loadErrorText').textContent = `${layer.label} could not be loaded. The layer has been switched off. ${err?.message || err}`;
+  document.getElementById('loadErrorHelp').style.display = 'none';
+  document.getElementById('loadErrorCommand').style.display = 'none';
+  document.getElementById('loadRetryBtn').textContent = 'Close';
   loadError.classList.add('show');
 }
 
@@ -8072,6 +8409,13 @@ function startApp(rawSites){
     validateAndNormalizeSites,
     getState: ()=>state,
     selectSite, openDrawer, buildShareUrl, applyStateFromUrl,
+    // Phase 5 introspection (GEOMETRY_PHASE5_SITE_LINKING.md) — used by the
+    // browser interaction test suite, not by the app itself.
+    getTemporalLayers: ()=>TEMPORAL_LAYERS,
+    getCatalogFeatureIndex: ()=>catalogFeatureIndex,
+    getGeometrySelectionController: ()=>geometrySelectionController,
+    getGeometryDiagnostics: ()=>window.ArcheoGeometryDiagnostics,
+    setLayerEnabled, setLayerSelectionState, currentMapYear, applyFilters,
   };
 }
 
@@ -8090,19 +8434,29 @@ function loadData(){
       Promise.all([loadImage(`${s.image||DEFAULT_SPRITE_ATLAS}?v=4`),loadImage(`${h.image||DEFAULT_HERO_ATLAS}?v=4`)]).then(()=>{SPRITE_MANIFEST=manifest;resolve(manifest)}).catch(()=>resolve(null));
     }))
     .catch(()=>null);
+  const geometryCatalogPromise = loadLayerCatalog().then(()=>null).catch(error=>error);
   Promise.all([fetch(DATA_URL)
     .then(res=>{
       if(!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       return res.json();
-    }),spriteManifestPromise])
-    .then(([data])=>{
+    }),spriteManifestPromise,geometryCatalogPromise])
+    .then(([data,,geometryCatalogError])=>{
       if(!Array.isArray(data) || data.length === 0) throw new Error('archeomaps_data.json did not contain a site array.');
       startApp(data);
+      if(geometryCatalogError) showLayerLoadError({ id:'layer-catalog', label:'Geometry layer catalogue' }, geometryCatalogError);
     })
     .catch(showLoadError);
 }
 
-document.getElementById('loadRetryBtn').addEventListener('click', loadData);
+document.getElementById('loadRetryBtn').addEventListener('click', ()=>{
+  if(loadErrorMode === 'map-layer'){
+    loadError.classList.remove('show');
+    loadOverlay.classList.add('hidden');
+    loadErrorMode = 'site-data';
+    return;
+  }
+  loadData();
+});
 
 loadData();
 
