@@ -1,0 +1,26 @@
+✔ valid fixture passes without quarantine (15.1093ms)
+✔ invalid fixture is quarantined with expected safety codes (0.669551ms)
+✔ canonical output is deterministic regardless of input feature order (1.358972ms)
+✔ geometryRole default may be overridden without quarantine (3.002408ms)
+✔ missing dataset geometryTypes returns a fatal issue instead of throwing (0.449355ms)
+✔ both features sharing an id are quarantined (0.365371ms)
+✔ dataset validation covers malformed fields and geometry type entries (0.780836ms)
+✔ coordinate validation covers invalid positions, empty arrays, and non-finite values (0.43964ms)
+✔ polygon validation covers short and unclosed rings (0.49978ms)
+✔ deployed Hadrian's Wall package matches its validation report (4.73ms)
+✔ map registers the pilot as a lazy proposed validity layer (3.828306ms)
+✔ shared lazy loader reverts failed layers and exposes the load error (8.085105ms)
+✔ every catalogued layer resolves locally and matches its pinned bytes (2.840734ms)
+✔ map loads the external catalog before restoring application state (6.794045ms)
+✔ deployed layer catalogue is valid and uniquely identifies Hadrian's Wall (1.869487ms)
+✔ catalogue rejects duplicate ids, unsafe paths, unknown states, and invalid hashes (1.30443ms)
+✔ maps the pinned OHM relation into the Phase 1 contract (2.968523ms)
+✔ fails closed when the expected relation or geometry shape changes (1.129382ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 152.659306

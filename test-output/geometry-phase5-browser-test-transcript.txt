@@ -1,0 +1,18 @@
+ArcheoMaps Geometry Phase 5 — browser interaction test transcript
+Run at: 2026-09-14T17:09:06.086Z
+Vendored (locally, from the npm registry) rather than CDN-loaded: Leaflet 1.9.4, Leaflet.markercluster 1.5.3, topojson-client 3 — the sandbox's egress policy returns 403 for cdnjs.cloudflare.com and unpkg.com (confirmed via curl before writing this runner). The shipped index.html is unmodified; only a scratch copy used for this run had its CDN <script>/<link> URLs pointed at the vendored files.
+
+PASS  app loads with real Leaflet and Phase 4/5 scripts, no page errors during boot
+PASS  a Site selected while the timeline is outside the Geometry's valid range loads it but never highlights it, and the drawer says so
+PASS  moving the timeline into range reveals and highlights the already-selected relationship without re-selecting the Site
+PASS  moving the timeline back out of range removes the highlight and the checkbox stays unchecked
+PASS  selecting a Site with an accepted relationship reveals and highlights the layer without checking its manual checkbox
+PASS  the Site drawer's Linked geometry section renders the relationship
+PASS  closing the Site record clears the temporary reveal and highlight
+PASS  a proposed relationship is revealed and visibly labelled proposed
+PASS  a rejected relationship never auto-reveals and is labelled Rejected in the drawer
+PASS  manually enabling the layer via the checkbox is independent of selection state and persists to the share URL
+PASS  the mobile drawer layout does not overflow the viewport
+PASS  no unhandled page exceptions occurred anywhere in the run (network-asset noise aside)
+
+12 passed, 0 failed, 12 total.

@@ -1,0 +1,363 @@
+ArcheoMaps Geometry Phase 5 — Node test suite transcript (node:test)
+Run at: 2026-09-14T17:08:52Z
+Node version: v22.22.2
+Command: node --test tests/*.js  (all Phase 2-5 non-browser tests; the browser suite is separate, see geometry-phase5-browser-test-transcript.txt)
+
+TAP version 13
+# Subtest: valid fixture passes without quarantine
+ok 1 - valid fixture passes without quarantine
+  ---
+  duration_ms: 11.456974
+  type: 'test'
+  ...
+# Subtest: invalid fixture is quarantined with expected safety codes
+ok 2 - invalid fixture is quarantined with expected safety codes
+  ---
+  duration_ms: 0.754982
+  type: 'test'
+  ...
+# Subtest: canonical output is deterministic regardless of input feature order
+ok 3 - canonical output is deterministic regardless of input feature order
+  ---
+  duration_ms: 0.759676
+  type: 'test'
+  ...
+# Subtest: geometryRole default may be overridden without quarantine
+ok 4 - geometryRole default may be overridden without quarantine
+  ---
+  duration_ms: 0.458398
+  type: 'test'
+  ...
+# Subtest: missing dataset geometryTypes returns a fatal issue instead of throwing
+ok 5 - missing dataset geometryTypes returns a fatal issue instead of throwing
+  ---
+  duration_ms: 0.433465
+  type: 'test'
+  ...
+# Subtest: both features sharing an id are quarantined
+ok 6 - both features sharing an id are quarantined
+  ---
+  duration_ms: 0.371471
+  type: 'test'
+  ...
+# Subtest: dataset validation covers malformed fields and geometry type entries
+ok 7 - dataset validation covers malformed fields and geometry type entries
+  ---
+  duration_ms: 0.637666
+  type: 'test'
+  ...
+# Subtest: coordinate validation covers invalid positions, empty arrays, and non-finite values
+ok 8 - coordinate validation covers invalid positions, empty arrays, and non-finite values
+  ---
+  duration_ms: 0.496288
+  type: 'test'
+  ...
+# Subtest: polygon validation covers short and unclosed rings
+ok 9 - polygon validation covers short and unclosed rings
+  ---
+  duration_ms: 0.572116
+  type: 'test'
+  ...
+# Subtest: deployed Hadrian's Wall package matches its validation report
+ok 10 - deployed Hadrian's Wall package matches its validation report
+  ---
+  duration_ms: 4.210468
+  type: 'test'
+  ...
+# Subtest: map registers the pilot as a lazy proposed validity layer
+ok 11 - map registers the pilot as a lazy proposed validity layer
+  ---
+  duration_ms: 3.601447
+  type: 'test'
+  ...
+# Subtest: shared lazy loader reverts failed layers and exposes the load error
+ok 12 - shared lazy loader reverts failed layers and exposes the load error
+  ---
+  duration_ms: 4.889935
+  type: 'test'
+  ...
+# Subtest: every catalogued layer resolves locally and matches its pinned bytes
+ok 13 - every catalogued layer resolves locally and matches its pinned bytes
+  ---
+  duration_ms: 3.783893
+  type: 'test'
+  ...
+# Subtest: map loads the external catalog before restoring application state
+ok 14 - map loads the external catalog before restoring application state
+  ---
+  duration_ms: 3.788774
+  type: 'test'
+  ...
+# Subtest: valid Geometry ID resolves to exactly one catalogue layer
+ok 15 - valid Geometry ID resolves to exactly one catalogue layer
+  ---
+  duration_ms: 2.021711
+  type: 'test'
+  ...
+# Subtest: malformed feature ID is rejected by the catalogue validator
+ok 16 - malformed feature ID is rejected by the catalogue validator
+  ---
+  duration_ms: 0.614937
+  type: 'test'
+  ...
+# Subtest: empty featureIds array is rejected
+ok 17 - empty featureIds array is rejected
+  ---
+  duration_ms: 0.39485
+  type: 'test'
+  ...
+# Subtest: duplicate feature ID within one entry is rejected
+ok 18 - duplicate feature ID within one entry is rejected
+  ---
+  duration_ms: 0.310773
+  type: 'test'
+  ...
+# Subtest: duplicate feature ID across entries is rejected
+ok 19 - duplicate feature ID across entries is rejected
+  ---
+  duration_ms: 0.326223
+  type: 'test'
+  ...
+# Subtest: declared Geometry feature absent from canonical file fails
+ok 20 - declared Geometry feature absent from canonical file fails
+  ---
+  duration_ms: 0.541691
+  type: 'test'
+  ...
+# Subtest: undeclared canonical feature fails
+ok 21 - undeclared canonical feature fails
+  ---
+  duration_ms: 0.47987
+  type: 'test'
+  ...
+# Subtest: duplicate canonical feature ID fails
+ok 22 - duplicate canonical feature ID fails
+  ---
+  duration_ms: 0.269527
+  type: 'test'
+  ...
+# Subtest: Dataset-ID mismatch still fails at the feature-index gate
+ok 23 - Dataset-ID mismatch still fails at the feature-index gate
+  ---
+  duration_ms: 1.611241
+  type: 'test'
+  ...
+# Subtest: a fully valid canonical file builds a clean loaded-feature index
+ok 24 - a fully valid canonical file builds a clean loaded-feature index
+  ---
+  duration_ms: 0.646423
+  type: 'test'
+  ...
+# Subtest: accepted relationship is eligible
+ok 25 - accepted relationship is eligible
+  ---
+  duration_ms: 0.4298
+  type: 'test'
+  ...
+# Subtest: proposed relationship is eligible and remains visibly proposed
+ok 26 - proposed relationship is eligible and remains visibly proposed
+  ---
+  duration_ms: 0.219055
+  type: 'test'
+  ...
+# Subtest: rejected relationship is ineligible
+ok 27 - rejected relationship is ineligible
+  ---
+  duration_ms: 0.234146
+  type: 'test'
+  ...
+# Subtest: disputed relationship does not auto-reveal
+ok 28 - disputed relationship does not auto-reveal
+  ---
+  duration_ms: 0.17756
+  type: 'test'
+  ...
+# Subtest: needs-research relationship does not auto-reveal
+ok 29 - needs-research relationship does not auto-reveal
+  ---
+  duration_ms: 0.138676
+  type: 'test'
+  ...
+# Subtest: missing review state is ineligible (malformed) and produces a diagnostic
+ok 30 - missing review state is ineligible (malformed) and produces a diagnostic
+  ---
+  duration_ms: 0.126468
+  type: 'test'
+  ...
+# Subtest: malformed relationship does not throw for any garbage shape
+ok 31 - malformed relationship does not throw for any garbage shape
+  ---
+  duration_ms: 0.324525
+  type: 'test'
+  ...
+# Subtest: unresolved target produces a diagnostic, not a crash
+ok 32 - unresolved target produces a diagnostic, not a crash
+  ---
+  duration_ms: 0.136193
+  type: 'test'
+  ...
+# Subtest: non-Geometry relationship is ignored by the Geometry resolver (no diagnostic)
+ok 33 - non-Geometry relationship is ignored by the Geometry resolver (no diagnostic)
+  ---
+  duration_ms: 0.121501
+  type: 'test'
+  ...
+# Subtest: unlinked Site (no relationships) yields no eligible targets and no diagnostics
+ok 34 - unlinked Site (no relationships) yields no eligible targets and no diagnostics
+  ---
+  duration_ms: 0.11725
+  type: 'test'
+  ...
+# Subtest: a Site with multiple relationships resolves each independently and deterministically
+ok 35 - a Site with multiple relationships resolves each independently and deterministically
+  ---
+  duration_ms: 1.577191
+  type: 'test'
+  ...
+# Subtest: linked validity feature displays inside its interval (inclusive bounds)
+ok 36 - linked validity feature displays inside its interval (inclusive bounds)
+  ---
+  duration_ms: 0.146039
+  type: 'test'
+  ...
+# Subtest: linked feature remains hidden outside its interval
+ok 37 - linked feature remains hidden outside its interval
+  ---
+  duration_ms: 0.072988
+  type: 'test'
+  ...
+# Subtest: open start/end bounds behave correctly
+ok 38 - open start/end bounds behave correctly
+  ---
+  duration_ms: 0.095153
+  type: 'test'
+  ...
+# Subtest: display name prefers the feature-level name override
+ok 39 - display name prefers the feature-level name override
+  ---
+  duration_ms: 0.105959
+  type: 'test'
+  ...
+# Subtest: display name falls back to entity registry preferredName when no feature name override exists
+ok 40 - display name falls back to entity registry preferredName when no feature name override exists
+  ---
+  duration_ms: 0.082101
+  type: 'test'
+  ...
+# Subtest: display name falls back to catalogue layer label with no runtime Entity registry
+ok 41 - display name falls back to catalogue layer label with no runtime Entity registry
+  ---
+  duration_ms: 0.104755
+  type: 'test'
+  ...
+# Subtest: display name falls back to the Geometry ID as a last resort
+ok 42 - display name falls back to the Geometry ID as a last resort
+  ---
+  duration_ms: 0.077042
+  type: 'test'
+  ...
+# Subtest: effectiveEnabled is manualEnabled OR selectionEnabled
+ok 43 - effectiveEnabled is manualEnabled OR selectionEnabled
+  ---
+  duration_ms: 0.085156
+  type: 'test'
+  ...
+# Subtest: an eligible relationship is temporarily revealed once its layer loads
+ok 44 - an eligible relationship is temporarily revealed once its layer loads
+  ---
+  duration_ms: 3.446237
+  type: 'test'
+  ...
+# Subtest: temporary layer/highlight clears on clearSelection (deselect / close record)
+ok 45 - temporary layer/highlight clears on clearSelection (deselect / close record)
+  ---
+  duration_ms: 0.763779
+  type: 'test'
+  ...
+# Subtest: selecting another linked Site clears the old highlight before revealing the new one
+ok 46 - selecting another linked Site clears the old highlight before revealing the new one
+  ---
+  duration_ms: 0.664111
+  type: 'test'
+  ...
+# Subtest: selecting an unlinked Site clears previous temporary Geometry
+ok 47 - selecting an unlinked Site clears previous temporary Geometry
+  ---
+  duration_ms: 1.331271
+  type: 'test'
+  ...
+# Subtest: repeated selection of the same Site is idempotent
+ok 48 - repeated selection of the same Site is idempotent
+  ---
+  duration_ms: 1.774911
+  type: 'test'
+  ...
+# Subtest: §8 stale-request protection: an earlier selection's late load cannot resurrect its highlight
+ok 49 - §8 stale-request protection: an earlier selection's late load cannot resurrect its highlight
+  ---
+  duration_ms: 0.685042
+  type: 'test'
+  ...
+# Subtest: a failed fetch rolls back selection state, preserves the open Site record, and never throws unhandled
+ok 50 - a failed fetch rolls back selection state, preserves the open Site record, and never throws unhandled
+  ---
+  duration_ms: 0.63296
+  type: 'test'
+  ...
+# Subtest: stale completion after a failed-then-reselected sequence cannot mutate current selection UI
+ok 51 - stale completion after a failed-then-reselected sequence cannot mutate current selection UI
+  ---
+  duration_ms: 0.439834
+  type: 'test'
+  ...
+# Subtest: a selection outside the feature's valid interval loads without ever highlighting
+ok 52 - a selection outside the feature's valid interval loads without ever highlighting
+  ---
+  duration_ms: 0.733167
+  type: 'test'
+  ...
+# Subtest: moving the timeline into range reveals the current selection; moving out removes it
+ok 53 - moving the timeline into range reveals the current selection; moving out removes it
+  ---
+  duration_ms: 1.059598
+  type: 'test'
+  ...
+# Subtest: diagnostics are forwarded for ineligible/malformed relationships during selection without throwing
+ok 54 - diagnostics are forwarded for ineligible/malformed relationships during selection without throwing
+  ---
+  duration_ms: 0.972865
+  type: 'test'
+  ...
+# Subtest: deployed layer catalogue is valid and uniquely identifies Hadrian's Wall
+ok 55 - deployed layer catalogue is valid and uniquely identifies Hadrian's Wall
+  ---
+  duration_ms: 1.529167
+  type: 'test'
+  ...
+# Subtest: catalogue rejects duplicate ids, unsafe paths, unknown states, and invalid hashes
+ok 56 - catalogue rejects duplicate ids, unsafe paths, unknown states, and invalid hashes
+  ---
+  duration_ms: 1.017555
+  type: 'test'
+  ...
+# Subtest: maps the pinned OHM relation into the Phase 1 contract
+ok 57 - maps the pinned OHM relation into the Phase 1 contract
+  ---
+  duration_ms: 3.530836
+  type: 'test'
+  ...
+# Subtest: fails closed when the expected relation or geometry shape changes
+ok 58 - fails closed when the expected relation or geometry shape changes
+  ---
+  duration_ms: 0.986044
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 649.997306
