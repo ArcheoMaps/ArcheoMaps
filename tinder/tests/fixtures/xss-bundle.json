@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "scribe.mobile.v1",
+  "batchId": "xss-test-batch",
+  "sourceFingerprint": "sha256:test",
+  "locations": [
+    {
+      "recordId": "loc-xss-1",
+      "name": "<img src=x onerror=window.__pwned=1>Hostile Name",
+      "country": "Nowhere",
+      "type": "Test",
+      "images": [{ "url": "javascript:alert(1)" }],
+      "proposals": [
+        {
+          "proposalId": "p-xss-1",
+          "field": "Description",
+          "label": "Description",
+          "lane": "high",
+          "confidence": 0.9,
+          "currentValue": "",
+          "proposedValue": "<script>window.__pwned2=1</script><img src=x onerror=\"window.__pwned=1\">",
+          "evidence": [{ "text": "\"><img src=x onerror=window.__pwned=1>" }],
+          "sources": [{ "label": "evil", "url": "javascript:window.__pwned=1" }]
+        }
+      ]
+    }
+  ]
+}

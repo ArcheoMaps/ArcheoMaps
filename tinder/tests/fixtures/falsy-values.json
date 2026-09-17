@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "scribe.mobile.v1",
+  "batchId": "falsy-test-batch",
+  "sourceFingerprint": "sha256:test",
+  "locations": [
+    {
+      "recordId": "loc-falsy-1",
+      "name": "Falsy Value Site",
+      "proposals": [
+        { "proposalId": "p-falsy-1", "field": "Elevation", "label": "Elevation", "lane": "medium", "confidence": 0.5, "currentValue": false, "proposedValue": 0 }
+      ]
+    }
+  ]
+}

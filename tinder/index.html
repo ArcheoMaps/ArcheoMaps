@@ -1,0 +1,2121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0b1220" />
+<!--
+  Content-Security-Policy note: script-src needs 'unsafe-inline' because
+  this is a hand-edited single static file with no build step to generate
+  a nonce or a script hash per release — there's nowhere else for the app's
+  own logic to live. That is a real, acknowledged tradeoff (audit C-01),
+  not a substitute for fixing the actual injection sinks: every attacker-
+  reachable value (image/source URLs, imported proposal/group ids) is now
+  escaped and scheme-validated before it ever reaches an HTML attribute,
+  and the one inline event-handler attribute the app used to emit itself
+  (onerror on the card image) has been replaced with addEventListener —
+  so there is no longer a sink for injected markup to land in even though
+  the policy can't fully lock down script-src.
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';" />
+<title>Scribe Curator</title>
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<style>
+  :root{
+    --navy:#0b1220;
+    --navy-deep:#060a13;
+    --navy-raised:#121b2e;
+    --ivory:#f6f1e4;
+    --ivory-dim:#e9e1c9;
+    --ink:#2a2620;
+    --ink-soft:#5b5546;
+    --emerald:#1f8a5f;
+    --emerald-glow:rgba(31,138,95,.55);
+    --crimson:#a8384a;
+    --crimson-glow:rgba(168,56,74,.55);
+    --amber:#c99a3e;
+    --amber-glow:rgba(201,154,62,.55);
+    --gold:#d4af6a;
+    --line:rgba(212,175,106,.35);
+    --shadow-lg:0 22px 48px rgba(0,0,0,.55), 0 4px 10px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  /* A visible keyboard-focus treatment (audit M-05: "no visible focus
+     treatment") — scoped to :focus-visible so it only appears for keyboard/
+     switch-device navigation, never as a flash on an ordinary touch tap. */
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible{
+    outline:3px solid var(--gold);outline-offset:2px;
+  }
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:
+      radial-gradient(circle at 50% -10%, #16223a 0%, var(--navy) 45%, var(--navy-deep) 100%);
+    color:var(--ivory);
+    overflow:hidden;
+    -webkit-user-select:none;user-select:none;
+  }
+  #app{
+    height:100dvh;
+    display:flex;
+    flex-direction:column;
+    padding-top:env(safe-area-inset-top);
+    /* Bottom inset lives on .footer-bar only — the lowest bar actually on
+       screen. Adding it here too, and again on .action-bar below, was
+       triple-counting the same inset and wasting space that could go to
+       the review card (audit M-06). */
+  }
+
+  /* ---------- header ---------- */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 18px 6px;
+  }
+  .brand{font-size:15px;letter-spacing:3px;font-weight:700;color:var(--gold);}
+  .brand span{color:var(--ivory-dim);font-weight:400;}
+  .status-row{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ivory-dim);opacity:.8;}
+  .conn-dot{width:7px;height:7px;border-radius:50%;background:var(--emerald);box-shadow:0 0 6px var(--emerald-glow);}
+  .conn-dot.offline{background:var(--amber);box-shadow:0 0 6px var(--amber-glow);}
+
+  .counters{display:flex;gap:10px;padding:6px 18px 2px;}
+  .counter{flex:1;text-align:center;background:var(--navy-raised);border:1px solid var(--line);border-radius:10px;padding:6px 4px;}
+  .counter span{display:block;font-size:17px;font-weight:700;}
+  .counter label{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ivory-dim);opacity:.75;}
+  .counter.accepted span{color:var(--emerald);}
+  .counter.rejected span{color:var(--crimson);}
+  .counter.deferred span{color:var(--amber);}
+
+  .progress-row{display:flex;align-items:center;gap:10px;padding:10px 18px 4px;}
+  .progress-track{flex:1;height:6px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--amber),var(--gold));transition:width .3s ease;}
+  .progress-label{font-size:11px;color:var(--ivory-dim);min-width:52px;text-align:right;}
+
+  /* ---------- stage ---------- */
+  .stage{flex:1;position:relative;padding:10px 16px 4px;min-height:0;}
+  .import-screen,.done-screen{
+    position:absolute;inset:10px 16px 4px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:14px;padding:24px;
+    background:var(--navy-raised);border:1px solid var(--line);border-radius:18px;
+  }
+  .import-screen h2,.done-screen h2{margin:0;color:var(--gold);font-size:19px;}
+  .import-screen p,.done-screen p{margin:0;color:var(--ivory-dim);font-size:13px;line-height:1.5;max-width:280px;}
+  .file-btn{
+    background:var(--emerald);color:#f6fff9;padding:12px 22px;border-radius:999px;
+    font-size:14px;font-weight:600;cursor:pointer;position:relative;overflow:hidden;
+    box-shadow:0 6px 16px rgba(31,138,95,.4);
+  }
+  .file-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+  .ghost-btn{
+    background:transparent;border:1px solid var(--line);color:var(--ivory);
+    padding:11px 20px;border-radius:999px;font-size:13px;cursor:pointer;
+  }
+  .danger-btn{
+    background:transparent;border:1px solid var(--crimson-glow);color:var(--crimson);
+    padding:10px 18px;border-radius:999px;font-size:12px;cursor:pointer;margin-top:10px;
+  }
+  .import-error{color:var(--crimson);font-size:12px;max-width:280px;}
+
+  /* ---------- card stack ---------- */
+  .card-stack{position:absolute;inset:10px 16px 4px;display:none;}
+  .card{
+    position:absolute;inset:0;margin:auto;
+    width:min(100%,380px);height:100%;
+    border-radius:22px;
+    background:var(--ivory);
+    color:var(--ink);
+    box-shadow:var(--shadow-lg);
+    border:2px solid rgba(255,255,255,.6);
+    outline:1px solid rgba(0,0,0,.15);
+    display:flex;flex-direction:column;
+    overflow:hidden;
+    will-change:transform;
+  }
+  .card.stack-1{transform:translateY(14px) scale(.965);opacity:.9;z-index:1;}
+  .card.top{z-index:2;}
+  .card.dragging{transition:none;}
+  .card.returning{transition:transform .38s cubic-bezier(.2,.8,.2,1);}
+  .card.exiting{transition:transform .42s cubic-bezier(.4,0,.6,1), opacity .42s ease;}
+
+  /* touch-action:none lives ONLY on the drag handle (image + title), so our
+     custom pointer-based swipe physics owns gestures there — everywhere
+     else on the card, most importantly .card-body below, keeps normal
+     touch scrolling. Putting this on the whole .card was the bug: it
+     silently blocked scrolling in the field list underneath it too. */
+  /* .card-inner has to be its own flex column with a real height, or
+     .card-body's flex:1 below has nothing to size against — it then just
+     grows to fit its content instead of being clipped to the card, so the
+     overflow is silently cut off by .card{overflow:hidden} with no
+     scrollbar at all. This was the actual root cause of "can't scroll". */
+  .card-inner{display:flex;flex-direction:column;height:100%;}
+  .drag-handle{flex:0 0 auto;touch-action:none;}
+  .card-image-wrap{position:relative;height:150px;background:#d8cfa9;overflow:hidden;}
+  .card-image{width:100%;height:100%;object-fit:cover;display:block;}
+  .card-image.img-fail{display:none;}
+  .img-placeholder{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    color:var(--ink-soft);font-size:11px;letter-spacing:1px;text-transform:uppercase;
+    background:repeating-linear-gradient(45deg,#e4dab8,#e4dab8 10px,#ddd2ac 10px,#ddd2ac 20px);
+  }
+  .card-image:not(.img-fail) + .img-placeholder{display:none;}
+
+  .stamp{
+    position:absolute;top:14px;padding:6px 14px;border-radius:6px;
+    font-weight:800;font-size:20px;letter-spacing:2px;
+    border:3px solid currentColor;opacity:0;transform:rotate(-14deg);
+    pointer-events:none;
+  }
+  .stamp-accept{left:14px;color:var(--emerald);transform:rotate(-14deg);}
+  .stamp-reject{right:14px;color:var(--crimson);transform:rotate(14deg);}
+  .stamp-defer{left:50%;top:10px;transform:translateX(-50%);color:var(--amber);}
+
+  .edge-glow{position:absolute;inset:0;pointer-events:none;border-radius:20px;opacity:0;transition:none;}
+
+  .card-title{padding:10px 16px 8px;border-bottom:1px solid rgba(0,0,0,.08);}
+  .card-title h3{margin:0 0 2px;font-size:17px;font-family:Georgia,"Times New Roman",serif;}
+  .card-title .meta{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;}
+
+  .card-body{flex:1;min-height:0;overflow-y:auto;padding:10px 14px 100px;-webkit-overflow-scrolling:touch;}
+  .field-controls-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .field-controls-header>span{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--ink-soft);}
+  .all-none button{
+    background:none;border:1px solid rgba(0,0,0,.15);border-radius:999px;
+    font-size:10px;min-width:44px;min-height:44px;padding:3px 9px;margin-left:4px;color:var(--ink-soft);cursor:pointer;
+  }
+
+  .field-row{
+    padding:9px 2px;border-bottom:1px dashed rgba(0,0,0,.09);
+  }
+  .field-row-top{display:flex;align-items:center;gap:8px;}
+  .field-row.identity-row{background:rgba(201,154,62,.10);border-radius:8px;padding:9px 6px;}
+  .field-row.locked{opacity:.45;}
+  .field-row-main{flex:1;min-width:0;}
+  .field-row[data-proposal] .field-row-main{cursor:pointer;}
+  .chevron{display:inline-block;width:9px;color:var(--ink-soft);font-size:9px;}
+  /* The global user-select:none on <body> (needed so the drag gesture
+     doesn't fight with accidental text selection while swiping) was also
+     blocking copying the very evidence/source text a curator most needs to
+     quote or paste elsewhere (audit M-05). Explicitly re-enabling selection
+     on the read-only detail/evidence content undoes that side effect
+     without touching the drag handle or button chrome. */
+  .field-detail, .evidence-panel{-webkit-user-select:text;user-select:text;}
+  .field-detail{margin-top:7px;padding:8px 10px;background:rgba(0,0,0,.035);border-radius:8px;font-size:11.5px;color:var(--ink-soft);line-height:1.45;}
+  .field-detail-row{display:flex;gap:8px;margin-bottom:4px;}
+  .field-detail-row .fd-label{flex:0 0 56px;font-weight:700;color:var(--ink);text-transform:uppercase;font-size:9px;letter-spacing:.5px;padding-top:1px;}
+  .field-detail-row .fd-value{flex:1;white-space:normal;word-break:break-word;}
+  .field-detail-evidence{margin:6px 0 4px;padding-left:16px;}
+  .field-detail-sources{font-size:10.5px;}
+  .field-detail-sources a{margin-right:10px;}
+  .field-label{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:6px;}
+  .field-label .id-star{color:var(--amber);font-size:11px;}
+  .badge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:999px;text-transform:uppercase;letter-spacing:.5px;}
+  .badge.lane-high{background:rgba(31,138,95,.18);color:var(--emerald);}
+  .badge.lane-medium{background:rgba(201,154,62,.2);color:#8a6a1f;}
+  .badge.lane-low{background:rgba(168,56,74,.15);color:var(--crimson);}
+  .field-values{font-size:11.5px;color:var(--ink-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .field-values .arrow{margin:0 4px;color:var(--gold);}
+  .field-values .prop{color:var(--emerald);font-weight:600;}
+
+  .pill-toggle{
+    flex:0 0 auto;width:52px;height:44px;border:0;background:transparent;
+    position:relative;cursor:pointer;
+  }
+  .pill-toggle::before{
+    content:"";position:absolute;left:3px;top:9px;width:46px;height:26px;
+    border-radius:999px;background:#d8d0b5;transition:background .18s ease;
+  }
+  .pill-toggle::after{
+    content:"";position:absolute;top:11px;left:5px;width:22px;height:22px;border-radius:50%;
+    background:#fffdf6;box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.8);
+    transition:transform .18s ease;
+  }
+  .pill-toggle.on::before{background:var(--emerald);}
+  .pill-toggle.on::after{transform:translateX(20px);}
+  .pill-toggle:disabled{cursor:not-allowed;opacity:.5;}
+  .field-more{
+    /* A 44x44 tap target (not just the visible dot) — the old 22x22 button
+       was well below any usable mobile touch-target size (audit M-05). The
+       larger hit area is transparent; only the inner .dot circle is drawn,
+       as its own element rather than a pseudo-element, so paint order
+       never has to fight the button's own text content. */
+    flex:0 0 auto;width:44px;height:44px;border:none;background:none;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .field-more .dot{
+    width:26px;height:26px;border-radius:50%;border:1px solid rgba(0,0,0,.15);
+    color:var(--ink-soft);font-size:14px;line-height:1;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  .competing-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+  .chip{
+    font-size:11px;min-height:44px;padding:5px 10px;border-radius:999px;border:1px solid rgba(0,0,0,.18);
+    background:#fffdf6;cursor:pointer;
+  }
+  .chip.selected{background:var(--emerald);color:#fff;border-color:var(--emerald);}
+  .chip.none-chip.selected{background:var(--crimson);border-color:var(--crimson);}
+  .chip.later-chip.selected{background:var(--amber);border-color:var(--amber);}
+
+  .field-explicit-tag{font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:1px 6px;border-radius:999px;margin-left:6px;}
+  .field-explicit-tag.rejected{background:rgba(168,56,74,.18);color:var(--crimson);}
+  .field-explicit-tag.deferred{background:rgba(201,154,62,.2);color:#8a6a1f;}
+
+  .evidence-toggle{
+    /* A real <button> now (audit M-05: was a non-semantic, non-keyboard-
+       operable <div>) — reset the button chrome back to how the div used
+       to look. */
+    margin-top:10px;font-size:11.5px;color:var(--ink-soft);text-transform:uppercase;
+    letter-spacing:.5px;cursor:pointer;display:flex;align-items:center;gap:4px;
+    background:none;border:none;padding:0;font-family:inherit;width:100%;min-height:44px;text-align:left;
+  }
+  .evidence-panel{margin-top:6px;font-size:12px;color:var(--ink-soft);line-height:1.5;}
+  .evidence-panel.hidden{display:none;}
+  .evidence-panel ul{margin:4px 0;padding-left:16px;}
+  .evidence-panel .src-link{color:#2c6e8f;word-break:break-all;}
+
+  /* ---------- sticky action bar ---------- */
+  .action-bar{
+    position:relative;display:flex;align-items:center;justify-content:center;gap:18px;
+    padding:10px 18px;
+  }
+  .round-btn{
+    width:58px;height:58px;border-radius:50%;border:none;cursor:pointer;
+    font-size:24px;font-weight:800;color:#fff;
+    box-shadow:0 8px 18px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.25);
+  }
+  .round-btn.reject{background:linear-gradient(145deg,#c04a5c,var(--crimson));}
+  .round-btn.defer{background:linear-gradient(145deg,#dcb257,var(--amber));width:50px;height:50px;font-size:19px;}
+  .round-btn.accept{background:linear-gradient(145deg,#28a86e,var(--emerald));}
+  .icon-btn{
+    width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--navy-raised);
+    color:var(--ivory-dim);font-size:18px;cursor:pointer;
+  }
+  .icon-btn:disabled{opacity:.35;}
+
+  .footer-bar{display:flex;gap:8px;padding:0 18px calc(10px + env(safe-area-inset-bottom));}
+  .footer-btn{
+    flex:1;background:var(--navy-raised);border:1px solid var(--line);color:var(--gold);
+    padding:10px 6px;border-radius:12px;font-size:12px;font-weight:600;cursor:pointer;
+  }
+  .footer-btn.ghost{flex:0 0 40px;color:var(--ivory-dim);font-style:italic;font-family:Georgia,serif;}
+
+  /* ---------- sheets / overlays ---------- */
+  .sheet{
+    position:fixed;inset:0;background:rgba(6,10,19,.72);
+    display:flex;align-items:flex-end;z-index:50;
+  }
+  .sheet.hidden{display:none;}
+  .sheet-inner{
+    background:var(--navy-raised);border-top:1px solid var(--line);
+    border-radius:20px 20px 0 0;padding:18px 20px calc(20px + env(safe-area-inset-bottom));
+    width:100%;max-height:80vh;overflow-y:auto;
+  }
+  .sheet-inner h3{margin:0 0 10px;color:var(--gold);font-size:15px;}
+  .sheet-inner dl{font-size:12px;color:var(--ivory-dim);margin:0 0 10px;}
+  .sheet-inner dt{color:var(--ivory);font-weight:600;margin-top:6px;}
+  .sheet-inner dd{margin:0 0 4px;word-break:break-all;}
+  .field-actions{display:flex;flex-direction:column;gap:8px;}
+  .field-actions button{
+    background:var(--navy);border:1px solid var(--line);color:var(--ivory);
+    padding:12px;border-radius:10px;font-size:13px;text-align:left;cursor:pointer;
+  }
+  .field-actions button.danger{color:var(--crimson);}
+  .field-actions button.warn{color:var(--amber);}
+  .field-actions button.cancel-btn{color:var(--ivory-dim);text-align:center;border-style:dashed;}
+
+  .update-banner{
+    position:fixed;left:0;right:0;bottom:0;background:var(--gold);color:#241c08;
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+    text-align:center;font-size:13px;font-weight:600;z-index:60;
+  }
+  .update-banner.hidden{display:none;}
+  .update-banner button{
+    margin-left:10px;background:#241c08;color:var(--gold);border:none;border-radius:999px;
+    padding:5px 12px;font-size:12px;cursor:pointer;
+  }
+
+  .toast{
+    position:fixed;left:50%;bottom:110px;transform:translateX(-50%);
+    background:var(--navy-raised);border:1px solid var(--line);color:var(--ivory);
+    padding:9px 16px;border-radius:999px;font-size:12px;z-index:70;opacity:0;
+    transition:opacity .25s ease;pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">SCRIBE <span>CURATOR</span></div>
+    <div class="status-row">
+      <span id="connDot" class="conn-dot"></span>
+      <span id="connLabel">Online</span>
+    </div>
+  </header>
+
+  <div class="counters">
+    <div class="counter accepted"><span id="cntAccepted">0</span><label>Accepted</label></div>
+    <div class="counter rejected"><span id="cntRejected">0</span><label>Rejected</label></div>
+    <div class="counter deferred"><span id="cntDeferred">0</span><label>Deferred</label></div>
+  </div>
+
+  <div class="progress-row">
+    <div class="progress-track"><div id="progressFill" class="progress-fill"></div></div>
+    <div id="progressLabel" class="progress-label">0 / 0</div>
+  </div>
+
+  <main class="stage">
+    <div id="importScreen" class="import-screen">
+      <h2>Import a review bundle</h2>
+      <p>Load the mobile review bundle exported from desktop Scribe, or try the built-in sample batch to test the app.</p>
+      <label class="file-btn">
+        Choose bundle file (.json)
+        <input type="file" id="fileInput" accept="application/json,.json" />
+      </label>
+      <button id="loadSampleBtn" class="ghost-btn">Load sample batch (mock data)</button>
+      <div id="importError" class="import-error"></div>
+    </div>
+
+    <div id="cardStack" class="card-stack"></div>
+
+    <div id="doneScreen" class="done-screen" style="display:none">
+      <h2>Queue complete</h2>
+      <p>Every location in this batch has been decided. Export your decisions below for desktop Scribe, or start a new session.</p>
+      <button id="undoFromDone" class="ghost-btn" style="display:none">&#8630; Undo last decision</button>
+      <button id="newSessionFromDone" class="ghost-btn">Start new session…</button>
+    </div>
+  </main>
+
+  <div id="actionBar" class="action-bar" style="display:none">
+    <button id="btnUndo" class="icon-btn" title="Undo last decision" aria-label="Undo last decision">&#8630;</button>
+    <button id="btnReject" class="round-btn reject" title="Reject" aria-label="Reject this location's proposals">&times;</button>
+    <button id="btnDefer" class="round-btn defer" title="Defer" aria-label="Defer this location's proposals">&#9650;</button>
+    <button id="btnAccept" class="round-btn accept" title="Accept" aria-label="Accept this location's proposals">&#10003;</button>
+    <button id="btnSkip" class="icon-btn" title="Skip (no decision)" aria-label="Skip, no decision">&#8250;</button>
+  </div>
+
+  <footer class="footer-bar">
+    <button id="exportDecisionsBtn" class="footer-btn">Export Decisions</button>
+    <button id="exportBackupBtn" class="footer-btn">Export Backup</button>
+    <button id="aboutBtn" class="footer-btn ghost" aria-label="About this batch">i</button>
+  </footer>
+</div>
+
+<div id="aboutSheet" class="sheet hidden">
+  <div class="sheet-inner">
+    <h3>Session info</h3>
+    <dl id="aboutInfo"></dl>
+    <div class="field-actions">
+      <button id="closeAbout">Close</button>
+      <button id="resetBtn" class="danger">Start a new session (clears current progress)…</button>
+    </div>
+  </div>
+</div>
+
+<div id="fieldActionSheet" class="sheet hidden">
+  <div class="sheet-inner">
+    <h3 id="fieldActionTitle">Field options</h3>
+    <div class="field-actions" id="fieldActionButtons"></div>
+  </div>
+</div>
+
+<div id="updateBanner" class="update-banner hidden">
+  A new version of Scribe Curator is ready.
+  <button id="updateBtn">Refresh</button>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   Constants & tiny helpers
+   ============================================================ */
+// Exact allowlist, not a prefix match — an unrecognized version is refused
+// rather than silently run through today's field/decision logic, which may
+// not match what that version actually means (audit H-03).
+const SUPPORTED_SCHEMA_VERSIONS = new Set(["scribe.mobile.v1"]);
+const DB_NAME = "scribe-curator-db";
+const DB_STORE = "kv";
+const STATE_KEY = "app-state";
+const APP_VERSION = "0.3.1";
+const STATE_FORMAT_VERSION = 1;
+
+// A hard ceiling on the raw import file, checked before it's even read —
+// well above a realistic pilot batch, well below what risks freezing a
+// mid-range phone parsing and re-serializing it several times over (audit
+// H-06). RECOMMENDED_MAX_LOCATIONS is a soft warning, not a hard block.
+const MAX_IMPORT_FILE_BYTES = 8 * 1024 * 1024;
+const RECOMMENDED_MAX_LOCATIONS = 200;
+const ALLOWED_DECISIONS = new Set(["accepted","rejected","deferred","untouched"]);
+const ALLOWED_EXPLICIT = new Set(["rejected","deferred"]);
+
+function makeDict(){ return Object.create(null); }
+function hasOwn(obj, key){ return Object.prototype.hasOwnProperty.call(obj, key); }
+function isRecord(value){ return !!value && typeof value === "object" && !Array.isArray(value); }
+function dictCopy(value){
+  const out = makeDict();
+  if(isRecord(value)) Object.entries(value).forEach(([key, val]) => { out[key] = val; });
+  return out;
+}
+
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+
+function uid(prefix){
+  return prefix + "-" + Math.random().toString(36).slice(2, 9);
+}
+
+function nowIso(){ return new Date().toISOString(); }
+
+function clamp(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
+
+function toast(msg, ms){
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => el.classList.remove("show"), ms || 1800);
+}
+
+function vibrate(pattern){
+  try{ if(navigator.vibrate) navigator.vibrate(pattern); }catch(e){/* ignore */}
+}
+
+/* ============================================================
+   Tiny IndexedDB key/value wrapper (no external libraries —
+   this app must keep working with zero network access)
+   ============================================================ */
+function openDb(){
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(DB_STORE); };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+// Every call opens its own connection and closes it once its transaction
+// settles. A long curation session was previously accumulating one
+// never-closed connection per autosave — harmless in the short run, but
+// unbounded, and it can get in the way of a future schema upgrade or of
+// clearing the database (audit M-03).
+async function idbSet(key, val){
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, "readwrite");
+    tx.objectStore(DB_STORE).put(val, key);
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+async function idbGet(key){
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, "readonly");
+    const r = tx.objectStore(DB_STORE).get(key);
+    tx.oncomplete = () => db.close();
+    r.onsuccess = () => resolve(r.result);
+    r.onerror = () => { db.close(); reject(r.error); };
+  });
+}
+async function idbClear(){
+  const db = await openDb();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(DB_STORE, "readwrite");
+    tx.objectStore(DB_STORE).clear();
+    tx.oncomplete = () => { db.close(); resolve(); };
+    tx.onerror = () => { db.close(); reject(tx.error); };
+  });
+}
+
+/* ============================================================
+   App state
+   ============================================================
+   locations[i] = {
+     recordId, name, country, type, images:[{url,label}],
+     proposals: [{
+       proposalId, field, label, lane, confidence,
+       currentValue, proposedValue,
+       isIdentity, dependsOnIdentity, competingGroup,
+       evidence:[{text}], sources:[{label,url}]
+     }]
+   }
+*/
+let state = null;
+let lastAction = null;      // single-level undo snapshot
+let isAnimating = false;    // guards against duplicate/rapid decisions
+let saveTimer = null;
+let saveGeneration = 0;
+let saveChain = Promise.resolve();
+
+// Ephemeral, non-persisted UI state (not saved to IndexedDB — resets on
+// reload, and resets per-card automatically when the top card changes).
+let currentTopId = null;
+let expandedFields = new Set();  // proposalIds currently showing full detail
+let evidenceOpen = false;        // whether the Evidence & sources panel is open
+
+function freshState(bundle){
+  const locations = bundle.locations.map(loc => ({
+    recordId: loc.recordId,
+    name: loc.name,
+    country: loc.country || "",
+    type: loc.type || "",
+    images: loc.images || [],
+    proposals: (loc.proposals || []).map(p => ({...p}))
+  }));
+
+  const toggles = makeDict();
+  const competingSelection = makeDict();
+  const groupBest = makeDict();
+
+  locations.forEach(loc => {
+    // Pick a default winner per competing group = highest confidence.
+    // Keyed by (recordId, groupId), never the bare group id — see
+    // competingGroupKey for why (audit C-03: reused group ids across
+    // records must never let one record's selection leak into another's).
+    loc.proposals.forEach(p => {
+      if(p.competingGroup){
+        const key = competingGroupKey(loc, p);
+        if(safeLane(p.lane) !== "low" && (!hasOwn(groupBest, key) || p.confidence > groupBest[key].confidence)){
+          groupBest[key] = {proposalId:p.proposalId, confidence:p.confidence||0};
+        }
+      }
+    });
+  });
+  locations.forEach(loc => loc.proposals.forEach(p => {
+    if(p.competingGroup){
+      const key = competingGroupKey(loc, p);
+      if(!hasOwn(competingSelection, key)) competingSelection[key] = hasOwn(groupBest, key) ? groupBest[key].proposalId : "later";
+    }
+  }));
+
+  locations.forEach(loc => {
+    loc.proposals.forEach(p => {
+      if(p.competingGroup){
+        toggles[p.proposalId] = competingSelection[competingGroupKey(loc, p)] === p.proposalId;
+      } else {
+        // "Ready" proposals default on — except low-confidence ones, which
+        // now require a deliberate opt-in rather than riding along on a
+        // green swipe (audit H-05: a single accept was silently taking
+        // low-lane proposals with it).
+        toggles[p.proposalId] = safeLane(p.lane) !== "low";
+      }
+    });
+  });
+
+  return {
+    stateFormatVersion: STATE_FORMAT_VERSION,
+    schemaVersion: bundle.schemaVersion,
+    batchId: bundle.batchId,
+    sourceFingerprint: bundle.sourceFingerprint,
+    importedAt: nowIso(),
+    locations,
+    order: locations.map(l => l.recordId),
+    cursor: 0,
+    toggles,
+    explicit: makeDict(),       // proposalId -> 'rejected' | 'deferred'
+    competingSelection,        // groupId -> proposalId | 'none' | 'later'
+    decisions: makeDict(),      // proposalId -> {decision, timestamp}
+    cardOutcomes: makeDict(),   // recordId -> 'accepted'|'rejected'|'deferred'
+    counts: {accepted:0, rejected:0, deferred:0}
+  };
+}
+
+function locById(recordId){
+  return state.locations.find(l => l.recordId === recordId);
+}
+function proposalById(proposalId){
+  for(const loc of state.locations){
+    const p = loc.proposals.find(pp => pp.proposalId === proposalId);
+    if(p) return {loc, p};
+  }
+  return null;
+}
+function elementByData(attribute, value){
+  return $$(`[${attribute}]`).find(el => el.getAttribute(attribute) === value) || null;
+}
+// A competing group's own id only has to be unique WITHIN one location —
+// nothing in the schema promises it's unique across the whole bundle, and a
+// desktop exporter that reused a group id across two records would
+// otherwise let one record's chip selection bleed into another's (audit
+// C-03). Namespacing every group key by its record id closes that off
+// entirely, independent of whether the bundle happens to behave.
+function competingGroupKey(loc, p){
+  return JSON.stringify([loc.recordId, p.competingGroup]);
+}
+
+// One authoritative read of "is this location's identity actually settled,
+// in a way dependents may rely on" — used both to greatly out dependent
+// rows in the UI and to gate their export decision. Previously this only
+// checked for an explicit "rejected" or the toggle being off, so explicitly
+// *deferring* identity (a real, common review outcome) left every dependent
+// field free to be silently accepted anyway (audit C-02).
+function identityResolutionState(loc){
+  const identityProposals = loc.proposals.filter(p => p.isIdentity);
+  if(identityProposals.length === 0) return "none";
+  if(identityProposals.length > 1) return "ambiguous"; // shouldn't happen; fail safe if it does
+  const identity = identityProposals[0];
+  const explicit = state.explicit[identity.proposalId];
+  if(explicit === "rejected") return "rejected";
+  if(explicit === "deferred") return "deferred";
+  const selected = identity.competingGroup
+    ? state.competingSelection[competingGroupKey(loc, identity)] === identity.proposalId
+    : !!state.toggles[identity.proposalId];
+  return selected ? "accepted" : "off";
+}
+function isIdentityLocked(loc){
+  return identityResolutionState(loc) !== "accepted";
+}
+
+// Whether the most recent autosave attempt succeeded, and when it last
+// did. Surfaced in the About sheet so a save failure is at least
+// discoverable — silently swallowing every IndexedDB error made storage
+// denial, quota exhaustion, or eviction into invisible data loss (audit
+// M-02). This can't force a browser to grant storage; it can only make
+// sure a failure doesn't pass as success.
+let saveHealth = {status: "pending", lastSavedAt: null, lastError: null};
+
+function invalidatePendingSaves(){
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  saveGeneration += 1;
+}
+
+function persistState(){
+  clearTimeout(saveTimer);
+  const generation = saveGeneration;
+  const snapshot = state ? structuredClone(state) : null;
+  saveHealth = {status:"pending", lastSavedAt:saveHealth.lastSavedAt, lastError:null};
+  saveTimer = setTimeout(() => {
+    saveChain = saveChain.catch(() => {}).then(async () => {
+      if(generation !== saveGeneration || !snapshot) return;
+      await idbSet(STATE_KEY, snapshot);
+      if(generation === saveGeneration){
+        saveHealth = {status:"saved", lastSavedAt:nowIso(), lastError:null};
+      }
+    });
+    saveChain.catch((err) => {
+      if(generation !== saveGeneration) return;
+      const wasFailing = saveHealth.status === "failing";
+      saveHealth = {status:"failing", lastSavedAt:saveHealth.lastSavedAt, lastError:String(err && err.message || err)};
+      if(!wasFailing) toast("Autosave failed — export a backup to be safe");
+    });
+  }, 250);
+}
+
+/* ============================================================
+   Import / validation / mock data
+   ============================================================ */
+// Fails closed: gathers every structural problem it can find and throws
+// once with the full list, rather than stopping at the first issue (audit
+// C-03). Used both for a fresh bundle import and — via validateFullState
+// below — to re-check a backup file or the autosaved session before
+// trusting it, so the same gate applies everywhere state comes from outside
+// this running session.
+function validateBundle(obj, opts){
+  opts = opts || {};
+  if(!isRecord(obj)){
+    throw new Error("File is not a JSON object.");
+  }
+  const errors = [];
+
+  if(typeof obj.schemaVersion !== "string" || !obj.schemaVersion){
+    errors.push("missing schemaVersion");
+  } else if(!SUPPORTED_SCHEMA_VERSIONS.has(obj.schemaVersion)){
+    errors.push(`unsupported schemaVersion "${obj.schemaVersion}" (this build supports: ${[...SUPPORTED_SCHEMA_VERSIONS].join(", ")})`);
+  }
+  if(typeof obj.batchId !== "string" || !obj.batchId) errors.push("missing batchId");
+  if(typeof obj.sourceFingerprint !== "string" || !obj.sourceFingerprint) errors.push("missing sourceFingerprint");
+
+  if(!Array.isArray(obj.locations) || obj.locations.length === 0){
+    errors.push("locations must be a non-empty array");
+    throw new Error(errors.join("; "));
+  }
+
+  const seenRecordIds = new Set(), dupRecordIds = new Set();
+  const seenProposalIds = new Set(), dupProposalIds = new Set();
+
+  obj.locations.forEach((loc, i) => {
+    if(!isRecord(loc)){ errors.push(`location[${i}] is not an object`); return; }
+    const locLabel = (typeof loc.recordId === "string" && loc.recordId) ? loc.recordId : `location[${i}]`;
+    if(typeof loc.recordId !== "string" || !loc.recordId){
+      errors.push(`${locLabel} is missing recordId`);
+    } else {
+      if(seenRecordIds.has(loc.recordId)) dupRecordIds.add(loc.recordId);
+      seenRecordIds.add(loc.recordId);
+    }
+    if(typeof loc.name !== "string" || !loc.name) errors.push(`${locLabel} is missing name`);
+    if(loc.country !== undefined && typeof loc.country !== "string") errors.push(`${locLabel} country must be a string`);
+    if(loc.type !== undefined && typeof loc.type !== "string") errors.push(`${locLabel} type must be a string`);
+    if(loc.images !== undefined && !Array.isArray(loc.images)){
+      errors.push(`${locLabel} images must be an array`);
+    } else {
+      (loc.images||[]).forEach((img, j) => {
+        if(!isRecord(img) || typeof img.url !== "string" || !img.url) errors.push(`${locLabel} image[${j}] must have a URL string`);
+        else if(img.label !== undefined && typeof img.label !== "string") errors.push(`${locLabel} image[${j}] label must be a string`);
+      });
+    }
+    if(!Array.isArray(loc.proposals) || loc.proposals.length === 0){
+      errors.push(`${locLabel} proposals must be a non-empty array`);
+      return;
+    }
+    const groups = new Map();
+    let identityCount = 0;
+    loc.proposals.forEach((p, j) => {
+      if(!isRecord(p)){ errors.push(`${locLabel} proposal[${j}] is not an object`); return; }
+      const pLabel = (typeof p.proposalId === "string" && p.proposalId) ? p.proposalId : `${locLabel} proposal[${j}]`;
+      if(typeof p.proposalId !== "string" || !p.proposalId){
+        errors.push(`${pLabel} is missing proposalId`);
+      } else {
+        if(seenProposalIds.has(p.proposalId)) dupProposalIds.add(p.proposalId);
+        seenProposalIds.add(p.proposalId);
+      }
+      if(typeof p.field !== "string" || !p.field) errors.push(`${pLabel} is missing field`);
+      if(typeof p.label !== "string" || !p.label) errors.push(`${pLabel} is missing label`);
+      if(!ALLOWED_LANES.has(p.lane)) errors.push(`${pLabel} has an invalid lane "${p.lane}"`);
+      if(typeof p.confidence !== "number" || !Number.isFinite(p.confidence) || p.confidence < 0 || p.confidence > 1) errors.push(`${pLabel} confidence must be between 0 and 1`);
+      if(p.isIdentity !== undefined && typeof p.isIdentity !== "boolean") errors.push(`${pLabel} isIdentity must be boolean`);
+      if(p.dependsOnIdentity !== undefined && typeof p.dependsOnIdentity !== "boolean") errors.push(`${pLabel} dependsOnIdentity must be boolean`);
+      if(p.isIdentity === true){ identityCount += 1; if(p.dependsOnIdentity === true) errors.push(`${pLabel} cannot both define and depend on identity`); }
+      if(p.competingGroup !== undefined && p.competingGroup !== null && (typeof p.competingGroup !== "string" || !p.competingGroup)) errors.push(`${pLabel} competingGroup must be a non-empty string`);
+      if(p.evidence !== undefined && !Array.isArray(p.evidence)) errors.push(`${pLabel} evidence must be an array`);
+      else (p.evidence||[]).forEach((ev, k) => { if(!isRecord(ev) || typeof ev.text !== "string") errors.push(`${pLabel} evidence[${k}] must contain text`); });
+      if(p.sources !== undefined && !Array.isArray(p.sources)) errors.push(`${pLabel} sources must be an array`);
+      else (p.sources||[]).forEach((src, k) => {
+        if(!isRecord(src) || typeof src.label !== "string" || typeof src.url !== "string") errors.push(`${pLabel} source[${k}] must contain label and URL strings`);
+      });
+      if(typeof p.competingGroup === "string" && p.competingGroup){
+        if(!groups.has(p.competingGroup)) groups.set(p.competingGroup, []);
+        groups.get(p.competingGroup).push(p);
+      }
+    });
+    if(identityCount > 1) errors.push(`${locLabel} has multiple identity proposals; scribe.mobile.v1 permits at most one`);
+    if(loc.proposals.some(p => isRecord(p) && p.dependsOnIdentity === true) && identityCount !== 1) errors.push(`${locLabel} has identity-dependent proposals but not exactly one identity proposal`);
+    groups.forEach((members, groupId) => {
+      if(members.length < 2) errors.push(`${locLabel} competing group "${groupId}" must contain at least two proposals`);
+      const first = members[0];
+      if(members.some(p => p.field !== first.field || p.label !== first.label || JSON.stringify(p.currentValue) !== JSON.stringify(first.currentValue))) errors.push(`${locLabel} competing group "${groupId}" mixes different fields or current values`);
+      if(members.some(p => !!p.isIdentity)) errors.push(`${locLabel} competing group "${groupId}" cannot contain identity proposals`);
+      if(members.some(p => !!p.dependsOnIdentity !== !!first.dependsOnIdentity)) errors.push(`${locLabel} competing group "${groupId}" mixes identity-dependency rules`);
+    });
+  });
+
+  if(dupRecordIds.size) errors.push("duplicate recordId(s): " + [...dupRecordIds].join(", "));
+  if(dupProposalIds.size) errors.push("duplicate proposalId(s) — every proposal must be globally unique: " + [...dupProposalIds].join(", "));
+
+  if(errors.length) throw new Error(errors.join("; "));
+
+  if(!opts.skipSizeConfirm && obj.locations.length > RECOMMENDED_MAX_LOCATIONS){
+    const proceed = confirm(
+      `This bundle has ${obj.locations.length} locations — well beyond the recommended pilot batch size (50–150) and untested at this size on a phone. Import anyway?`
+    );
+    if(!proceed) throw new Error("import cancelled (bundle exceeds the recommended size)");
+  }
+}
+
+function identityStateFor(candidate, loc){
+  const identity = loc.proposals.find(p => p.isIdentity);
+  if(!identity) return "none";
+  const explicit = candidate.explicit[identity.proposalId];
+  if(explicit === "rejected" || explicit === "deferred") return explicit;
+  return candidate.toggles[identity.proposalId] ? "accepted" : "off";
+}
+
+function resolvedDecisionFor(candidate, loc, p, cardOutcome){
+  if(hasOwn(candidate.explicit, p.proposalId)) return candidate.explicit[p.proposalId];
+  if(p.dependsOnIdentity && identityStateFor(candidate, loc) !== "accepted") return "untouched";
+  if(p.competingGroup){
+    const selected = candidate.competingSelection[competingGroupKey(loc, p)];
+    if(selected === "later") return "deferred";
+    if(selected === "none" || selected !== p.proposalId) return "untouched";
+  } else if(cardOutcome === "accepted" && !candidate.toggles[p.proposalId]){
+    return "untouched";
+  }
+  return cardOutcome === "accepted" || cardOutcome === "rejected" || cardOutcome === "deferred" ? cardOutcome : "untouched";
+}
+
+function normalizeFullState(candidate){
+  return {
+    ...candidate,
+    toggles:dictCopy(candidate.toggles),
+    explicit:dictCopy(candidate.explicit),
+    competingSelection:dictCopy(candidate.competingSelection),
+    decisions:dictCopy(candidate.decisions),
+    cardOutcomes:dictCopy(candidate.cardOutcomes)
+  };
+}
+
+// Re-validates a full saved app state — a backup file OR whatever boot()
+// finds in IndexedDB — against the same bundle-shape rules, plus the extra
+// invariants that only exist once a session is underway (audit H-04: a
+// backup or a corrupted autosave was previously trusted almost blindly).
+function validateFullState(candidate){
+  if(!isRecord(candidate)) throw new Error("Saved state is not an object.");
+
+  validateBundle({
+    schemaVersion: candidate.schemaVersion,
+    batchId: candidate.batchId,
+    sourceFingerprint: candidate.sourceFingerprint,
+    locations: candidate.locations
+  }, {skipSizeConfirm:true});
+
+  const errors = [];
+  const recordIds = new Set(candidate.locations.map(l => l.recordId));
+  const proposals = candidate.locations.flatMap(l => l.proposals);
+  const proposalIds = new Set(proposals.map(p => p.proposalId));
+  const expectedGroups = new Map();
+  candidate.locations.forEach(loc => loc.proposals.forEach(p => {
+    if(p.competingGroup){
+      const key = competingGroupKey(loc, p);
+      if(!expectedGroups.has(key)) expectedGroups.set(key, []);
+      expectedGroups.get(key).push(p.proposalId);
+    }
+  }));
+
+  if(candidate.stateFormatVersion !== STATE_FORMAT_VERSION) errors.push(`unsupported saved-state format (expected ${STATE_FORMAT_VERSION})`);
+  if(typeof candidate.importedAt !== "string" || !Number.isFinite(Date.parse(candidate.importedAt))) errors.push("importedAt is invalid");
+
+  if(!Array.isArray(candidate.order)){
+    errors.push("order is not an array");
+  } else {
+    const orderSet = new Set(candidate.order);
+    if(orderSet.size !== candidate.order.length) errors.push("order contains duplicate entries");
+    if(candidate.order.some(id => !recordIds.has(id))) errors.push("order references an unknown recordId");
+    if(orderSet.size !== recordIds.size) errors.push("order does not match the location set");
+  }
+  if(!Number.isInteger(candidate.cursor) || candidate.cursor < 0 || candidate.cursor > (candidate.order||[]).length){
+    errors.push("cursor is out of range");
+  }
+  for(const name of ["toggles","explicit","competingSelection","decisions","cardOutcomes","counts"]){
+    if(!isRecord(candidate[name])) errors.push(`${name} is missing or is not an object`);
+  }
+  if(errors.some(e => /missing or is not an object/.test(e))){ throw new Error(errors.join("; ")); }
+
+  const toggleKeys = Object.keys(candidate.toggles);
+  if(toggleKeys.length !== proposalIds.size || toggleKeys.some(id => !proposalIds.has(id))) errors.push("toggles must contain exactly every proposalId");
+  Object.entries(candidate.toggles).forEach(([pid, val]) => { if(typeof val !== "boolean") errors.push(`toggle for ${pid} is not boolean`); });
+  Object.entries(candidate.explicit).forEach(([pid, val]) => {
+    if(!proposalIds.has(pid)) errors.push(`explicit override references unknown proposalId (${pid})`);
+    if(!ALLOWED_EXPLICIT.has(val)) errors.push(`explicit override for ${pid} is invalid`);
+  });
+  const selectionKeys = Object.keys(candidate.competingSelection);
+  if(selectionKeys.length !== expectedGroups.size || selectionKeys.some(key => !expectedGroups.has(key))) errors.push("competingSelection must contain exactly every competing group");
+  expectedGroups.forEach((members, key) => {
+    const selected = candidate.competingSelection[key];
+    if(selected !== "none" && selected !== "later" && !members.includes(selected)) errors.push(`competing selection for ${key} is not a member of that group`);
+  });
+
+  const reviewedIds = Array.isArray(candidate.order) && Number.isInteger(candidate.cursor) ? candidate.order.slice(0, candidate.cursor) : [];
+  const reviewedSet = new Set(reviewedIds);
+  const outcomeKeys = Object.keys(candidate.cardOutcomes);
+  if(outcomeKeys.length !== reviewedSet.size || outcomeKeys.some(id => !reviewedSet.has(id))) errors.push("cardOutcomes must match exactly the reviewed records");
+  Object.entries(candidate.cardOutcomes).forEach(([id, outcome]) => {
+    if(!recordIds.has(id)) errors.push(`cardOutcomes references unknown recordId (${id})`);
+    if(!["accepted","rejected","deferred"].includes(outcome)) errors.push(`card outcome for ${id} is invalid`);
+  });
+
+  const expectedDecisionIds = new Set();
+  reviewedIds.forEach(id => {
+    const loc = candidate.locations.find(item => item.recordId === id);
+    if(!loc) return;
+    const outcome = candidate.cardOutcomes[id];
+    loc.proposals.forEach(p => {
+      expectedDecisionIds.add(p.proposalId);
+      const saved = candidate.decisions[p.proposalId];
+      if(!isRecord(saved)) errors.push(`decision for ${p.proposalId} is missing`);
+      else {
+        const expected = resolvedDecisionFor(candidate, loc, p, outcome);
+        if(saved.decision !== expected || !ALLOWED_DECISIONS.has(saved.decision)) errors.push(`decision for ${p.proposalId} is inconsistent (expected ${expected})`);
+        if(typeof saved.timestamp !== "string" || !Number.isFinite(Date.parse(saved.timestamp))) errors.push(`decision timestamp for ${p.proposalId} is invalid`);
+      }
+    });
+  });
+  Object.keys(candidate.decisions).forEach(pid => { if(!expectedDecisionIds.has(pid)) errors.push(`unexpected decision for unreviewed/unknown proposalId (${pid})`); });
+
+  const recomputed = {accepted:0, rejected:0, deferred:0};
+  Object.values(candidate.cardOutcomes).forEach(outcome => { if(hasOwn(recomputed, outcome)) recomputed[outcome] += 1; });
+  if(Object.keys(candidate.counts).length !== 3 || Object.keys(candidate.counts).some(k => !hasOwn(recomputed, k))) errors.push("counts must contain exactly accepted, rejected and deferred");
+  Object.keys(recomputed).forEach(k => {
+    if(!Number.isInteger(candidate.counts[k]) || candidate.counts[k] !== recomputed[k]) errors.push(`counts.${k} does not match card outcomes`);
+  });
+  if(errors.length) throw new Error(errors.join("; "));
+}
+
+function loadBundle(bundle){
+  validateBundle(bundle);
+  const previous = state;
+  const next = freshState(bundle);
+  try{
+    state = next;
+    showReviewUI();
+    renderAll();
+  }catch(err){
+    state = previous;
+    if(previous){ showReviewUI(); renderAll(); }
+    throw err;
+  }
+  invalidatePendingSaves();
+  lastAction = null;
+  persistState();
+  toast("Bundle loaded: " + state.locations.length + " locations");
+}
+
+function restoreBackup(obj){
+  if(!isRecord(obj) || obj._scribeCuratorBackup !== true || !obj.state) throw new Error("Backup marker or session state is missing.");
+  if(typeof obj.savedAt !== "string" || !Number.isFinite(Date.parse(obj.savedAt))) throw new Error("Backup savedAt timestamp is invalid.");
+  validateFullState(obj.state);
+  const previous = state;
+  const next = normalizeFullState(obj.state);
+  try{
+    state = next;
+    showReviewUI();
+    renderAll();
+  }catch(err){
+    state = previous;
+    if(previous){ showReviewUI(); renderAll(); }
+    throw err;
+  }
+  invalidatePendingSaves();
+  lastAction = null;
+  persistState();
+  toast("Session restored from backup");
+}
+
+function handleImportedJson(obj){
+  const errEl = $("#importError");
+  errEl.textContent = "";
+  try{
+    if(obj && obj._scribeCuratorBackup){
+      restoreBackup(obj);
+    } else {
+      loadBundle(obj);
+    }
+  }catch(err){
+    errEl.textContent = "Could not import: " + err.message;
+  }
+}
+
+function generateMockBundle(){
+  // Well-known real archaeological sites used purely as illustrative sample
+  // data for this prototype — not real ArcheoMaps catalogue content.
+  const raw = [
+    {
+      // Enriched to a full field set (was 3 fields) so every sample card —
+      // not just Petra — is long enough to exercise vertical scrolling.
+      name:"Göbekli Tepe", country:"Türkiye", type:"Religious Site",
+      img:"https://picsum.photos/seed/gobekli/400/300",
+      fields:{
+        Type:{cur:"Unclassified", prop:"Religious Site", conf:0.91, lane:"high",
+          ev:["Multiple T-shaped megalithic pillars arranged in circular enclosures.","No domestic occupation layer found at earliest phase."],
+          src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/1572"}]},
+        Dates:{cur:"—", prop:"c. 9500–8000 BCE", conf:0.86, lane:"high",
+          ev:["Radiocarbon dating of enclosure fill."], src:[{label:"Excavation report (sample)", url:"https://example.org/goebekli-dates"}]},
+        Description:{cur:"", prop:"Early Neolithic hilltop sanctuary with monumental carved pillars, among the oldest known monumental architecture. Predates pottery and settled agriculture, forcing a rethink of the assumed order in which farming, religion and monument-building emerged.", conf:0.8, lane:"medium",
+          ev:["Synthesized from adapter summary.","Cross-checked against two independent excavation season reports."], src:[{label:"Site summary (sample)", url:"https://example.org/goebekli-summary"}]},
+        Tags:{cur:"", prop:"pre-pottery-neolithic, megalith, t-pillar, anatolia", conf:0.82, lane:"high",
+          ev:["Tag cluster derived from enclosure typology."], src:[]},
+        Cultures:{cur:"", prop:"Pre-Pottery Neolithic B", conf:0.77, lane:"medium",
+          ev:["Matched against regional chronological culture periods."], src:[]},
+        Countries:{cur:"—", prop:"Türkiye", conf:0.98, lane:"high",
+          ev:["Direct coordinate match to national boundary."], src:[]},
+        ExternalIDs:{cur:"—", prop:"UNESCO:1572", conf:0.93, lane:"high",
+          ev:["Matched UNESCO World Heritage listing."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/1572"}]},
+        Image:{cur:"(none)", prop:"4 candidate images found", conf:0.7, lane:"medium",
+          ev:["Four licensed candidate images located across two sources."], src:[{label:"Wikimedia Commons", url:"https://commons.wikimedia.org/wiki/G%C3%B6bekli_Tepe"}]}
+      }
+    },
+    {
+      name:"Nan Madol", country:"Micronesia", type:"", identityUncertain:true,
+      img:"https://picsum.photos/seed/nanmadol/400/300",
+      fields:{
+        Identity:{cur:"Unmatched pin", prop:"Nan Madol (megalithic complex)", conf:0.62, lane:"medium", identity:true,
+          ev:["Coordinates fall within the Nan Madol islet cluster.","Name partially matches an existing gazetteer entry."],
+          src:[{label:"Gazetteer match (sample)", url:"https://example.org/nan-madol-gazetteer"}]},
+        Type:{cur:"", prop:"Ceremonial / Administrative Complex", conf:0.7, lane:"medium", dependsOnIdentity:true,
+          ev:["Derived from the proposed identity match above."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/1503"}]},
+        Cultures:{cur:"", prop:"Saudeleur Dynasty", conf:0.68, lane:"medium", dependsOnIdentity:true,
+          ev:["Derived from the proposed identity match above."], src:[{label:"Regional history reference (sample)", url:"https://example.org/saudeleur"}]},
+        Tags:{cur:"", prop:"basalt, artificial islets, tidal", conf:0.55, lane:"low", dependsOnIdentity:true,
+          ev:["Derived from the proposed identity match above."], src:[]},
+        Dates:{cur:"", prop:"c. 1180–1200 CE (islet construction begins)", conf:0.5, lane:"low", dependsOnIdentity:true,
+          ev:["Derived from the proposed identity match above; independent dating not yet available."], src:[]},
+        Description:{cur:"", prop:"Megalithic complex of nearly 100 artificial islets built from stacked basalt logs on a coral reef, once the ceremonial and political seat of the Saudeleur dynasty. Unusual among Pacific sites for combining monumental stone architecture with a tidal, canal-based layout often compared to Venice.", conf:0.6, lane:"medium", dependsOnIdentity:true,
+          ev:["Derived from the proposed identity match above."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/1503"}]},
+        Countries:{cur:"—", prop:"Federated States of Micronesia", conf:0.9, lane:"high",
+          ev:["Direct coordinate match to national boundary — independent of the identity match above."], src:[]},
+        Image:{cur:"(none)", prop:"2 candidate images found", conf:0.65, lane:"medium",
+          ev:["Located from coordinate-based search, independent of identity match."], src:[{label:"Wikimedia Commons", url:"https://commons.wikimedia.org/wiki/Nan_Madol"}]}
+      }
+    },
+    {
+      name:"Sacsayhuamán", country:"Peru", type:"Fortress",
+      img:"https://picsum.photos/seed/sacsayhuaman/400/300",
+      fields:{
+        Tags:{cur:"inca, stonework", prop:"inca, stonework, polygonal-masonry, unesco-buffer", conf:0.83, lane:"high",
+          ev:["Cross-referenced with UNESCO Cusco buffer zone description."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/273"}]},
+        ExternalIDs:{cur:"—", prop:"UNESCO:273-002", conf:0.9, lane:"high",
+          ev:["Matched sub-site code within the Cusco World Heritage listing."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/273"}]},
+        Dates:{cur:"", prop:"c. 1400–1500 CE", conf:0.75, lane:"medium",
+          ev:["Consistent with published Inca imperial construction range."], src:[]},
+        Description:{cur:"Large Inca walled complex above Cusco.", prop:"Massive Inca walled complex overlooking Cusco, renowned for zigzagging terrace walls built from polygonal limestone blocks weighing up to 200 tonnes, fitted without mortar. Long described as a military fortress, though recent scholarship increasingly favors a primarily ceremonial and astronomical role.", conf:0.7, lane:"medium",
+          ev:["Expanded from adapter summary; flags the fortress/ceremonial debate reflected in the competing Type proposal below."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/273"}]},
+        Cultures:{cur:"", prop:"Inca", conf:0.96, lane:"high",
+          ev:["Strong adapter consensus across sources."], src:[]},
+        Countries:{cur:"—", prop:"Peru", conf:0.98, lane:"high",
+          ev:["Direct coordinate match to national boundary."], src:[]},
+        Image:{cur:"(none)", prop:"3 candidate images found", conf:0.72, lane:"medium",
+          ev:["Three licensed candidate images located."], src:[{label:"Wikimedia Commons", url:"https://commons.wikimedia.org/wiki/Sacsayhuam%C3%A1n"}]},
+        competing_Type:[
+          {label:"Fortress", conf:0.58, lane:"medium", ev:["Terraced defensive walls, historically described as a fortress."]},
+          {label:"Ceremonial Complex", conf:0.54, lane:"medium", ev:["Recent scholarship favors a ceremonial/religious primary function."]}
+        ]
+      }
+    },
+    {
+      name:"Ħaġar Qim", country:"Malta", type:"Stone Circle",
+      img:"https://picsum.photos/seed/hagarqim/400/300",
+      fields:{
+        Image:{cur:"(none)", prop:"3 candidate images found", conf:0.75, lane:"medium",
+          ev:["Licensed images located from two independent sources."],
+          src:[{label:"Wikimedia Commons", url:"https://commons.wikimedia.org/wiki/Category:%C4%A6a%C4%A1ar_Qim"}]},
+        Description:{cur:"Megalithic temple complex.", prop:"Megalithic temple complex dating to the Ġgantija phase, notable for its coralline limestone megaliths and solar alignment. One of the earliest known free-standing stone structures in the world, predating both Stonehenge and the pyramids of Giza.", conf:0.72, lane:"medium",
+          ev:["Expanded from adapter summary; adds dating phase and alignment detail."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/132"}]},
+        Type:{cur:"", prop:"Megalithic Temple", conf:0.85, lane:"high",
+          ev:["Matches established Maltese temple-period typology rather than a generic stone circle."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/132"}]},
+        Tags:{cur:"", prop:"megalithic, coralline-limestone, solstice-alignment, malta-temple-period", conf:0.8, lane:"high",
+          ev:["Tag set derived from architectural and archaeoastronomical features."], src:[]},
+        Dates:{cur:"", prop:"c. 3600–3200 BCE", conf:0.83, lane:"high",
+          ev:["Consistent with the Maltese temple-building period chronology."], src:[]},
+        Cultures:{cur:"", prop:"Maltese Temple Culture", conf:0.79, lane:"medium",
+          ev:["Matched against regional prehistoric culture periods."], src:[]},
+        Countries:{cur:"—", prop:"Malta", conf:0.98, lane:"high",
+          ev:["Direct coordinate match to national boundary."], src:[]},
+        ExternalIDs:{cur:"—", prop:"UNESCO:132-002", conf:0.88, lane:"high",
+          ev:["Matched sub-site code within the Megalithic Temples of Malta listing."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/132"}]}
+      }
+    },
+    {
+      name:"Great Zimbabwe", country:"Zimbabwe", type:"Fortress",
+      img:"https://picsum.photos/seed/greatzim/400/300",
+      fields:{
+        Countries:{cur:"—", prop:"Zimbabwe", conf:0.97, lane:"high", ev:["Direct coordinate match to national boundary."], src:[]},
+        Cultures:{cur:"", prop:"Kingdom of Zimbabwe", conf:0.88, lane:"high", ev:["Strong adapter match on associated culture."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/364"}]},
+        Dates:{cur:"", prop:"c. 1100–1450 CE", conf:0.8, lane:"high", ev:["Consistent with published occupation range."], src:[]},
+        Type:{cur:"Fortress", prop:"Royal Enclosure / Stone City", conf:0.72, lane:"medium",
+          ev:["Dry-stone royal enclosure and surrounding settlement, not primarily defensive in function despite the existing 'Fortress' typing."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/364"}]},
+        Tags:{cur:"", prop:"dry-stone, royal-enclosure, shona, soapstone-birds", conf:0.78, lane:"medium",
+          ev:["Tag set derived from architectural and artefact features."], src:[]},
+        Description:{cur:"Stone-walled royal city in southern Africa.", prop:"Largest dry-stone-wall complex in sub-Saharan Africa, once the royal capital of the Kingdom of Zimbabwe at the height of a trade network reaching as far as China and the Middle East. Famed for its curved granite-block walls, built without mortar, and for the carved soapstone Zimbabwe Birds recovered from its ruins.", conf:0.76, lane:"medium",
+          ev:["Synthesized from adapter summary and artefact records."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/364"}]},
+        ExternalIDs:{cur:"—", prop:"UNESCO:364", conf:0.92, lane:"high", ev:["Matched UNESCO World Heritage listing."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/364"}]},
+        Image:{cur:"(none)", prop:"3 candidate images found", conf:0.7, lane:"medium",
+          ev:["Three licensed candidate images located."], src:[{label:"Wikimedia Commons", url:"https://commons.wikimedia.org/wiki/Great_Zimbabwe"}]}
+      }
+    },
+    {
+      name:"Mesa Verde cliff dwellings", country:"United States", type:"",
+      img:"", // deliberately no image — exercises the placeholder path
+      fields:{
+        Type:{cur:"", prop:"Cliff Dwelling", conf:0.66, lane:"medium", ev:["Adapter flags dense multi-room dwellings set into sandstone alcoves."], src:[]},
+        Tags:{cur:"", prop:"ancestral-puebloan, sandstone, cliff-alcove", conf:0.5, lane:"low", ev:["Lower-confidence tag cluster; review recommended."], src:[]},
+        Dates:{cur:"", prop:"c. 600–1300 CE", conf:0.72, lane:"medium",
+          ev:["Consistent with published Ancestral Puebloan occupation range for the region."], src:[]},
+        Description:{cur:"", prop:"Cluster of multi-room dwellings built directly into sheltered sandstone alcoves by Ancestral Puebloan communities, occupied for roughly seven centuries before being abandoned in the late 13th century, likely due to a sustained regional drought.", conf:0.68, lane:"medium",
+          ev:["Synthesized from adapter summary; drought hypothesis flagged as one of several proposed causes for abandonment."], src:[]},
+        Cultures:{cur:"", prop:"Ancestral Puebloan", conf:0.9, lane:"high",
+          ev:["Strong adapter consensus across sources."], src:[]},
+        Countries:{cur:"—", prop:"United States", conf:0.97, lane:"high",
+          ev:["Direct coordinate match to national boundary."], src:[]},
+        ExternalIDs:{cur:"—", prop:"UNESCO:27", conf:0.85, lane:"high",
+          ev:["Matched UNESCO World Heritage listing for Mesa Verde National Park."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/27"}]}
+      }
+    },
+    {
+      // A deliberately "fully loaded" card — every field type at once, and a
+      // long multi-sentence description — so the scroll + expand-a-row
+      // behaviour is obvious even before real scraped data is imported.
+      name:"Petra", country:"Jordan", type:"Fortress",
+      img:"https://picsum.photos/seed/petra/400/300",
+      fields:{
+        Type:{cur:"Fortress", prop:"Rock-cut City", conf:0.93, lane:"high",
+          ev:["Extensive rock-cut facades and tomb complexes rather than defensive fortifications.","Existing 'Fortress' typing predates this more detailed adapter pass."],
+          src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/326"}]},
+        Tags:{cur:"desert, trade-route", prop:"desert, trade-route, nabataean, rock-cut, siq, treasury", conf:0.87, lane:"high",
+          ev:["Tag set expanded from six independent adapter passes."], src:[]},
+        Dates:{cur:"", prop:"c. 312 BCE – 106 CE (Nabataean Kingdom)", conf:0.84, lane:"high",
+          ev:["Dated to the height of the Nabataean Kingdom, before Roman annexation."], src:[]},
+        Description:{cur:"Ancient city carved into rose-coloured rock.",
+          prop:"Ancient Nabataean city famed for its rock-cut architecture and elaborate tomb facades, reached through the narrow Siq canyon. Once a thriving caravan trade hub linking Arabia, Egypt and the Mediterranean, it flourished from roughly the 4th century BCE until Roman annexation in 106 CE. Its water-management system — dams, cisterns and channels carved directly into the sandstone — was sophisticated enough to sustain a desert city of tens of thousands. Largely unknown to the West until its rediscovery in 1812.",
+          conf:0.79, lane:"medium",
+          ev:["Synthesized from four adapter passes covering history, hydrology and rediscovery."],
+          src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/326"}]},
+        Image:{cur:"(none)", prop:"5 candidate images found", conf:0.7, lane:"medium",
+          ev:["Five licensed candidate images located across two sources."], src:[{label:"Wikimedia Commons", url:"https://commons.wikimedia.org/wiki/Category:Petra"}]},
+        Cultures:{cur:"", prop:"Nabataean", conf:0.95, lane:"high", ev:["Strong adapter consensus across sources."], src:[]},
+        Countries:{cur:"", prop:"Jordan", conf:0.98, lane:"high", ev:["Direct coordinate match to national boundary."], src:[]},
+        ExternalIDs:{cur:"—", prop:"UNESCO:326", conf:0.9, lane:"high", ev:["Matched UNESCO World Heritage listing."], src:[{label:"UNESCO DataHub", url:"https://whc.unesco.org/en/list/326"}]}
+      }
+    }
+  ];
+
+  const locations = raw.map((r, i) => {
+    const recordId = "mock-" + String(i+1).padStart(3,"0");
+    const proposals = [];
+    Object.entries(r.fields).forEach(([field, def]) => {
+      if(field.startsWith("competing_")){
+        const realField = field.replace("competing_","");
+        const groupId = recordId + "-grp-" + realField;
+        def.forEach((cand, ci) => {
+          proposals.push({
+            proposalId: recordId + "-" + realField + "-c" + ci,
+            field: realField,
+            label: realField,
+            lane: cand.lane, confidence: cand.conf,
+            currentValue: r.type || "—",
+            proposedValue: cand.label,
+            isIdentity:false, dependsOnIdentity:false,
+            competingGroup: groupId,
+            evidence: cand.ev.map(t => ({text:t})),
+            sources: []
+          });
+        });
+        return;
+      }
+      proposals.push({
+        proposalId: recordId + "-" + field,
+        field, label: field,
+        lane: def.lane, confidence: def.conf,
+        currentValue: def.cur, proposedValue: def.prop,
+        isIdentity: !!def.identity,
+        dependsOnIdentity: !!def.dependsOnIdentity,
+        competingGroup: null,
+        evidence: (def.ev||[]).map(t => ({text:t})),
+        sources: def.src || []
+      });
+    });
+    return {
+      recordId, name:r.name, country:r.country, type:r.type,
+      images: r.img ? [{url:r.img, label:"Primary candidate"}] : [],
+      proposals
+    };
+  });
+
+  return {
+    schemaVersion: "scribe.mobile.v1",
+    batchId: "mock-batch-" + Date.now().toString(36),
+    sourceFingerprint: "sha256:mock-fingerprint-demo-data",
+    exportedAt: nowIso(),
+    locations
+  };
+}
+
+/* ============================================================
+   Decision resolution
+   ============================================================ */
+function resolveDecision(loc, p, cardOutcome){
+  return resolvedDecisionFor(state, loc, p, cardOutcome);
+}
+
+function snapshotForUndo(recordId){
+  const loc = locById(recordId);
+  const proposalIds = loc.proposals.map(p => p.proposalId);
+  const groupKeys = new Set(loc.proposals.filter(p=>p.competingGroup).map(p=>competingGroupKey(loc,p)));
+  return {
+    recordId,
+    cursor: state.cursor,
+    order: state.order.slice(),
+    decisions: Object.fromEntries(proposalIds.map(id => [id, state.decisions[id] ? {...state.decisions[id]} : undefined])),
+    toggles: Object.fromEntries(proposalIds.map(id => [id, state.toggles[id]])),
+    explicit: Object.fromEntries(proposalIds.map(id => [id, state.explicit[id]])),
+    competingSelection: Object.fromEntries([...groupKeys].map(g => [g, state.competingSelection[g]])),
+    previousCardOutcome: state.cardOutcomes[recordId] // normally undefined; kept only for completeness
+  };
+}
+
+function commitCardOutcome(outcome, cardEl){
+  if(isAnimating || state.cursor >= state.order.length) return;
+  const recordId = state.order[state.cursor];
+  const loc = locById(recordId);
+
+  const snap = snapshotForUndo(recordId);
+  // The bug this replaces: the old code tried to recover "what to
+  // decrement" from state.cardOutcomes[recordId] captured *before* this
+  // decision was applied — which is undefined for any card being decided
+  // for the first time, i.e. every normal case, so Undo silently never
+  // decremented a counter at all (audit H-01). The outcome being applied
+  // is already known right here, so just record it directly.
+  snap.appliedOutcome = outcome;
+  lastAction = snap;
+  isAnimating = true;
+  vibrate(16);
+
+  loc.proposals.forEach(p => {
+    const decision = resolveDecision(loc, p, outcome);
+    state.decisions[p.proposalId] = {decision, timestamp: nowIso()};
+  });
+  state.cardOutcomes[recordId] = outcome;
+  state.counts[outcome] = (state.counts[outcome]||0) + 1;
+  state.cursor += 1;
+  persistState();
+
+  animateExit(cardEl, outcome, () => {
+    isAnimating = false;
+    renderAll();
+  });
+}
+
+function undoLast(){
+  if(!lastAction || isAnimating) return;
+  const a = lastAction;
+  lastAction = null;
+  state.cursor = a.cursor;
+  state.order = a.order;
+  Object.entries(a.decisions).forEach(([id, val]) => {
+    if(val === undefined) delete state.decisions[id]; else state.decisions[id] = val;
+  });
+  Object.entries(a.toggles).forEach(([id, val]) => { state.toggles[id] = val; });
+  Object.entries(a.explicit).forEach(([id, val]) => {
+    if(val === undefined) delete state.explicit[id]; else state.explicit[id] = val;
+  });
+  Object.entries(a.competingSelection).forEach(([g, val]) => { state.competingSelection[g] = val; });
+  if(a.appliedOutcome){ state.counts[a.appliedOutcome] = Math.max(0, (state.counts[a.appliedOutcome]||0) - 1); }
+  if(a.previousCardOutcome){ state.cardOutcomes[a.recordId] = a.previousCardOutcome; }
+  else { delete state.cardOutcomes[a.recordId]; }
+  persistState();
+  renderAll();
+  toast("Undone");
+}
+
+function skipCurrent(){
+  if(isAnimating || state.cursor >= state.order.length) return;
+  const id = state.order.splice(state.cursor, 1)[0];
+  state.order.push(id);
+  persistState();
+  renderAll();
+}
+
+/* ============================================================
+   Rendering
+   ============================================================ */
+function showReviewUI(){
+  $("#importScreen").style.display = "none";
+  $("#actionBar").style.display = "flex";
+}
+
+function renderAll(){
+  renderCounters();
+  renderStack();
+}
+
+function renderCounters(){
+  $("#cntAccepted").textContent = state.counts.accepted || 0;
+  $("#cntRejected").textContent = state.counts.rejected || 0;
+  $("#cntDeferred").textContent = state.counts.deferred || 0;
+  const total = state.order.length;
+  const done = Math.min(state.cursor, total);
+  $("#progressLabel").textContent = done + " / " + total;
+  $("#progressFill").style.width = (total ? (done/total*100) : 0) + "%";
+}
+
+function fieldValuesHtml(p){
+  return `<span class="field-values">${escapeHtml(displayValue(p.currentValue))} <span class="arrow">&#8594;</span> <span class="prop">${escapeHtml(displayValue(p.proposedValue))}</span></span>`;
+}
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+// Every ID that came from an imported bundle (proposalId, competingGroup)
+// ends up inside an HTML attribute somewhere. Escaping it the same way as
+// any other untrusted string closes that off — a proposalId containing a
+// stray quote can no longer break out of the attribute it's placed in.
+const escapeAttr = escapeHtml;
+
+// `value || "—"` treats any falsy-but-real value (0, false, "") as missing
+// and silently replaces it with a dash (audit M-07) — a legitimate proposed
+// value of, say, a numeric field being `0` would be indistinguishable from
+// "nothing was proposed". Only null/undefined/empty-string count as absent.
+function displayValue(v){
+  return (v === null || v === undefined || v === "") ? "—" : v;
+}
+
+const ALLOWED_LANES = new Set(["high","medium","low"]);
+function safeLane(lane){
+  return ALLOWED_LANES.has(lane) ? lane : "medium";
+}
+
+// Only http/https URLs are ever rendered as an <img src> or <a href>. This
+// blocks javascript:, data:, and malformed values from an untrusted bundle
+// — the URL is escaped on top of that since it still lands in an HTML
+// attribute either way.
+function safeUrl(url){
+  if(typeof url !== "string" || !url) return null;
+  try{
+    const parsed = new URL(url, document.baseURI);
+    if(parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
+    return parsed.href;
+  }catch(e){
+    return null;
+  }
+}
+
+function laneBadge(p){
+  const lane = safeLane(p.lane);
+  const pct = (typeof p.confidence === "number" && isFinite(p.confidence)) ? Math.round(clamp(p.confidence,0,1)*100)+"%" : "";
+  return `<span class="badge lane-${lane}">${lane} ${pct}</span>`;
+}
+
+function renderFieldRow(loc, p, isTop){
+  const locked = p.dependsOnIdentity && isIdentityLocked(loc);
+  const explicitState = state.explicit[p.proposalId];
+  const explicitTag = explicitState ? `<span class="field-explicit-tag ${explicitState}">${explicitState}</span>` : "";
+
+  if(p.competingGroup){
+    return ""; // competing groups are rendered once per group, see renderCompetingGroup
+  }
+
+  const on = !!state.toggles[p.proposalId] && !locked;
+  const expanded = isTop && expandedFields.has(p.proposalId);
+  const detailHtml = expanded ? `
+    <div class="field-detail">
+      <div class="field-detail-row"><span class="fd-label">Current</span><span class="fd-value">${escapeHtml(displayValue(p.currentValue))}</span></div>
+      <div class="field-detail-row"><span class="fd-label">Proposed</span><span class="fd-value">${escapeHtml(displayValue(p.proposedValue))}</span></div>
+      ${(p.evidence&&p.evidence.length) ? `<ul class="field-detail-evidence">${p.evidence.map(e=>`<li>${escapeHtml(e.text)}</li>`).join("")}</ul>` : ""}
+      ${(p.sources&&p.sources.length) ? `<div class="field-detail-sources">${p.sources.map(s=>renderSourceLink(s)).join("")}</div>` : ""}
+    </div>` : "";
+
+  return `
+  <div class="field-row ${p.isIdentity?'identity-row':''} ${locked?'locked':''}" data-proposal="${escapeAttr(p.proposalId)}">
+    <div class="field-row-top">
+      <div class="field-row-main">
+        <div class="field-label"><span class="chevron">${expanded?'&#9662;':'&#9656;'}</span>${p.isIdentity?'<span class="id-star">&#9733;</span>':''} ${escapeHtml(p.label)} ${laneBadge(p)} ${explicitTag}</div>
+        ${fieldValuesHtml(p)}
+      </div>
+      <button class="field-more" data-proposal="${escapeAttr(p.proposalId)}" title="More options" aria-label="More options for ${escapeAttr(p.label)}"><span class="dot">&#8942;</span></button>
+      <button class="pill-toggle ${on?'on':''}" data-toggle="${escapeAttr(p.proposalId)}" ${locked?'disabled':''} role="switch" aria-checked="${on}" aria-label="Enable ${escapeAttr(p.label)} proposal"></button>
+    </div>
+    ${detailHtml}
+  </div>`;
+}
+
+// A single, reused sink for rendering a source link keeps URL validation in
+// one place instead of repeated inline in every template that shows one.
+function renderSourceLink(s){
+  const url = safeUrl(s && s.url);
+  if(!url) return "";
+  return `<a class="src-link" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(s.label || url)}</a>`;
+}
+
+function renderCompetingGroup(loc, groupId, members){
+  const sel = state.competingSelection[groupId];
+  const fieldLabel = members[0].label;
+  // Parity with normal rows (audit M-01): a competing group can carry an
+  // explicit whole-field reject/defer too (see openGroupActionSheet), set
+  // identically across every candidate's proposalId, so surface it exactly
+  // like a normal row's explicit tag whenever every member agrees.
+  const explicitStates = members.map(p => state.explicit[p.proposalId]);
+  const groupExplicit = explicitStates.every(s => s && s === explicitStates[0]) ? explicitStates[0] : null;
+  const explicitTag = groupExplicit ? `<span class="field-explicit-tag ${groupExplicit}">${groupExplicit}</span>` : "";
+  // Parity with normal rows: a competing field can itself depend on the
+  // location's identity being settled, exactly like a normal proposal.
+  const locked = members.some(p => p.dependsOnIdentity) && isIdentityLocked(loc);
+  const disabledAttr = locked ? "disabled" : "";
+  const chips = members.map(p => `<button type="button" class="chip ${sel===p.proposalId?'selected':''}" data-group="${escapeAttr(groupId)}" data-choice="${escapeAttr(p.proposalId)}" ${disabledAttr}>${escapeHtml(p.proposedValue)} (${Math.round(clamp(p.confidence||0,0,1)*100)}%)</button>`).join("");
+  const expanded = expandedFields.has(groupId);
+  const detailHtml = expanded ? `
+    <div class="field-detail">
+      ${members.map(p => `
+        <div class="field-detail-row"><span class="fd-label">${escapeHtml(p.proposedValue)}</span><span class="fd-value">${Math.round(clamp(p.confidence||0,0,1)*100)}% confidence</span></div>
+        ${(p.evidence&&p.evidence.length) ? `<ul class="field-detail-evidence">${p.evidence.map(e=>`<li>${escapeHtml(e.text)}</li>`).join("")}</ul>` : ""}
+      `).join("")}
+    </div>` : "";
+  return `
+  <div class="field-row ${locked?'locked':''}" style="display:block" data-group-row="${escapeAttr(groupId)}">
+    <div class="field-row-top" style="align-items:flex-start">
+      <div class="field-row-main">
+        <div class="field-label"><span class="chevron">${expanded?'&#9662;':'&#9656;'}</span>${escapeHtml(fieldLabel)} <span class="badge lane-medium">competing</span> ${explicitTag}</div>
+        <div class="field-values">${escapeHtml(displayValue(members[0].currentValue))} &#8594; choose one below</div>
+      </div>
+      <button class="field-more" data-group-more="${escapeAttr(groupId)}" title="More options" aria-label="More options for ${escapeAttr(fieldLabel)}"><span class="dot">&#8942;</span></button>
+    </div>
+    <div class="competing-chips">
+      ${chips}
+      <button type="button" class="chip none-chip ${sel==='none'?'selected':''}" data-group="${escapeAttr(groupId)}" data-choice="none" ${disabledAttr}>None</button>
+      <button type="button" class="chip later-chip ${sel==='later'?'selected':''}" data-group="${escapeAttr(groupId)}" data-choice="later" ${disabledAttr}>Decide later</button>
+    </div>
+    ${detailHtml}
+  </div>`;
+}
+
+function renderEvidence(loc){
+  const items = loc.proposals.flatMap(p => {
+    const ev = (p.evidence||[]).map(e => `<li><strong>${escapeHtml(p.label)}:</strong> ${escapeHtml(e.text)}</li>`);
+    const src = (p.sources||[]).map(s => { const link = renderSourceLink(s); return link ? `<li>${link}</li>` : ""; }).filter(Boolean);
+    return ev.concat(src);
+  });
+  if(items.length === 0) return "<p>No additional evidence recorded for this batch entry.</p>";
+  return `<ul>${items.join("")}</ul>`;
+}
+
+function cardHtml(loc, isTop){
+  const img = loc.images && loc.images[0];
+  const imgUrl = img ? safeUrl(img.url) : null;
+  const groupsSeen = new Set();
+  const rowsHtml = loc.proposals.map(p => {
+    if(p.competingGroup){
+      const groupKey = competingGroupKey(loc, p);
+      if(groupsSeen.has(groupKey)) return "";
+      groupsSeen.add(groupKey);
+      const members = loc.proposals.filter(pp => competingGroupKey(loc, pp) === groupKey);
+      return renderCompetingGroup(loc, groupKey, members);
+    }
+    return renderFieldRow(loc, p, isTop);
+  }).join("");
+
+  return `
+  <div class="card-inner">
+    <div class="drag-handle">
+      <div class="card-image-wrap">
+        ${imgUrl ? `<img class="card-image" src="${escapeAttr(imgUrl)}" alt="" />` : ""}
+        <div class="img-placeholder">No image available</div>
+        <div class="edge-glow"></div>
+        <div class="stamp stamp-accept">ACCEPT</div>
+        <div class="stamp stamp-reject">REJECT</div>
+        <div class="stamp stamp-defer">DEFER</div>
+      </div>
+      <div class="card-title">
+        <h3>${escapeHtml(loc.name)}</h3>
+        <div class="meta">${escapeHtml(loc.country || "Unknown country")} &middot; ${escapeHtml(loc.type || "Untyped")}</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="field-controls-header">
+        <span>Proposals</span>
+        <div class="all-none">
+          <button data-all>All</button>
+          <button data-none>None</button>
+        </div>
+      </div>
+      ${rowsHtml}
+      <button type="button" class="evidence-toggle" data-evidence-toggle aria-expanded="${(isTop&&evidenceOpen)?'true':'false'}" aria-controls="evidencePanel-${escapeAttr(loc.recordId)}">Evidence &amp; sources ${(isTop&&evidenceOpen)?'&#9652;':'&#9662;'}</button>
+      <div id="evidencePanel-${escapeAttr(loc.recordId)}" class="evidence-panel ${(isTop&&evidenceOpen)?'':'hidden'}" data-evidence-panel>${renderEvidence(loc)}</div>
+    </div>
+  </div>`;
+}
+
+function renderStack(){
+  const stackEl = $("#cardStack");
+  const doneEl = $("#doneScreen");
+  const actionBar = $("#actionBar");
+
+  if(state.cursor >= state.order.length){
+    stackEl.innerHTML = "";
+    stackEl.style.display = "none";
+    doneEl.style.display = "flex";
+    actionBar.style.display = "none";
+    currentTopId = null;
+    // An accidental swipe on the very last card — especially a one-card
+    // batch — used to have no way back, because Undo lived only in the
+    // action bar and that bar disappears the moment the queue empties
+    // (audit H-02), even though the undo snapshot was still sitting right
+    // there in memory. Surface it here too.
+    $("#undoFromDone").style.display = lastAction ? "inline-block" : "none";
+    return;
+  }
+  doneEl.style.display = "none";
+  stackEl.style.display = "block";
+  actionBar.style.display = "flex";
+
+  const visibleIds = state.order.slice(state.cursor, state.cursor+2);
+  const newTopId = visibleIds[0];
+
+  // Preserve in-card scroll position across a rebuild, and only reset
+  // expanded-row / evidence-panel state when the top card actually changes
+  // (otherwise toggling a switch on card 4 of 9 fields would collapse
+  // everything else and yank the view back to the top — not a great feel).
+  const prevBody = stackEl.querySelector(".card.top .card-body");
+  const savedScroll = prevBody ? prevBody.scrollTop : 0;
+  const cardChanged = newTopId !== currentTopId;
+  if(cardChanged){
+    currentTopId = newTopId;
+    expandedFields = new Set();
+    evidenceOpen = false;
+  }
+
+  stackEl.innerHTML = "";
+  visibleIds.forEach((id, idx) => {
+    const loc = locById(id);
+    const el = document.createElement("div");
+    el.className = "card " + (idx===0 ? "top" : "stack-1");
+    el.dataset.recordId = id;
+    el.innerHTML = cardHtml(loc, idx===0);
+    // Attached via JS rather than an inline onerror="" attribute in the
+    // template — an inline handler attribute is exactly the kind of sink a
+    // hostile image URL could break out of and append to (audit C-01).
+    const imgEl = el.querySelector(".card-image");
+    if(imgEl) imgEl.addEventListener("error", () => imgEl.classList.add("img-fail"));
+    stackEl.appendChild(el);
+  });
+
+  const topCard = stackEl.querySelector(".card.top");
+  if(topCard) attachCardInteractions(topCard);
+
+  const newBody = stackEl.querySelector(".card.top .card-body");
+  if(newBody) newBody.scrollTop = cardChanged ? 0 : savedScroll;
+
+  $("#btnUndo").disabled = !lastAction;
+}
+
+/* ============================================================
+   Card interactions: toggles, all/none, more-menu, evidence,
+   competing chips
+   ============================================================ */
+function attachCardInteractions(cardEl){
+  const recordId = cardEl.dataset.recordId;
+  const loc = locById(recordId);
+
+  cardEl.querySelectorAll(".pill-toggle").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.toggle;
+      state.toggles[id] = !state.toggles[id];
+      persistState();
+      renderStack();
+    });
+  });
+
+  const allBtn = cardEl.querySelector("[data-all]");
+  const noneBtn = cardEl.querySelector("[data-none]");
+  if(allBtn) allBtn.addEventListener("click", () => {
+    loc.proposals.forEach(p => { if(!p.competingGroup) state.toggles[p.proposalId] = true; });
+    persistState(); renderStack();
+  });
+  if(noneBtn) noneBtn.addEventListener("click", () => {
+    loc.proposals.forEach(p => { if(!p.competingGroup) state.toggles[p.proposalId] = false; });
+    persistState(); renderStack();
+  });
+
+  cardEl.querySelectorAll(".field-more").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if(btn.dataset.groupMore) openGroupActionSheet(btn.dataset.groupMore);
+      else openFieldActionSheet(btn.dataset.proposal);
+    });
+  });
+
+  cardEl.querySelectorAll(".field-row[data-proposal] .field-row-main").forEach(main => {
+    main.addEventListener("click", () => {
+      const row = main.closest(".field-row");
+      const id = row && row.dataset.proposal;
+      if(!id) return;
+      if(expandedFields.has(id)) expandedFields.delete(id); else expandedFields.add(id);
+      renderStack();
+    });
+  });
+
+  cardEl.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const group = chip.dataset.group;
+      state.competingSelection[group] = chip.dataset.choice;
+      persistState(); renderStack();
+    });
+  });
+
+  const evToggle = cardEl.querySelector("[data-evidence-toggle]");
+  if(evToggle) evToggle.addEventListener("click", () => {
+    evidenceOpen = !evidenceOpen;
+    renderStack();
+  });
+
+  attachDragHandlers(cardEl);
+}
+
+function openFieldActionSheet(proposalId){
+  const found = proposalById(proposalId);
+  if(!found) return;
+  $("#fieldActionTitle").textContent = found.p.label + " — " + found.loc.name;
+  const current = state.explicit[proposalId];
+  const buttonsEl = $("#fieldActionButtons");
+  buttonsEl.innerHTML = "";
+
+  const makeBtn = (label, cls, onClick) => {
+    const b = document.createElement("button");
+    b.textContent = label;
+    if(cls) b.className = cls;
+    b.addEventListener("click", () => { onClick(); closeSheet("#fieldActionSheet"); });
+    return b;
+  };
+
+  buttonsEl.appendChild(makeBtn("View full details", "", () => {
+    expandedFields.add(proposalId);
+    renderStack();
+    setTimeout(() => {
+      const rowEl = elementByData("data-proposal", proposalId);
+      if(rowEl) rowEl.scrollIntoView({block:"center", behavior:"smooth"});
+    }, 60);
+  }));
+  buttonsEl.appendChild(makeBtn(current==="rejected" ? "✓ Explicitly reject this field" : "Explicitly reject this field", "danger", () => {
+    state.explicit[proposalId] = "rejected"; persistState(); renderStack();
+  }));
+  buttonsEl.appendChild(makeBtn(current==="deferred" ? "✓ Defer this field only" : "Defer this field only", "warn", () => {
+    state.explicit[proposalId] = "deferred"; persistState(); renderStack();
+  }));
+  if(current){
+    buttonsEl.appendChild(makeBtn("Clear explicit decision (use card default)", "", () => {
+      delete state.explicit[proposalId]; persistState(); renderStack();
+    }));
+  }
+  buttonsEl.appendChild(makeBtn("Cancel", "cancel-btn", () => {}));
+  openSheet("#fieldActionSheet");
+}
+
+// Group-scoped counterpart of openFieldActionSheet (audit M-01: competing
+// groups previously had no "⋯" menu at all, so they couldn't be explicitly
+// rejected/deferred as a whole field the way a normal row can). A competing
+// group has no single proposalId of its own — every candidate is its own
+// proposal — so "reject/defer the whole field" is expressed by setting the
+// same explicit override on every candidate's proposalId at once. resolveDecision
+// already checks state.explicit[p.proposalId] first, before any competing-group
+// logic, so this takes effect for every member uniformly regardless of which
+// (if any) chip is currently selected.
+function membersForGroupKey(groupId){
+  for(const loc of state.locations){
+    const members = loc.proposals.filter(p => p.competingGroup && competingGroupKey(loc, p) === groupId);
+    if(members.length) return {loc, members};
+  }
+  return {loc:null, members:[]};
+}
+
+function openGroupActionSheet(groupId){
+  const {loc, members} = membersForGroupKey(groupId);
+  if(!loc || members.length === 0) return;
+  const fieldLabel = members[0].label;
+  $("#fieldActionTitle").textContent = fieldLabel + " — " + loc.name;
+  const explicitStates = members.map(p => state.explicit[p.proposalId]);
+  const current = explicitStates.every(s => s && s === explicitStates[0]) ? explicitStates[0] : null;
+  const buttonsEl = $("#fieldActionButtons");
+  buttonsEl.innerHTML = "";
+
+  const makeBtn = (label, cls, onClick) => {
+    const b = document.createElement("button");
+    b.textContent = label;
+    if(cls) b.className = cls;
+    b.addEventListener("click", () => { onClick(); closeSheet("#fieldActionSheet"); });
+    return b;
+  };
+
+  buttonsEl.appendChild(makeBtn("View full details", "", () => {
+    expandedFields.add(groupId);
+    renderStack();
+    setTimeout(() => {
+      const rowEl = elementByData("data-group-row", groupId);
+      if(rowEl) rowEl.scrollIntoView({block:"center", behavior:"smooth"});
+    }, 60);
+  }));
+  buttonsEl.appendChild(makeBtn(current==="rejected" ? "✓ Explicitly reject this field" : "Explicitly reject this field", "danger", () => {
+    members.forEach(p => { state.explicit[p.proposalId] = "rejected"; });
+    persistState(); renderStack();
+  }));
+  buttonsEl.appendChild(makeBtn(current==="deferred" ? "✓ Defer this field only" : "Defer this field only", "warn", () => {
+    members.forEach(p => { state.explicit[p.proposalId] = "deferred"; });
+    persistState(); renderStack();
+  }));
+  if(current){
+    buttonsEl.appendChild(makeBtn("Clear explicit decision (use chip selection)", "", () => {
+      members.forEach(p => { delete state.explicit[p.proposalId]; });
+      persistState(); renderStack();
+    }));
+  }
+  buttonsEl.appendChild(makeBtn("Cancel", "cancel-btn", () => {}));
+  openSheet("#fieldActionSheet");
+}
+
+function openSheet(sel){ $(sel).classList.remove("hidden"); }
+function closeSheet(sel){ $(sel).classList.add("hidden"); }
+
+// Tapping the dark backdrop (outside the sheet's own content) dismisses it,
+// same as tapping Close/Cancel — standard bottom-sheet behaviour that was
+// missing before (the field-action sheet had no way out except picking one
+// of its actions).
+$$(".sheet").forEach(sheetEl => {
+  sheetEl.addEventListener("click", (e) => {
+    if(e.target === sheetEl) sheetEl.classList.add("hidden");
+  });
+});
+
+/* ============================================================
+   Drag / swipe gesture handling
+   ============================================================ */
+const THRESH_X = 110;
+const THRESH_Y_UP = 100;
+
+function attachDragHandlers(cardEl){
+  const handle = cardEl.querySelector(".drag-handle");
+  if(!handle) return;
+  let drag = null;
+
+  handle.addEventListener("pointerdown", (e) => {
+    if(isAnimating) return;
+    handle.setPointerCapture(e.pointerId);
+    drag = {pointerId:e.pointerId, startX:e.clientX, startY:e.clientY};
+    cardEl.classList.add("dragging");
+  });
+
+  handle.addEventListener("pointermove", (e) => {
+    if(!drag || e.pointerId !== drag.pointerId) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    const rot = dx / 18;
+    cardEl.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg)`;
+    updateDragVisuals(cardEl, dx, dy);
+  });
+
+  function finishDrag(e){
+    if(!drag || e.pointerId !== drag.pointerId) return;
+    const dx = e.clientX - drag.startX;
+    const dy = e.clientY - drag.startY;
+    drag = null;
+    cardEl.classList.remove("dragging");
+
+    const absX = Math.abs(dx), absY = Math.abs(dy);
+    if(absX > absY && absX > THRESH_X){
+      commitCardOutcome(dx > 0 ? "accepted" : "rejected", cardEl);
+    } else if(dy < -THRESH_Y_UP && absY > absX){
+      commitCardOutcome("deferred", cardEl);
+    } else {
+      springBack(cardEl);
+    }
+  }
+  handle.addEventListener("pointerup", finishDrag);
+  handle.addEventListener("pointercancel", finishDrag);
+}
+
+function updateDragVisuals(cardEl, dx, dy){
+  const glow = cardEl.querySelector(".edge-glow");
+  const stampA = cardEl.querySelector(".stamp-accept");
+  const stampR = cardEl.querySelector(".stamp-reject");
+  const stampD = cardEl.querySelector(".stamp-defer");
+  [stampA, stampR, stampD].forEach(s => { if(s) s.style.opacity = 0; });
+  if(glow) glow.style.opacity = 0;
+
+  const absX = Math.abs(dx), absY = Math.abs(dy);
+  if(absX > absY){
+    const ratio = clamp(absX / THRESH_X, 0, 1);
+    if(glow){
+      glow.style.boxShadow = dx > 0
+        ? `inset 0 0 ${40*ratio}px ${10*ratio}px var(--emerald-glow)`
+        : `inset 0 0 ${40*ratio}px ${10*ratio}px var(--crimson-glow)`;
+      glow.style.opacity = ratio;
+    }
+    const stamp = dx > 0 ? stampA : stampR;
+    if(stamp) stamp.style.opacity = ratio;
+  } else if(dy < 0){
+    const ratio = clamp(absY / THRESH_Y_UP, 0, 1);
+    if(glow){
+      glow.style.boxShadow = `inset 0 0 ${40*ratio}px ${10*ratio}px var(--amber-glow)`;
+      glow.style.opacity = ratio;
+    }
+    if(stampD) stampD.style.opacity = ratio;
+  }
+}
+
+function springBack(cardEl){
+  cardEl.classList.add("returning");
+  cardEl.style.transform = "translate(0,0) rotate(0deg)";
+  const glow = cardEl.querySelector(".edge-glow");
+  if(glow) glow.style.opacity = 0;
+  [".stamp-accept",".stamp-reject",".stamp-defer"].forEach(sel => {
+    const s = cardEl.querySelector(sel); if(s) s.style.opacity = 0;
+  });
+  setTimeout(() => cardEl.classList.remove("returning"), 400);
+}
+
+function animateExit(cardEl, outcome, done){
+  if(!cardEl){ done(); return; }
+  cardEl.classList.add("exiting");
+  const dir = outcome === "accepted" ? "translate(140%, -10%) rotate(24deg)"
+            : outcome === "rejected" ? "translate(-140%, -10%) rotate(-24deg)"
+            : "translate(0, -140%) rotate(0deg)";
+  requestAnimationFrame(() => {
+    cardEl.style.transform = dir;
+    cardEl.style.opacity = "0";
+  });
+  let finished = false;
+  const finish = () => { if(finished) return; finished = true; done(); };
+  cardEl.addEventListener("transitionend", finish, {once:true});
+  setTimeout(finish, 500); // safety net if transitionend doesn't fire
+}
+
+/* ============================================================
+   Export / backup / about / reset
+   ============================================================ */
+// Bounded, filesystem-safe slug for use inside a download filename only
+// (audit L-04) — batchId itself is never altered inside the exported JSON,
+// only this display copy used for the filename on disk. Browsers already
+// strip/replace some characters when saving, but inconsistently across
+// platforms, so anything outside a safe allowlist is collapsed here instead
+// of left to that inconsistent behaviour, and length is capped so a
+// pathological batchId can't produce an unusable filename.
+function safeFilenameSlug(s){
+  const slug = String(s == null ? "" : s)
+    .replace(/[^A-Za-z0-9_-]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 60);
+  return slug || "batch";
+}
+
+function downloadJson(obj, filename){
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function exportDecisions(){
+  if(!state){ toast("Nothing to export yet"); return; }
+  try{ validateFullState(state); }
+  catch(err){ toast("Export blocked: session state is inconsistent", 3200); console.error("Export validation failed", err); return; }
+  const decisions = [];
+  state.locations.forEach(loc => {
+    loc.proposals.forEach(p => {
+      const d = state.decisions[p.proposalId];
+      decisions.push({
+        proposalId: p.proposalId,
+        recordId: loc.recordId,
+        decision: d ? d.decision : "untouched",
+        timestamp: d ? d.timestamp : null
+      });
+    });
+  });
+  const out = {
+    schemaVersion: state.schemaVersion,
+    batchId: state.batchId,
+    sourceFingerprint: state.sourceFingerprint,
+    exportedAt: nowIso(),
+    decisions,
+    curatorNotes: null
+  };
+  downloadJson(out, `scribe-decisions-${safeFilenameSlug(state.batchId)}-${Date.now()}.json`);
+  toast("Decisions exported");
+}
+
+function exportBackup(){
+  if(!state){ toast("Nothing to back up yet"); return; }
+  try{ validateFullState(state); }
+  catch(err){ toast("Backup blocked: session state is inconsistent", 3200); console.error("Backup validation failed", err); return; }
+  const out = {_scribeCuratorBackup:true, savedAt: nowIso(), state};
+  downloadJson(out, `scribe-curator-backup-${Date.now()}.json`);
+  toast("Backup exported");
+}
+
+function openAbout(){
+  const el = $("#aboutInfo");
+  // App/build version shown unconditionally, bundle or not, so a screenshot
+  // or bug report always establishes exactly which code ran (audit L-03).
+  const versionRow = `<dt>Curator version</dt><dd>${escapeHtml(APP_VERSION)}</dd>`;
+  const saveRow = saveHealth.status === "saved"
+    ? `<dt>Autosave</dt><dd>OK${saveHealth.lastSavedAt ? " — last saved " + escapeHtml(new Date(saveHealth.lastSavedAt).toLocaleTimeString()) : ""}</dd>`
+    : saveHealth.status === "pending"
+      ? `<dt>Autosave</dt><dd>Saving…</dd>`
+      : `<dt>Autosave</dt><dd style="color:var(--crimson)">FAILING (${escapeHtml(saveHealth.lastError||"unknown error")}) — export a backup now</dd>`;
+  if(!state){
+    el.innerHTML = versionRow + "<dt>Status</dt><dd>No bundle loaded yet.</dd>";
+  } else {
+    el.innerHTML = versionRow + saveRow + `
+      <dt>Schema version</dt><dd>${escapeHtml(state.schemaVersion)}</dd>
+      <dt>Batch ID</dt><dd>${escapeHtml(state.batchId)}</dd>
+      <dt>Source fingerprint</dt><dd>${escapeHtml(state.sourceFingerprint)}</dd>
+      <dt>Imported</dt><dd>${escapeHtml(state.importedAt)}</dd>
+      <dt>Locations</dt><dd>${state.locations.length}</dd>
+      <dt>Reviewed</dt><dd>${Math.min(state.cursor, state.order.length)} / ${state.order.length}</dd>
+    `;
+  }
+  openSheet("#aboutSheet");
+}
+
+async function resetSession(){
+  if(!confirm("Start a new session? This clears the current queue, toggles and decisions from this device (export a backup first if you want to keep them).")) return;
+  invalidatePendingSaves();
+  state = null;
+  await saveChain.catch(()=>{});
+  try{ await idbClear(); }
+  catch(err){
+    saveHealth = {status:"failing", lastSavedAt:saveHealth.lastSavedAt, lastError:String(err && err.message || err)};
+    toast("Could not clear saved session", 3000);
+  }
+  $("#actionBar").style.display = "none";
+  $("#doneScreen").style.display = "none";
+  $("#cardStack").style.display = "none";
+  $("#importScreen").style.display = "flex";
+  $("#importError").textContent = "";
+  renderCountersEmpty();
+  closeSheet("#aboutSheet");
+}
+function renderCountersEmpty(){
+  $("#cntAccepted").textContent = 0;
+  $("#cntRejected").textContent = 0;
+  $("#cntDeferred").textContent = 0;
+  $("#progressLabel").textContent = "0 / 0";
+  $("#progressFill").style.width = "0%";
+}
+
+/* ============================================================
+   Connection status
+   ============================================================ */
+function updateConnStatus(){
+  const online = navigator.onLine;
+  $("#connDot").classList.toggle("offline", !online);
+  $("#connLabel").textContent = online ? "Online" : "Offline (queue unaffected)";
+}
+
+/* ============================================================
+   Wire up static controls
+   ============================================================ */
+$("#fileInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if(!file) return;
+  // Check size before ever handing the file to FileReader — a hostile or
+  // mistakenly-exported multi-thousand-location file has no business being
+  // parsed, copied into state, and stringified again several times over on
+  // a phone's main thread (audit H-06).
+  if(file.size > MAX_IMPORT_FILE_BYTES){
+    $("#importError").textContent = `That file is ${(file.size/1024/1024).toFixed(1)} MB, over this app's ${(MAX_IMPORT_FILE_BYTES/1024/1024)|0} MB import limit. Export a smaller pilot batch from desktop Scribe instead.`;
+    e.target.value = "";
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = () => {
+    try{
+      const obj = JSON.parse(reader.result);
+      handleImportedJson(obj);
+    }catch(err){
+      $("#importError").textContent = "Could not read file: " + err.message;
+    }
+  };
+  reader.onerror = () => {
+    $("#importError").textContent = "Could not read file from disk.";
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+$("#loadSampleBtn").addEventListener("click", () => {
+  handleImportedJson(generateMockBundle());
+});
+
+$("#btnAccept").addEventListener("click", () => {
+  const top = $("#cardStack .card.top");
+  commitCardOutcome("accepted", top);
+});
+$("#btnReject").addEventListener("click", () => {
+  const top = $("#cardStack .card.top");
+  commitCardOutcome("rejected", top);
+});
+$("#btnDefer").addEventListener("click", () => {
+  const top = $("#cardStack .card.top");
+  commitCardOutcome("deferred", top);
+});
+$("#btnUndo").addEventListener("click", undoLast);
+$("#undoFromDone").addEventListener("click", undoLast);
+$("#btnSkip").addEventListener("click", skipCurrent);
+
+$("#exportDecisionsBtn").addEventListener("click", exportDecisions);
+$("#exportBackupBtn").addEventListener("click", exportBackup);
+$("#aboutBtn").addEventListener("click", openAbout);
+$("#closeAbout").addEventListener("click", () => closeSheet("#aboutSheet"));
+$("#resetBtn").addEventListener("click", resetSession);
+$("#newSessionFromDone").addEventListener("click", resetSession);
+
+window.addEventListener("online", updateConnStatus);
+window.addEventListener("offline", updateConnStatus);
+
+/* ============================================================
+   Boot
+   ============================================================ */
+async function boot(){
+  updateConnStatus();
+  try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){/* ignore */}
+
+  try{
+    const saved = await idbGet(STATE_KEY);
+    if(saved && Array.isArray(saved.locations) && saved.locations.length){
+      // The autosave is trusted less than it used to be: a previous app
+      // version, a half-written save, or manual tampering with IndexedDB
+      // could all produce something that renders wrong or crashes deeper
+      // in (audit H-04). Run it through the same gate a backup file gets
+      // before ever assigning it to `state`.
+      try{
+        validateFullState(saved);
+        state = normalizeFullState(saved);
+        saveHealth = {status:"saved", lastSavedAt:null, lastError:null};
+        showReviewUI();
+        renderAll();
+        toast("Resumed saved session");
+        return;
+      }catch(validationErr){
+        console.warn("Saved session failed validation, discarding:", validationErr.message);
+        $("#importError").textContent =
+          "Your saved session couldn't be loaded (" + validationErr.message + ") and was reset. If you exported a backup or decisions recently, those files are unaffected.";
+        await idbClear().catch(()=>{});
+      }
+    }
+  }catch(e){ console.warn("Could not read saved session", e); }
+
+  $("#importScreen").style.display = "flex";
+}
+
+boot();
+
+/* ============================================================
+   Service worker registration + update banner
+   ============================================================ */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", () => {
+    // A page with no controller yet (a brand-new visitor, nothing cached
+    // before) will still get exactly one "controllerchange" event the
+    // moment this first worker's activate handler calls self.clients.claim()
+    // — that's the worker taking over the page it was just installed on,
+    // not a version swap. Reloading in response used to fire on literally
+    // every first-ever visit (self-discovered while writing the regression
+    // suite: it raced a test's file-import against an unannounced reload).
+    // Only a controllerchange after that initial claim is a real update.
+    let sawInitialClaim = !navigator.serviceWorker.controller;
+    let refreshing = false;
+    const offerUpdate = (worker) => {
+      if(!worker) return;
+      $("#updateBanner").classList.remove("hidden");
+      $("#updateBtn").onclick = () => worker.postMessage({type:"SKIP_WAITING"});
+    };
+
+    navigator.serviceWorker.register("service-worker.js").then((reg) => {
+      if(reg.waiting && navigator.serviceWorker.controller) offerUpdate(reg.waiting);
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        if(!newWorker) return;
+        newWorker.addEventListener("statechange", () => {
+          if(newWorker.state === "installed" && navigator.serviceWorker.controller){
+            offerUpdate(newWorker);
+          }
+        });
+      });
+    }).catch((e) => console.warn("Service worker registration failed", e));
+
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if(sawInitialClaim){ sawInitialClaim = false; return; }
+      if(refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+  });
+}
+
+})();
+</script>
+</body>
+</html>

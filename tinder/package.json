@@ -1,0 +1,14 @@
+{
+  "name": "scribe-curator-prototype",
+  "version": "0.3.1",
+  "private": true,
+  "description": "Offline mobile curator prototype and regression tests",
+  "scripts": {
+    "test:logic": "node tests/logic-regression.js",
+    "test:browser": "node tests/regression.js",
+    "test": "npm run test:logic && npm run test:browser"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}

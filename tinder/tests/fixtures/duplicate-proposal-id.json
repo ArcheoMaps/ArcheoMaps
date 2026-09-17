@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "scribe.mobile.v1",
+  "batchId": "dup-test-batch",
+  "sourceFingerprint": "sha256:test",
+  "locations": [
+    {
+      "recordId": "loc-a",
+      "name": "Location A",
+      "proposals": [
+        { "proposalId": "dup-1", "field": "Type", "label": "Type", "lane": "high", "confidence": 0.9, "currentValue": "", "proposedValue": "Foo" }
+      ]
+    },
+    {
+      "recordId": "loc-b",
+      "name": "Location B",
+      "proposals": [
+        { "proposalId": "dup-1", "field": "Type", "label": "Type", "lane": "high", "confidence": 0.9, "currentValue": "", "proposedValue": "Bar" }
+      ]
+    }
+  ]
+}

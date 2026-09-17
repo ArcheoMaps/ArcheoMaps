@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "scribe.mobile.v2",
+  "batchId": "bad-schema-batch",
+  "sourceFingerprint": "sha256:test",
+  "locations": [
+    {
+      "recordId": "loc-1",
+      "name": "Location One",
+      "proposals": [
+        { "proposalId": "p1", "field": "Type", "label": "Type", "lane": "high", "confidence": 0.9, "currentValue": "", "proposedValue": "Foo" }
+      ]
+    }
+  ]
+}
