@@ -483,6 +483,67 @@ async function main() {
     }
   });
 
+  // ---- v0.3.2: counter history can revise without moving the queue ----
+  await test("v0.3.2: counter history re-judges a site and returns to the untouched queue position", async () => {
+    const { context, page } = await freshPage();
+    try {
+      await loadSample(page);
+      await page.click("#btnAccept");
+      await page.waitForTimeout(600);
+      await page.click("#btnReject");
+      await page.waitForTimeout(600);
+
+      const queueTitle = await page.locator("#cardStack .card.top .card-title h3").textContent();
+      const progressBefore = await page.locator("#progressLabel").textContent();
+      assert(progressBefore === "2 / 7", `expected queue at 2 / 7, got ${progressBefore}`);
+
+      await page.click('[data-history-outcome="accepted"]');
+      await page.waitForSelector("#historySheet:not(.hidden) .history-item");
+      await page.locator("#historySheet .history-item").first().click();
+      await page.waitForSelector("#cardStack .card.top .revisit-banner");
+      await page.click("#btnReject");
+      await page.waitForTimeout(600);
+
+      const returnedTitle = await page.locator("#cardStack .card.top .card-title h3").textContent();
+      const progressAfter = await page.locator("#progressLabel").textContent();
+      assert(returnedTitle === queueTitle, `expected return to ${queueTitle}, got ${returnedTitle}`);
+      assert(progressAfter === progressBefore, `re-review moved queue progress from ${progressBefore} to ${progressAfter}`);
+      assert(await page.locator("#cntAccepted").textContent() === "0", "old accepted counter was not decremented");
+      assert(await page.locator("#cntRejected").textContent() === "2", "new rejected counter was not incremented");
+    } finally {
+      await context.close();
+    }
+  });
+
+  await test("v0.3.2: cancelling a historical draft restores changes and keeps the saved session valid", async () => {
+    const { context, page } = await freshPage();
+    try {
+      await loadSample(page);
+      await page.click("#btnAccept");
+      await page.waitForTimeout(600);
+      const queueTitle = await page.locator("#cardStack .card.top .card-title h3").textContent();
+
+      await page.click('[data-history-outcome="accepted"]');
+      await page.locator("#historySheet .history-item").first().click();
+      const enabledToggle = page.locator("#cardStack .card.top .pill-toggle:not(:disabled)").first();
+      const before = await enabledToggle.getAttribute("aria-checked");
+      await enabledToggle.click();
+      await page.click("[data-cancel-revisit]");
+      await page.waitForTimeout(400);
+      assert(await page.locator("#cardStack .card.top .card-title h3").textContent() === queueTitle, "cancel did not return to the current queue card");
+
+      await page.reload();
+      await page.waitForSelector("#cardStack .card.top");
+      assert(await page.locator("#cardStack .card.top .card-title h3").textContent() === queueTitle, "reload did not resume the same valid queue position");
+      await page.click('[data-history-outcome="accepted"]');
+      await page.locator("#historySheet .history-item").first().click();
+      const restored = await page.locator("#cardStack .card.top .pill-toggle:not(:disabled)").first().getAttribute("aria-checked");
+      assert(restored === before, `cancelled draft toggle persisted (${before} became ${restored})`);
+    } finally {
+      await context.close();
+    }
+  });
+
   // ---- v0.3.1: a reset raced against a pending autosave stays clean -----
   // Added while independently re-verifying v0.3.1's own claims (this repo
   // has a real Chromium available, unlike the environment that produced
