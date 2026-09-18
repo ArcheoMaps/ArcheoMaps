@@ -81,9 +81,10 @@
   .conn-dot.offline{background:var(--amber);box-shadow:0 0 6px var(--amber-glow);}
 
   .counters{display:flex;gap:10px;padding:6px 18px 2px;}
-  .counter{flex:1;text-align:center;background:var(--navy-raised);border:1px solid var(--line);border-radius:10px;padding:6px 4px;}
+  .counter{flex:1;text-align:center;background:var(--navy-raised);border:1px solid var(--line);border-radius:10px;padding:6px 4px;color:inherit;font:inherit;cursor:pointer;min-height:48px;}
+  .counter:disabled{cursor:default;opacity:.72;}
   .counter span{display:block;font-size:17px;font-weight:700;}
-  .counter label{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ivory-dim);opacity:.75;}
+  .counter .counter-label{display:block;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--ivory-dim);opacity:.75;}
   .counter.accepted span{color:var(--emerald);}
   .counter.rejected span{color:var(--crimson);}
   .counter.deferred span{color:var(--amber);}
@@ -325,6 +326,25 @@
   .field-actions button.danger{color:var(--crimson);}
   .field-actions button.warn{color:var(--amber);}
   .field-actions button.cancel-btn{color:var(--ivory-dim);text-align:center;border-style:dashed;}
+  .history-list{display:flex;flex-direction:column;gap:8px;margin:8px 0 12px;}
+  .history-item{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;
+    background:var(--navy);border:1px solid var(--line);color:var(--ivory);
+    padding:12px;border-radius:10px;text-align:left;cursor:pointer;min-height:52px;
+  }
+  .history-item strong{display:block;font-size:13px;}
+  .history-item small{display:block;color:var(--ivory-dim);margin-top:2px;}
+  .history-item .history-arrow{color:var(--gold);font-size:18px;}
+  .history-empty{color:var(--ivory-dim);font-size:13px;margin:12px 0;}
+  .revisit-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:#fff2c8;color:#4b3908;border-bottom:1px solid rgba(0,0,0,.16);
+    padding:8px 12px;font-size:11px;font-weight:700;
+  }
+  .revisit-banner button{
+    background:transparent;border:1px solid rgba(75,57,8,.35);border-radius:999px;
+    color:#4b3908;min-height:36px;padding:5px 11px;font-weight:700;cursor:pointer;
+  }
 
   .update-banner{
     position:fixed;left:0;right:0;bottom:0;background:var(--gold);color:#241c08;
@@ -358,9 +378,9 @@
   </header>
 
   <div class="counters">
-    <div class="counter accepted"><span id="cntAccepted">0</span><label>Accepted</label></div>
-    <div class="counter rejected"><span id="cntRejected">0</span><label>Rejected</label></div>
-    <div class="counter deferred"><span id="cntDeferred">0</span><label>Deferred</label></div>
+    <button type="button" class="counter accepted" data-history-outcome="accepted" aria-label="Show accepted locations" disabled><span id="cntAccepted">0</span><span class="counter-label">Accepted</span></button>
+    <button type="button" class="counter rejected" data-history-outcome="rejected" aria-label="Show rejected locations" disabled><span id="cntRejected">0</span><span class="counter-label">Rejected</span></button>
+    <button type="button" class="counter deferred" data-history-outcome="deferred" aria-label="Show deferred locations" disabled><span id="cntDeferred">0</span><span class="counter-label">Deferred</span></button>
   </div>
 
   <div class="progress-row">
@@ -423,6 +443,16 @@
   </div>
 </div>
 
+<div id="historySheet" class="sheet hidden">
+  <div class="sheet-inner">
+    <h3 id="historyTitle">Reviewed locations</h3>
+    <div id="historyList" class="history-list"></div>
+    <div class="field-actions">
+      <button id="closeHistory" class="cancel-btn">Back to queue</button>
+    </div>
+  </div>
+</div>
+
 <div id="updateBanner" class="update-banner hidden">
   A new version of Scribe Curator is ready.
   <button id="updateBtn">Refresh</button>
@@ -444,7 +474,7 @@ const SUPPORTED_SCHEMA_VERSIONS = new Set(["scribe.mobile.v1"]);
 const DB_NAME = "scribe-curator-db";
 const DB_STORE = "kv";
 const STATE_KEY = "app-state";
-const APP_VERSION = "0.3.1";
+const APP_VERSION = "0.3.2";
 const STATE_FORMAT_VERSION = 1;
 
 // A hard ceiling on the raw import file, checked before it's even read —
@@ -559,6 +589,7 @@ let saveChain = Promise.resolve();
 let currentTopId = null;
 let expandedFields = new Set();  // proposalIds currently showing full detail
 let evidenceOpen = false;        // whether the Evidence & sources panel is open
+let revisitMode = null;          // ephemeral past-card review; never moves the queue cursor
 
 function freshState(bundle){
   const locations = bundle.locations.map(loc => ({
@@ -687,7 +718,12 @@ function invalidatePendingSaves(){
   saveGeneration += 1;
 }
 
-function persistState(){
+function persistState(force){
+  // A past decision is edited as an in-memory draft until the user commits
+  // a replacement outcome. Persisting intermediate toggle changes would
+  // temporarily make saved decisions disagree with their inputs and cause
+  // the strict resume validator to reject the whole session after a reload.
+  if(revisitMode && !force) return;
   clearTimeout(saveTimer);
   const generation = saveGeneration;
   const snapshot = state ? structuredClone(state) : null;
@@ -962,7 +998,8 @@ function loadBundle(bundle){
   }
   invalidatePendingSaves();
   lastAction = null;
-  persistState();
+  revisitMode = null;
+  persistState(true);
   toast("Bundle loaded: " + state.locations.length + " locations");
 }
 
@@ -983,6 +1020,7 @@ function restoreBackup(obj){
   }
   invalidatePendingSaves();
   lastAction = null;
+  revisitMode = null;
   persistState();
   toast("Session restored from backup");
 }
@@ -1238,7 +1276,58 @@ function snapshotForUndo(recordId){
   };
 }
 
+function restoreLocationSnapshot(snapshot){
+  Object.entries(snapshot.decisions).forEach(([id, val]) => {
+    if(val === undefined) delete state.decisions[id]; else state.decisions[id] = val;
+  });
+  Object.entries(snapshot.toggles).forEach(([id, val]) => { state.toggles[id] = val; });
+  Object.entries(snapshot.explicit).forEach(([id, val]) => {
+    if(val === undefined) delete state.explicit[id]; else state.explicit[id] = val;
+  });
+  Object.entries(snapshot.competingSelection).forEach(([key, val]) => { state.competingSelection[key] = val; });
+}
+
+function finishRevisit(outcome, cardEl){
+  if(!revisitMode || isAnimating) return;
+  const recordId = revisitMode.recordId;
+  const previousOutcome = state.cardOutcomes[recordId];
+  const loc = locById(recordId);
+  if(!loc || !previousOutcome) return;
+
+  isAnimating = true;
+  vibrate(16);
+  loc.proposals.forEach(p => {
+    state.decisions[p.proposalId] = {decision:resolveDecision(loc, p, outcome), timestamp:nowIso()};
+  });
+  if(previousOutcome !== outcome){
+    state.counts[previousOutcome] = Math.max(0, (state.counts[previousOutcome]||0) - 1);
+    state.counts[outcome] = (state.counts[outcome]||0) + 1;
+  }
+  state.cardOutcomes[recordId] = outcome;
+  lastAction = null;
+  persistState(true);
+
+  animateExit(cardEl, outcome, () => {
+    revisitMode = null;
+    currentTopId = null;
+    isAnimating = false;
+    renderAll();
+    toast(previousOutcome === outcome ? "Decision reviewed" : "Decision updated");
+  });
+}
+
+function cancelRevisit(){
+  if(!revisitMode || isAnimating) return;
+  restoreLocationSnapshot(revisitMode.snapshot);
+  revisitMode = null;
+  currentTopId = null;
+  persistState();
+  renderAll();
+  toast("Returned to queue — changes discarded");
+}
+
 function commitCardOutcome(outcome, cardEl){
+  if(revisitMode){ finishRevisit(outcome, cardEl); return; }
   if(isAnimating || state.cursor >= state.order.length) return;
   const recordId = state.order[state.cursor];
   const loc = locById(recordId);
@@ -1276,14 +1365,7 @@ function undoLast(){
   lastAction = null;
   state.cursor = a.cursor;
   state.order = a.order;
-  Object.entries(a.decisions).forEach(([id, val]) => {
-    if(val === undefined) delete state.decisions[id]; else state.decisions[id] = val;
-  });
-  Object.entries(a.toggles).forEach(([id, val]) => { state.toggles[id] = val; });
-  Object.entries(a.explicit).forEach(([id, val]) => {
-    if(val === undefined) delete state.explicit[id]; else state.explicit[id] = val;
-  });
-  Object.entries(a.competingSelection).forEach(([g, val]) => { state.competingSelection[g] = val; });
+  restoreLocationSnapshot(a);
   if(a.appliedOutcome){ state.counts[a.appliedOutcome] = Math.max(0, (state.counts[a.appliedOutcome]||0) - 1); }
   if(a.previousCardOutcome){ state.cardOutcomes[a.recordId] = a.previousCardOutcome; }
   else { delete state.cardOutcomes[a.recordId]; }
@@ -1293,10 +1375,60 @@ function undoLast(){
 }
 
 function skipCurrent(){
-  if(isAnimating || state.cursor >= state.order.length) return;
+  if(revisitMode || isAnimating || state.cursor >= state.order.length) return;
   const id = state.order.splice(state.cursor, 1)[0];
   state.order.push(id);
   persistState();
+  renderAll();
+}
+
+function outcomeLabel(outcome){
+  return outcome.charAt(0).toUpperCase() + outcome.slice(1);
+}
+
+function openHistory(outcome){
+  if(!state || !["accepted","rejected","deferred"].includes(outcome)) return;
+  const reviewedIds = state.order.slice(0, state.cursor).filter(id => state.cardOutcomes[id] === outcome);
+  const list = $("#historyList");
+  list.innerHTML = "";
+  $("#historyTitle").textContent = outcomeLabel(outcome) + " locations (" + reviewedIds.length + ")";
+
+  if(reviewedIds.length === 0){
+    const empty = document.createElement("p");
+    empty.className = "history-empty";
+    empty.textContent = "No locations in this category yet.";
+    list.appendChild(empty);
+  } else {
+    reviewedIds.slice().reverse().forEach(recordId => {
+      const loc = locById(recordId);
+      if(!loc) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "history-item";
+      const text = document.createElement("span");
+      const name = document.createElement("strong");
+      name.textContent = loc.name;
+      const meta = document.createElement("small");
+      meta.textContent = [loc.country, loc.type].filter(Boolean).join(" · ") || "No location details";
+      const arrow = document.createElement("span");
+      arrow.className = "history-arrow";
+      arrow.setAttribute("aria-hidden", "true");
+      arrow.textContent = "›";
+      text.append(name, meta);
+      button.append(text, arrow);
+      button.setAttribute("aria-label", "Re-review " + loc.name);
+      button.addEventListener("click", () => beginRevisit(recordId));
+      list.appendChild(button);
+    });
+  }
+  openSheet("#historySheet");
+}
+
+function beginRevisit(recordId){
+  if(!state || !hasOwn(state.cardOutcomes, recordId) || isAnimating) return;
+  revisitMode = {recordId, snapshot:snapshotForUndo(recordId)};
+  currentTopId = null;
+  closeSheet("#historySheet");
   renderAll();
 }
 
@@ -1311,6 +1443,8 @@ function showReviewUI(){
 function renderAll(){
   renderCounters();
   renderStack();
+  $("#exportDecisionsBtn").disabled = !!revisitMode;
+  $("#exportBackupBtn").disabled = !!revisitMode;
 }
 
 function renderCounters(){
@@ -1321,6 +1455,10 @@ function renderCounters(){
   const done = Math.min(state.cursor, total);
   $("#progressLabel").textContent = done + " / " + total;
   $("#progressFill").style.width = (total ? (done/total*100) : 0) + "%";
+  $$('[data-history-outcome]').forEach(button => {
+    const outcome = button.dataset.historyOutcome;
+    button.disabled = !!revisitMode || !state.counts[outcome];
+  });
 }
 
 function fieldValuesHtml(p){
@@ -1478,6 +1616,7 @@ function cardHtml(loc, isTop){
 
   return `
   <div class="card-inner">
+    ${isTop && revisitMode ? `<div class="revisit-banner"><span>Re-reviewing ${escapeHtml(loc.name)}</span><button type="button" data-cancel-revisit>Back to queue</button></div>` : ""}
     <div class="drag-handle">
       <div class="card-image-wrap">
         ${imgUrl ? `<img class="card-image" src="${escapeAttr(imgUrl)}" alt="" />` : ""}
@@ -1512,7 +1651,7 @@ function renderStack(){
   const doneEl = $("#doneScreen");
   const actionBar = $("#actionBar");
 
-  if(state.cursor >= state.order.length){
+  if(!revisitMode && state.cursor >= state.order.length){
     stackEl.innerHTML = "";
     stackEl.style.display = "none";
     doneEl.style.display = "flex";
@@ -1530,8 +1669,8 @@ function renderStack(){
   stackEl.style.display = "block";
   actionBar.style.display = "flex";
 
-  const visibleIds = state.order.slice(state.cursor, state.cursor+2);
-  const newTopId = visibleIds[0];
+  const visibleIds = revisitMode ? [revisitMode.recordId] : state.order.slice(state.cursor, state.cursor+2);
+  const newTopId = revisitMode ? "revisit:" + revisitMode.recordId : visibleIds[0];
 
   // Preserve in-card scroll position across a rebuild, and only reset
   // expanded-row / evidence-panel state when the top card actually changes
@@ -1567,6 +1706,8 @@ function renderStack(){
   const newBody = stackEl.querySelector(".card.top .card-body");
   if(newBody) newBody.scrollTop = cardChanged ? 0 : savedScroll;
 
+  $("#btnUndo").style.display = revisitMode ? "none" : "inline-block";
+  $("#btnSkip").style.display = revisitMode ? "none" : "inline-block";
   $("#btnUndo").disabled = !lastAction;
 }
 
@@ -1577,6 +1718,12 @@ function renderStack(){
 function attachCardInteractions(cardEl){
   const recordId = cardEl.dataset.recordId;
   const loc = locById(recordId);
+
+  const cancelRevisitBtn = cardEl.querySelector("[data-cancel-revisit]");
+  if(cancelRevisitBtn) cancelRevisitBtn.addEventListener("click", (event) => {
+    event.stopPropagation();
+    cancelRevisit();
+  });
 
   cardEl.querySelectorAll(".pill-toggle").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -1943,6 +2090,7 @@ async function resetSession(){
   if(!confirm("Start a new session? This clears the current queue, toggles and decisions from this device (export a backup first if you want to keep them).")) return;
   invalidatePendingSaves();
   state = null;
+  revisitMode = null;
   await saveChain.catch(()=>{});
   try{ await idbClear(); }
   catch(err){
@@ -1963,6 +2111,7 @@ function renderCountersEmpty(){
   $("#cntDeferred").textContent = 0;
   $("#progressLabel").textContent = "0 / 0";
   $("#progressFill").style.width = "0%";
+  $$('[data-history-outcome]').forEach(button => { button.disabled = true; });
 }
 
 /* ============================================================
@@ -2024,6 +2173,10 @@ $("#btnDefer").addEventListener("click", () => {
 $("#btnUndo").addEventListener("click", undoLast);
 $("#undoFromDone").addEventListener("click", undoLast);
 $("#btnSkip").addEventListener("click", skipCurrent);
+$$('[data-history-outcome]').forEach(button => {
+  button.addEventListener("click", () => openHistory(button.dataset.historyOutcome));
+});
+$("#closeHistory").addEventListener("click", () => closeSheet("#historySheet"));
 
 $("#exportDecisionsBtn").addEventListener("click", exportDecisions);
 $("#exportBackupBtn").addEventListener("click", exportBackup);

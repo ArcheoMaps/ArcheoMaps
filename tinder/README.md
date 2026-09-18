@@ -1,4 +1,4 @@
-# Scribe Curator — prototype v0.3.1
+# Scribe Curator — prototype v0.3.2
 
 A phone-first, offline-capable companion for reviewing Scribe enrichment proposals, built to the pilot design brief. This is a working first pass, tested with mock data — no real desktop export required to try it.
 
@@ -62,6 +62,14 @@ What I could not test from here is how the drag physics actually *feel* in your 
 ## Adversarial audit — what was fixed
 
 The prototype has now had two adversarial security/correctness passes. Version 0.3.1 closes the state-integrity gaps the second pass found in 0.3.0 as well as retaining the first pass's fixes.
+
+### Decision history in v0.3.2
+
+- The Accepted, Rejected, and Deferred counters are now buttons that open a list of every reviewed location in that category.
+- Selecting a past location opens its complete card in a clearly marked re-review mode. A replacement Accept/Reject/Defer updates the existing decision and counters, then returns to the exact untouched queue position.
+- **Back to queue** discards every draft toggle, competing-group, and explicit-field change before returning.
+- Historical drafts are kept out of IndexedDB until committed, so reloading mid-edit resumes the last fully valid saved session rather than persisting a temporarily inconsistent decision.
+- Re-review works after queue completion as well as during an active queue; it never moves or reorders pending cards.
 
 Everything below was independently re-verified rather than taken on faith: the second pass's own logic suite was re-run here, and the first pass's full browser suite was re-run against v0.3.1 unmodified (it still passes — nothing was quietly regressed). The one claim that genuinely needed a live browser to check — that a reset can't be raced by a stale pending autosave — didn't have browser access in the environment that made the claim, so a new test for exactly that race was written and run here; it passed. See `TEST_RESULTS.md` for the full account, including what still can't be verified from any sandbox (real device feel, a live two-deployment service-worker upgrade, real desktop-Scribe round-tripping).
 

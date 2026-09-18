@@ -15,7 +15,7 @@
 // directly — it goes to the network first whenever one's available — so a
 // forgotten version bump degrades to "one background reload" rather than
 // silently running old code indefinitely.
-const CACHE_VERSION = "scribe-curator-shell-v0.3.1";
+const CACHE_VERSION = "scribe-curator-shell-v0.3.2";
 const SHELL_FILES = [
   "./",
   "./index.html",

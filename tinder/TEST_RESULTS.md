@@ -1,8 +1,19 @@
-# Scribe Curator v0.3.1 — verification record
+# Scribe Curator v0.3.2 — verification record
 
-Date: 2026-09-17
+Date: 2026-09-18
 
-## Passed in the packaging environment (ChatGPT, no Chromium available)
+## v0.3.2 decision-history update
+
+- `node tests/logic-regression.js`: **10 passed, 0 failed**.
+- Inline `index.html` JavaScript parse check: **passed**.
+- `node --check service-worker.js`: **passed**.
+- `node --check tests/regression.js`: **passed**.
+- JSON parsing for the manifest, package files, and every fixture: **passed**.
+- The browser suite now contains **15 checks**. Two new Playwright checks cover re-judging a reviewed location without moving the active queue position, plus cancelling a historical draft without leaking changes into IndexedDB. They were added and syntax-checked here, but were **not executed in this packaging environment because its Playwright Chromium binary is unavailable**. The pre-existing 13 browser checks remain recorded below as having passed against v0.3.1; they are not relabelled as v0.3.2 results.
+
+The v0.3.2 implementation makes the three outcome counters interactive, lists previously reviewed locations by outcome, and lets a reviewer revise one in an isolated draft. Committing updates the old/new counters and resolved proposal decisions, then returns to the untouched queue position. Cancelling restores the complete location snapshot. Draft edits are deliberately excluded from autosave and exports until committed so a reload can only recover the last internally consistent session.
+
+## Previously passed in the v0.3.1 packaging environment (ChatGPT, no Chromium available)
 
 - `node tests/logic-regression.js`: **10 passed, 0 failed**.
 - Inline `index.html` JavaScript parse check: **passed**.
@@ -12,7 +23,7 @@ Date: 2026-09-17
 
 The logic suite executes the application's actual inline functions (not a reimplementation) in a Node `vm` sandbox with inert DOM shims. It covers prototype-shaped IDs, delimiter-collision group keys, multi-identity rejection, malformed nested fields, all-low and mixed competing-group defaults, mandatory saved-state maps, integer cursors, derived counters, group membership, and decision consistency.
 
-## Since re-run and extended with a real browser (Claude, this environment has Chromium)
+## v0.3.1 re-run and extension with a real browser (Claude, Chromium available)
 
 The packaging environment was honest that it couldn't run the Playwright browser suite. This environment can, so it was actually run rather than left as an open claim:
 
