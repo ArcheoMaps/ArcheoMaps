@@ -280,6 +280,67 @@ async function main(){
     await page.waitForFunction(()=> window.ArcheoTestHooks.getTemporalLayers().get('hadrians-wall').manualEnabled === false, { timeout: 10000 });
   });
 
+  await record('Chronological Navigator cut-off mode uses one upper date and round-trips through a share URL', async ()=>{
+    await page.evaluate(()=> window.ArcheoTestHooks.applyTimelineMode('cutoff'));
+    const cutoff = await page.evaluate(()=>({
+      mode: window.ArcheoTestHooks.getState().timelineMode,
+      yMin: window.ArcheoTestHooks.getState().yMin,
+      minHidden: getComputedStyle(document.getElementById('thumbMin')).display === 'none',
+      label: document.getElementById('rangeLabel').textContent,
+      share: window.ArcheoTestHooks.buildShareUrl(),
+    }));
+    assert(cutoff.mode === 'cutoff', 'cut-off mode did not become active');
+    assert(cutoff.yMin === -20000, `cut-off lower bound must be the catalogue floor, got ${cutoff.yMin}`);
+    assert(cutoff.minHidden, 'the range start handle must be hidden in cut-off mode');
+    assert(/Everything up to/.test(cutoff.label), `unexpected cut-off label: ${cutoff.label}`);
+    assert(cutoff.share.includes('tm=cutoff'), `cut-off share state missing: ${cutoff.share}`);
+    await page.evaluate(()=> window.ArcheoTestHooks.applyTimelineMode('range'));
+  });
+
+  await record('Site Record treats imported HTML and active image URLs as inert data', async ()=>{
+    const result = await page.evaluate(()=>{
+      const site=window.ArcheoTestHooks.getSites()[0];
+      const original={text:site.text,img:site.img,type:site.type,category:site.category,typeSource:site.typeSource};
+      site.text='<img src=x onerror="window.__drawerXss=1"><script>window.__drawerXss=2</script> Plain text';
+      site.img='javascript:window.__drawerXss=3';
+      site.type='<svg onload="window.__drawerXss=4">';
+      site.category='<b>category</b>';
+      site.typeSource='<a href="javascript:window.__drawerXss=5">source</a>';
+      window.__drawerXss=0;
+      window.ArcheoTestHooks.openDrawer(site);
+      const snapshot={
+        xss:window.__drawerXss,
+        scripts:document.querySelectorAll('#drawerContent script').length,
+        unsafeImages:[...document.querySelectorAll('#drawerContent img')].filter(img=>/^javascript:/i.test(img.getAttribute('src')||'')).length,
+        text:document.querySelector('#drawerContent .drawer-text')?.textContent||'',
+      };
+      Object.assign(site,original);
+      return snapshot;
+    });
+    assert(result.xss === 0, `drawer payload executed (flag ${result.xss})`);
+    assert(result.scripts === 0, 'drawer created a script element from imported text');
+    assert(result.unsafeImages === 0, 'drawer accepted an active image URL');
+    assert(result.text.includes('<script>'), 'imported markup should be displayed as literal text');
+  });
+
+  await record('an open Site Record restores its selected stable id after reload instead of becoming a blank shell', async ()=>{
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.evaluate(()=>{
+      const site=window.ArcheoTestHooks.getSites().find(s=>s.id==='test-site-accepted');
+      window.ArcheoTestHooks.selectSite(site);
+    });
+    await page.reload({waitUntil:'load'});
+    await page.waitForFunction(()=> Boolean(window.ArcheoTestHooks&&window.ArcheoTestHooks.getState().selectedSiteKey), {timeout:15000});
+    const restored=await page.evaluate(()=>({
+      key:window.ArcheoTestHooks.getState().selectedSiteKey,
+      title:document.querySelector('#drawerContent .drawer-title')?.textContent||'',
+      open:window.ArcheoWindowManager.getState('record').open,
+    }));
+    assert(restored.key==='test-site-accepted', `wrong restored site key: ${restored.key}`);
+    assert(restored.title.length>0, 'restored Site Record has no title/content');
+    assert(restored.open, 'restored Site Record window is not open');
+  });
+
   await record('the mobile drawer layout does not overflow the viewport', async ()=>{
     await page.setViewportSize({ width: 390, height: 844 });
     await page.evaluate(()=>{

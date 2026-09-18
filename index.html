@@ -2414,6 +2414,8 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
   margin-top:3px;padding-top:3px;border-top:2px groove var(--win-grey);
 }
 .timeline-date-controls,.timeline-transport,.timeline-view-controls{display:flex;align-items:center;gap:3px;min-width:0;}
+.timeline-mode-toggle{height:25px;min-width:52px;padding:1px 6px;border:2px outset var(--win-grey);background:var(--win-grey);font:700 9px var(--ms-sans);}
+.timeline-mode-toggle:active,.timeline-mode-toggle[aria-pressed="true"]{border-style:inset;background:var(--win-grey-light);}
 .timeline-transport{justify-content:center;padding:0 8px;border-left:2px groove var(--win-grey);border-right:2px groove var(--win-grey);}
 .timeline-view-controls{justify-content:flex-end;}
 .timeline-date-field{display:grid;grid-template-columns:minmax(0,1fr) 13px;width:104px;height:25px;background:#fff;border:2px inset var(--win-grey);}
@@ -2435,6 +2437,14 @@ input[type="checkbox"]{accent-color:var(--control-accent)!important;}
 #timelineBar #repeatToggle{height:25px;padding:2px 5px;border:0;border-radius:0;font:9px var(--ms-sans);white-space:nowrap;}
 #timelineBar #zoomOutBtn,#timelineBar #zoomInBtn{width:29px;height:25px;padding:0;font-size:14px!important;}
 #timelineBar #zoomResetBtn{width:38px;height:25px;padding:0;font-size:9px!important;}
+#timelineBar[data-timeline-mode="cutoff"] .timeline-earlier-toggle,
+#timelineBar[data-timeline-mode="cutoff"] #thumbMin,
+#timelineBar[data-timeline-mode="cutoff"] .timeline-start-field,
+#timelineBar[data-timeline-mode="cutoff"] .timeline-date-arrow{display:none!important;}
+#timelineBar[data-timeline-mode="cutoff"] .timeline-ruler-row{grid-template-columns:minmax(0,1fr);}
+#timelineBar[data-timeline-mode="cutoff"] #thumbMax{width:17px;height:17px;margin-left:-8px;border-radius:50%;background:#fff;box-shadow:inset 1px 1px 0 #fff,inset -1px -1px 0 #808080;}
+#timelineBar[data-timeline-mode="cutoff"] #sliderRange::after{background:#000080;}
+#timelineBar[data-timeline-mode="cutoff"] .timeline-date-controls::after{content:"Shows everything up to this date";margin-left:3px;font:9px var(--ms-sans);white-space:nowrap;}
 
 @media(max-width:1180px){
   .filter-tab{min-width:45px;padding-left:4px;padding-right:4px;}
@@ -2993,7 +3003,8 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
           </div>
           <div class="timeline-deck-controls">
             <div class="timeline-date-controls" aria-label="Selected date range">
-              <label class="timeline-date-field">
+              <button id="timelineModeToggle" class="timeline-mode-toggle" type="button" aria-pressed="false" title="Switch between a date range and everything up to one date">Range</button>
+              <label class="timeline-date-field timeline-start-field">
                 <span class="timeline-visually-hidden">Start year</span>
                 <input id="timelineStartInput" type="text" inputmode="text" autocomplete="off" spellcheck="false" aria-label="Start year">
                 <span class="timeline-date-spinner" aria-hidden="false">
@@ -3214,7 +3225,7 @@ body.overview-dock-dragging .overview-dock-target{display:block;}
 <script src="scripts/geometry-relationship-core.js"></script>
 <script src="scripts/geometry-selection-controller.js"></script>
 <script>
-const ARCHEOMAPS_VERSION='6.4.3';
+const ARCHEOMAPS_VERSION='6.4.4';
 console.info(`ArcheoMaps v${ARCHEOMAPS_VERSION}`);
 document.getElementById('buildVersion').textContent=`v${ARCHEOMAPS_VERSION}`;
 
@@ -3438,6 +3449,19 @@ function sanitizeSourceUrl(raw){
   return url;
 }
 
+// Site-record images are untrusted data too. Only ordinary web URLs (or
+// same-origin relative assets) may reach an <img src>; active/non-web URL
+// schemes and malformed values are rejected before any HTML is assembled.
+function sanitizeImageUrl(raw){
+  if(typeof raw !== 'string') return null;
+  const trimmed = raw.trim();
+  if(!trimmed) return null;
+  let url;
+  try{ url = new URL(trimmed, window.location.href); } catch(_err){ return null; }
+  if(url.protocol !== 'http:' && url.protocol !== 'https:') return null;
+  return url;
+}
+
 // A canonical tag has exactly one non-edge colon separating two non-empty
 // components. Structurally malformed strings stay intact but are routed to
 // the synthetic Unresolved tags group instead of masquerading as a namespace.
@@ -3594,6 +3618,9 @@ const state = {
   filterFunctionsActive: false,
   filterStatusActive: false,
   yMin: -4000, yMax: 1950,
+  timelineMode: 'range',
+  rangeYMin: -4000,
+  rangeShowAllBefore: false,
   showAllBefore: false,
   search: '',
   unescoOnly: false,
@@ -4246,7 +4273,18 @@ window.ArcheoMarkerDisplayManager={
 };
 syncMarkerDisplaySettings();
 
+const SELECTED_SITE_STORAGE_KEY='archeomapsSelectedSiteV644';
+function persistSelectedSite(site){
+  const key=siteKeyOf(site);
+  if(!key)return;
+  try{localStorage.setItem(SELECTED_SITE_STORAGE_KEY,key);}catch(_err){}
+}
+function clearPersistedSelectedSite(){
+  try{localStorage.removeItem(SELECTED_SITE_STORAGE_KEY);}catch(_err){}
+}
+
 function selectSite(s){
+  if(!s)return;
   const marker = markers.find(m => m._site === s);
   if(selectedMarker){
     setMarkerVisual(selectedMarker,'normal');
@@ -4265,6 +4303,7 @@ function selectSite(s){
   }
   refreshClusterIcons();
   highlightListItem(s);
+  persistSelectedSite(s);
   openDrawer(s);
   // Phase 5 §4: selectSite() is the one central function every selection
   // path (marker click, Site List, Nearby Sites, Random, search, shared
@@ -4683,7 +4722,7 @@ function setLayerEnabled(id, on){
 
 function setLayerOpacity(id, opacity){
   const layer = TEMPORAL_LAYERS.get(id);
-  if(!layer) return;
+  if(!layer||!Number.isFinite(opacity)) return;
   layer.opacity = Math.max(0, Math.min(1, opacity));
   if(isLayerEffectivelyEnabled(layer)){
     if(layer.temporal) layer.update(currentMapYear());
@@ -5053,7 +5092,7 @@ function siteVisible(s,{ignoreTimeline=false}={}){
     // there's no way to represent "earlier than the timeline itself" on
     // the handle, so records older than RANGE_MIN are included by default.
     // Otherwise the left handle is the real, strict lower cutoff.
-    const lowerBound = (state.showAllBefore || state.yMin <= RANGE_MIN) ? -Infinity : state.yMin;
+    const lowerBound = (state.timelineMode==='cutoff' || state.showAllBefore || state.yMin <= RANGE_MIN) ? -Infinity : state.yMin;
     if(s.year < lowerBound || s.year > state.yMax) return false;
   }
 
@@ -5421,6 +5460,7 @@ function clearFilterTab(tabKey){
   (FILTER_TAB_BUCKETS[tabKey]||[]).forEach(clearBucketFilter);
   if(tabKey==='when'){
     if(playing)stopPlaying();
+    applyTimelineMode('range',{persist:true,render:false});
     state.yMin=DEFAULT_YMIN;state.yMax=RANGE_MAX;state.showAllBefore=false;
     showAllBeforeCheckbox.checked=false;state.viewMin=INITIAL_VIEW_MIN;state.viewMax=RANGE_MAX;
     updateSliderVisual();regenerateTicks();regenerateStripes();
@@ -5658,6 +5698,9 @@ const showAllBeforeCheckbox = document.getElementById('showAllBeforeCheckbox');
 const showAllBeforeYearEl = document.getElementById('showAllBeforeYear');
 const timelineStartInput = document.getElementById('timelineStartInput');
 const timelineEndInput = document.getElementById('timelineEndInput');
+const timelineBarEl = document.getElementById('timelineBar');
+const timelineModeToggle = document.getElementById('timelineModeToggle');
+const TIMELINE_MODE_KEY = 'archeomapsTimelineModeV644';
 state.viewMin = INITIAL_VIEW_MIN;
 state.viewMax = RANGE_MAX;
 let playing = false, playTimer = null, playOriginMin = 0, playOriginMax = 0;
@@ -5679,6 +5722,35 @@ function syncTimelineDateInputs(forceInput=null){
   if(timelineStartInput&&(forceInput===timelineStartInput||document.activeElement!==timelineStartInput))timelineStartInput.value=fmtYear(state.yMin);
   if(timelineEndInput&&(forceInput===timelineEndInput||document.activeElement!==timelineEndInput))timelineEndInput.value=fmtYear(state.yMax);
 }
+function saveTimelineMode(){
+  try{ localStorage.setItem(TIMELINE_MODE_KEY,state.timelineMode); }catch(_err){}
+}
+function applyTimelineMode(mode,{persist=true,render=true}={}){
+  const next=mode==='cutoff'?'cutoff':'range';
+  const previous=state.timelineMode;
+  if(next==='cutoff'&&previous!=='cutoff'){
+    state.rangeYMin=state.yMin;
+    state.rangeShowAllBefore=state.showAllBefore;
+    state.yMin=RANGE_MIN;
+    state.showAllBefore=true;
+  }else if(next==='range'&&previous==='cutoff'){
+    state.yMin=Math.min(state.rangeYMin,state.yMax);
+    state.showAllBefore=Boolean(state.rangeShowAllBefore);
+  }
+  state.timelineMode=next;
+  timelineBarEl.dataset.timelineMode=next;
+  timelineModeToggle.textContent=next==='cutoff'?'Cut-off':'Range';
+  timelineModeToggle.setAttribute('aria-pressed',String(next==='cutoff'));
+  timelineModeToggle.title=next==='cutoff'?'Switch to a selected date range':'Switch to everything up to one date';
+  showAllBeforeCheckbox.checked=state.showAllBefore;
+  showAllBeforeCheckbox.disabled=next==='cutoff';
+  if(persist)saveTimelineMode();
+  if(render){updateSliderVisual();updateSpeedValidity();applyFilters();}
+}
+timelineModeToggle.addEventListener('click',()=>{
+  if(playing)stopPlaying();
+  applyTimelineMode(state.timelineMode==='cutoff'?'range':'cutoff');
+});
 function commitTimelineDate(which,input){
   const parsed=parseTimelineYear(input.value);
   if(parsed===null){
@@ -5748,6 +5820,7 @@ function updatePeriodPresetHighlight(){
 function applyPeriodPreset(preset){
   if(!preset) return;
   stopPlaying();
+  applyTimelineMode('range',{persist:true,render:false});
   state.yMin = preset.start;
   state.yMax = preset.end;
   state.showAllBefore = false;
@@ -5834,6 +5907,16 @@ function updateSliderVisual(){
     return;
   }
   playProgressEl.style.width = '0%';
+  if(state.timelineMode==='cutoff'){
+    const cutoffPct=Math.max(0,Math.min(100,yearToPct(state.yMax)*100));
+    thumbMinEl.style.left='0%';
+    thumbMaxEl.style.left=cutoffPct+'%';
+    sliderRangeEl.style.left='0%';
+    sliderRangeEl.style.width=cutoffPct+'%';
+    rangeLabel.textContent=`Everything up to ${fmtYear(state.yMax)}`;
+    updatePeriodPresetHighlight();
+    return;
+  }
   const lo = Math.min(state.yMin, state.yMax);
   const hi = Math.max(state.yMin, state.yMax);
   const leftPct = Math.max(0, Math.min(100, yearToPct(lo) * 100));
@@ -5868,6 +5951,7 @@ function hideThumbTooltip(){
    completely intact, it only changes how siteVisible() interprets it
    (see the lowerBound logic there). */
 showAllBeforeCheckbox.addEventListener('change', ()=>{
+  if(state.timelineMode==='cutoff')return;
   state.showAllBefore = showAllBeforeCheckbox.checked;
   applyFilters();
 });
@@ -5947,6 +6031,7 @@ let activeThumb = null;
 
 function setThumbYear(which, year){
   year = Math.max(RANGE_MIN, Math.min(RANGE_MAX, year));
+  if(state.timelineMode==='cutoff'&&which==='min') return;
   if(which === 'min'){ state.yMin = year; }
   else { state.yMax = year; }
   updateSliderVisual();
@@ -5979,7 +6064,7 @@ sliderTrack.addEventListener('pointerdown', (ev)=>{
   const year = trackPxToYear(ev.clientX);
   const distMin = Math.abs(year - state.yMin);
   const distMax = Math.abs(year - state.yMax);
-  const which = distMin <= distMax ? 'min' : 'max';
+  const which = state.timelineMode==='cutoff'?'max':(distMin <= distMax ? 'min' : 'max');
   setThumbYear(which, year);
   startDrag(which, ev);
 });
@@ -5987,6 +6072,7 @@ sliderTrack.addEventListener('pointerdown', (ev)=>{
 let rangeDragActive = false, rangeDragStartX = 0, rangeDragStartMin = 0, rangeDragStartMax = 0;
 
 sliderRangeEl.addEventListener('pointerdown', (ev)=>{
+  if(state.timelineMode==='cutoff')return;
   rangeDragActive = true;
   rangeDragStartX = ev.clientX;
   rangeDragStartMin = state.yMin;
@@ -6028,6 +6114,9 @@ function thumbKeydown(which){
 thumbMinEl.addEventListener('keydown', thumbKeydown('min'));
 thumbMaxEl.addEventListener('keydown', thumbKeydown('max'));
 
+let savedTimelineMode='range';
+try{ savedTimelineMode=localStorage.getItem(TIMELINE_MODE_KEY)||'range'; }catch(_err){}
+applyTimelineMode(savedTimelineMode,{persist:false,render:false});
 updateSliderVisual();
 regenerateTicks();
   regenerateStripes();
@@ -6040,6 +6129,15 @@ function currentStep(){ return parseInt(speedSelect.value, 10) || 150; }
 
 function shiftTimelineSelection(stepMultiplier){
   if(playing)stopPlaying();
+  if(state.timelineMode==='cutoff'){
+    const next=Math.max(RANGE_MIN,Math.min(RANGE_MAX,state.yMax+currentStep()*stepMultiplier));
+    state.yMax=next;
+    const viewSpan=state.viewMax-state.viewMin;
+    if(next<state.viewMin){state.viewMin=next;state.viewMax=Math.min(RANGE_MAX,next+viewSpan);}
+    if(next>state.viewMax){state.viewMax=next;state.viewMin=Math.max(RANGE_MIN,next-viewSpan);}
+    updateSliderVisual();regenerateTicks();regenerateStripes();updateSpeedValidity();applyFilters();
+    return;
+  }
   const selectionSpan=state.yMax-state.yMin;
   if(selectionSpan>=RANGE_SPAN)return;
   let newMin=state.yMin+currentStep()*stepMultiplier;
@@ -6268,6 +6366,7 @@ function refreshLinkedGeometrySection(site){
 function openDrawer(s){
   const typeKey = typeKeyOf(s);
   const isUnresolved = typeKey === UNRESOLVED_TYPE;
+  const safeImage = sanitizeImageUrl(s.img);
   const eraLabelText = s.eraLabel || null;
 
   // Each entry that corresponds to an existing filter bucket carries
@@ -6336,28 +6435,28 @@ function openDrawer(s){
   }
 
   const legacyBits = [];
-  if(s.type) legacyBits.push(`<div class="detail-row"><strong>Legacy type:</strong> ${s.type}${s.category && s.category!==s.type ? ' ('+s.category+')' : ''}</div>`);
-  if(eraLabelText) legacyBits.push(`<div class="detail-row"><strong>Legacy era:</strong> ${eraLabelText}</div>`);
-  if(s.typeSource) legacyBits.push(`<div class="detail-row"><strong>Type source:</strong> ${s.typeSource}</div>`);
-  if(s.secondaryType) legacyBits.push(`<div class="detail-row"><strong>Secondary type:</strong> ${s.secondaryType}</div>`);
+  if(s.type) legacyBits.push(`<div class="detail-row"><strong>Legacy type:</strong> ${escapeHtml(s.type)}${s.category && s.category!==s.type ? ' ('+escapeHtml(s.category)+')' : ''}</div>`);
+  if(eraLabelText) legacyBits.push(`<div class="detail-row"><strong>Legacy era:</strong> ${escapeHtml(eraLabelText)}</div>`);
+  if(s.typeSource) legacyBits.push(`<div class="detail-row"><strong>Type source:</strong> ${escapeHtml(s.typeSource)}</div>`);
+  if(s.secondaryType) legacyBits.push(`<div class="detail-row"><strong>Secondary type:</strong> ${escapeHtml(s.secondaryType)}</div>`);
   const prov = s.provenance && s.provenance.type;
   if(prov && (prov.ruleId || prov.notes)){
-    legacyBits.push(`<div class="detail-row"><strong>Classification rule:</strong> ${prov.ruleId||'—'}</div>`);
-    if(prov.notes) legacyBits.push(`<div class="detail-note">${prov.notes}</div>`);
+    legacyBits.push(`<div class="detail-row"><strong>Classification rule:</strong> ${escapeHtml(prov.ruleId||'—')}</div>`);
+    if(prov.notes) legacyBits.push(`<div class="detail-note">${escapeHtml(prov.notes)}</div>`);
   }
   if(s.dataQuality && s.dataQuality.duplicateGroupId){
-    legacyBits.push(`<div class="detail-row"><strong>Duplicate group:</strong> ${s.dataQuality.duplicateGroupId}</div>`);
+    legacyBits.push(`<div class="detail-row"><strong>Duplicate group:</strong> ${escapeHtml(s.dataQuality.duplicateGroupId)}</div>`);
   }
-  if(s.unescoIdNo) legacyBits.push(`<div class="detail-row"><strong>UNESCO ref. no.:</strong> ${s.unescoIdNo}</div>`);
-  if(s.id) legacyBits.push(`<div class="detail-row"><strong>Record ID:</strong> ${s.id}</div>`);
+  if(s.unescoIdNo) legacyBits.push(`<div class="detail-row"><strong>UNESCO ref. no.:</strong> ${escapeHtml(s.unescoIdNo)}</div>`);
+  if(s.id) legacyBits.push(`<div class="detail-row"><strong>Record ID:</strong> ${escapeHtml(s.id)}</div>`);
 
   drawerContent.innerHTML = `
-    <div class="drawer-era">${isUnresolved ? 'Unresolved' : s.canonicalType}</div>
+    <div class="drawer-era">${escapeHtml(isUnresolved ? 'Unresolved' : s.canonicalType)}</div>
     <h2 class="drawer-title">${escapeHtml(s.n)}</h2>
     <div class="drawer-meta">${renderChipGroup(chipRow)}</div>
     ${statusKey !== 'confirmed' ? `<div class="drawer-status-note"><span class="status-dot ${statusMeta.dotClass}"></span><span>${escapeHtml(statusMeta.label)} — ${escapeHtml(statusMeta.note)}</span></div>` : ''}
-    ${s.img ? `<img class="drawer-img" src="${escapeHtml(s.img)}" alt="${escapeHtml(s.n)}" loading="lazy" decoding="async">` : ''}
-    <div class="drawer-text">${s.text ? s.text : 'No notes recorded for this site yet.'}</div>
+    ${safeImage ? `<img class="drawer-img" src="${escapeHtml(safeImage.href)}" alt="${escapeHtml(s.n)}" loading="lazy" decoding="async" referrerpolicy="no-referrer">` : ''}
+    <div class="drawer-text">${escapeHtml(s.text || 'No notes recorded for this site yet.').replace(/\r?\n/g,'<br>')}</div>
     ${tagChips ? `<div class="drawer-section-label">Tags</div><div class="drawer-meta">${tagChips}</div>` : ''}
     ${functionChips ? `<div class="drawer-section-label">Function</div><div class="drawer-meta">${functionChips}</div>` : ''}
     ${politicalChips ? `<div class="drawer-section-label">Political entities</div><div class="drawer-meta">${politicalChips}</div>` : ''}
@@ -6412,6 +6511,7 @@ document.getElementById('drawerClose').addEventListener('click', (ev)=>{
   ev.stopPropagation();
   if(window.ArcheoWindowManager)window.ArcheoWindowManager.setOpen('record',false);
   else drawer.classList.remove('open');
+  clearPersistedSelectedSite();
   // Phase 5 §4: closing the Site record clears its selection-driven
   // Geometry reveal/highlight (manual layer state is untouched).
   if(typeof geometrySelectionController !== 'undefined') geometrySelectionController.clearSelection();
@@ -6449,6 +6549,7 @@ document.getElementById('resetBtn').addEventListener('click', ()=>{
   state.filterStatusActive = false;
   document.querySelectorAll('#typeList input, #tagsTree input, #cultureList input, #politicalList input, #functionList input, #statusList input')
     .forEach(i=>i.checked=true);
+  applyTimelineMode('range',{persist:true,render:false});
   state.yMin = RANGE_MIN; state.yMax = RANGE_MAX;
   state.showAllBefore = false;
   showAllBeforeCheckbox.checked = false;
@@ -7962,9 +8063,10 @@ function buildShareUrl(centerOverride=null,siteOverride=null){
   params.set('lon', center.lng.toFixed(4));
   params.set('z', (Math.round(map.getZoom()*100)/100));
 
-  if(Math.round(state.yMin) !== DEFAULT_YMIN) params.set('yMin', Math.round(state.yMin));
+  if(state.timelineMode==='cutoff') params.set('tm','cutoff');
+  if(state.timelineMode==='range' && Math.round(state.yMin) !== DEFAULT_YMIN) params.set('yMin', Math.round(state.yMin));
   if(Math.round(state.yMax) !== RANGE_MAX) params.set('yMax', Math.round(state.yMax));
-  if(state.showAllBefore) params.set('sab','1');
+  if(state.timelineMode==='range' && state.showAllBefore) params.set('sab','1');
   if(Math.round(state.viewMin) !== INITIAL_VIEW_MIN) params.set('vMin', Math.round(state.viewMin));
   if(Math.round(state.viewMax) !== RANGE_MAX) params.set('vMax', Math.round(state.viewMax));
 
@@ -8037,6 +8139,10 @@ function clampToRange(y){ return Math.max(RANGE_MIN, Math.min(RANGE_MAX, y)); }
 function applyStateFromUrl(){
   const hash = window.location.hash.replace(/^#/, '');
   if(!hash) return false;
+  if(hash.length>12000){
+    console.warn('ArcheoMaps ignored an oversized shared-state hash.');
+    return false;
+  }
   const params = new URLSearchParams(hash);
   if([...params.keys()].length === 0) return false;
 
@@ -8048,18 +8154,43 @@ function applyStateFromUrl(){
     if(cb) cb.checked = state.unescoOnly;
   }
   if(params.has('q')){
-    state.search = params.get('q').toLowerCase();
-    searchBox.value=params.get('q');
+    const safeQuery=String(params.get('q')||'').slice(0,300);
+    state.search = safeQuery.toLowerCase();
+    searchBox.value=safeQuery;
     syncSearchClearButton();
   }
-  if(params.has('yMin')) state.yMin = clampToRange(parseInt(params.get('yMin'),10));
-  if(params.has('yMax')) state.yMax = clampToRange(parseInt(params.get('yMax'),10));
+  const requestedTimelineMode=params.get('tm');
+  if(requestedTimelineMode==='range'||params.has('yMin')||params.has('sab')){
+    applyTimelineMode('range',{persist:false,render:false});
+  }
+  if(params.has('yMin')){
+    const parsed=parseInt(params.get('yMin'),10);
+    if(Number.isFinite(parsed))state.yMin=clampToRange(parsed);
+  }
+  if(params.has('yMax')){
+    const parsed=parseInt(params.get('yMax'),10);
+    if(Number.isFinite(parsed))state.yMax=clampToRange(parsed);
+  }
   if(params.has('sab')){
     state.showAllBefore = params.get('sab') === '1';
     if(showAllBeforeCheckbox) showAllBeforeCheckbox.checked = state.showAllBefore;
   }
-  if(params.has('vMin')) state.viewMin = clampToRange(parseInt(params.get('vMin'),10));
-  if(params.has('vMax')) state.viewMax = clampToRange(parseInt(params.get('vMax'),10));
+  if(requestedTimelineMode==='cutoff'){
+    applyTimelineMode('cutoff',{persist:false,render:false});
+  }
+  if(params.has('vMin')){
+    const parsed=parseInt(params.get('vMin'),10);
+    if(Number.isFinite(parsed))state.viewMin=clampToRange(parsed);
+  }
+  if(params.has('vMax')){
+    const parsed=parseInt(params.get('vMax'),10);
+    if(Number.isFinite(parsed))state.viewMax=clampToRange(parsed);
+  }
+  if(state.timelineMode==='range'&&state.yMin>state.yMax)state.yMin=state.yMax;
+  if(!Number.isFinite(state.viewMin)||!Number.isFinite(state.viewMax)||state.viewMax-state.viewMin<MIN_ZOOM_SPAN){
+    state.viewMin=INITIAL_VIEW_MIN;
+    state.viewMax=RANGE_MAX;
+  }
   updateSliderVisual();
   regenerateTicks();
   regenerateStripes();
@@ -8082,8 +8213,9 @@ function applyStateFromUrl(){
   const lat = params.has('lat') ? parseFloat(params.get('lat')) : null;
   const lon = params.has('lon') ? parseFloat(params.get('lon')) : null;
   const z = params.has('z') ? parseFloat(params.get('z')) : null;
-  if(lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)){
-    map.setView([lat, lon], (z !== null && !isNaN(z)) ? z : map.getZoom());
+  if(Number.isFinite(lat)&&Number.isFinite(lon)&&lat>=-90&&lat<=90&&lon>=-180&&lon<=180){
+    const safeZoom=Number.isFinite(z)?Math.max(map.getMinZoom(),Math.min(map.getMaxZoom(),z)):map.getZoom();
+    map.setView([lat, lon], safeZoom);
   }
 
   applyFilters();
@@ -8094,10 +8226,11 @@ function applyStateFromUrl(){
   // but only when the name resolves to exactly one record; an ambiguous
   // legacy name is never silently resolved to the first match.
   if(params.has('sid')){
-    const site = findSiteByKey(params.get('sid'));
+    const key=String(params.get('sid')||'').slice(0,300);
+    const site = findSiteByKey(key);
     if(site) selectSite(site);
   } else {
-    const siteName = params.get('site');
+    const siteName = String(params.get('site')||'').slice(0,300);
     if(siteName){
       const matches = findSitesByName(siteName);
       if(matches.length === 1){
@@ -8394,6 +8527,22 @@ function startApp(rawSites){
   // normal default render below runs exactly as it always has.
   const restoredFromUrl = applyStateFromUrl();
   if(!restoredFromUrl) applyFilters();
+
+  // Window geometry is restored before the asynchronous catalogue is
+  // available. If the Site Record was open at reload, restore the actual
+  // record by stable key; if that key is absent/stale, close the shell so
+  // a dead grey window can never survive a refresh.
+  const recordWindowState=window.ArcheoWindowManager&&window.ArcheoWindowManager.getState('record');
+  if(recordWindowState&&recordWindowState.open&&!state.selectedSiteKey){
+    let savedKey=null;
+    try{savedKey=localStorage.getItem(SELECTED_SITE_STORAGE_KEY);}catch(_err){}
+    const savedSite=savedKey&&savedKey.length<=300?findSiteByKey(savedKey):null;
+    if(savedSite)selectSite(savedSite);
+    else{
+      window.ArcheoWindowManager.setOpen('record',false);
+      clearPersistedSelectedSite();
+    }
+  }
   loadOverlay.classList.add('hidden');
 
   // v6.4.1: introspection hooks for the regression/smoke test suite,
@@ -8405,7 +8554,7 @@ function startApp(rawSites){
     getDiagnostics: ()=>window.ArcheoRuntimeDiagnostics,
     siteKeyOf, findSiteByKey, findSitesByName, findUniqueSiteByName,
     hasUsableCoords, formatSiteCoords, normalizeCoordinate, validateCoordinate,
-    sanitizeSourceUrl, statusMetaFor, statusKeyOf,
+    sanitizeSourceUrl, sanitizeImageUrl, statusMetaFor, statusKeyOf,
     validateAndNormalizeSites,
     getState: ()=>state,
     selectSite, openDrawer, buildShareUrl, applyStateFromUrl,
@@ -8415,7 +8564,7 @@ function startApp(rawSites){
     getCatalogFeatureIndex: ()=>catalogFeatureIndex,
     getGeometrySelectionController: ()=>geometrySelectionController,
     getGeometryDiagnostics: ()=>window.ArcheoGeometryDiagnostics,
-    setLayerEnabled, setLayerSelectionState, currentMapYear, applyFilters,
+    setLayerEnabled, setLayerSelectionState, currentMapYear, applyFilters, applyTimelineMode,
   };
 }
 
